@@ -7,25 +7,34 @@
 
 import Foundation
 
-protocol ProfileRespositoryProtocol {
+protocol ProfileRespositoryProtocol: Sendable {
     func fetchUserProfile() async throws -> UserProfile
 }
 
-struct ProfileRespository: ProfileRespositoryProtocol {
+struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
     private let networkManager: NetworkManaging
-    private let maxCacheAge: TimeInterval
+    private let shouldUseMockData: Bool
+    private let decoder: JSONDecoder
 
     init(
-        networkManager: NetworkManaging? = nil,
-        maxCacheAge: TimeInterval = 60
+        networkManager: NetworkManaging = NetworkManager(),
+        shouldUseMockData: Bool = true,
+        decoder: JSONDecoder = JSONDecoder()
     ) {
-        self.networkManager = networkManager ?? NetworkManager()
-        self.maxCacheAge = maxCacheAge
+        self.networkManager = networkManager
+        self.shouldUseMockData = shouldUseMockData
+        self.decoder = decoder
     }
 
     func fetchUserProfile() async throws -> UserProfile {
         let request = ProfileUrlRequest.getUserProfile.asURLRequest()
-        let userProfile = try await self.networkManager.perform(request) as UserProfile
-        return userProfile
+
+        if shouldUseMockData {
+            try await Task.sleep(for: .milliseconds(300))
+            return UserProfile.mock
+        }
+
+        let response = try await networkManager.perform(request) as UserProfileResponse
+        return response.toUserProfile()
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum APIConfig {
-    static let baseURL = URL(string: "")!
-    static let timeoutInterval: TimeInterval = 30
+enum ApiConfig {
+    static let baseURL = URL(string: "https://api.tinymeet.mock")!
+    static let timeoutInterval: TimeInterval = 15
 }

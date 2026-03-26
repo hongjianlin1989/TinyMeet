@@ -7,7 +7,15 @@
 
 import Foundation
 
-struct UserProfile: Codable, Identifiable, Equatable, Sendable {
+struct UserProfile: Identifiable, Equatable, Sendable {
+    let id: Int
+    let username: String
+    let bio: String?
+    let age: Int?
+    let avatarURL: URL?
+}
+
+struct UserProfileResponse: Codable, Sendable {
     let id: Int
     let username: String
     let bio: String?
@@ -20,6 +28,16 @@ struct UserProfile: Codable, Identifiable, Equatable, Sendable {
         case bio
         case age
         case avatarURL = "avatar_url"
+    }
+
+    func toUserProfile() -> UserProfile {
+        UserProfile(
+            id: id,
+            username: username,
+            bio: bio,
+            age: age,
+            avatarURL: avatarURL
+        )
     }
 }
 

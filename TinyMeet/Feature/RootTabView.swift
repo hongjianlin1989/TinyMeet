@@ -13,7 +13,7 @@ struct RootTabView: View {
                     Label("tab.discover", systemImage: "magnifyingglass")
                 }
 
-            ProfileView()
+            ProfileView(viewModel: ProfileViewModel.makeDefault())
                 .tabItem {
                     Label("tab.profile", systemImage: "person.crop.circle")
                 }
