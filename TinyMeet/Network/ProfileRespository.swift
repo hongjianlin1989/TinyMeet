@@ -11,7 +11,7 @@ protocol ProfileRespositoryProtocol {
     func fetchUserProfile() async throws -> UserProfile
 }
 
-actor ProfileRespository: ProfileRespositoryProtocol {
+struct ProfileRespository: ProfileRespositoryProtocol {
     private let networkManager: NetworkManaging
     private let maxCacheAge: TimeInterval
 
@@ -24,7 +24,7 @@ actor ProfileRespository: ProfileRespositoryProtocol {
     }
 
     func fetchUserProfile() async throws -> UserProfile {
-        let request = await ProfileUrlRequest.getUserProfile.asURLRequest()
+        let request = ProfileUrlRequest.getUserProfile.asURLRequest()
         let userProfile = try await self.networkManager.perform(request) as UserProfile
         return userProfile
     }
