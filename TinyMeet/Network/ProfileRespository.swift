@@ -8,8 +8,8 @@
 import Foundation
 
 protocol ProfileRespositoryProtocol: Sendable {
-    func fetchUserProfile() async throws -> UserProfile
-    func searchUserProfiles(query: String) async throws -> [UserProfile]
+    nonisolated func fetchUserProfile() async throws -> UserProfile
+    nonisolated func searchUserProfiles(query: String) async throws -> [UserProfile]
 }
 
 struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
@@ -17,7 +17,7 @@ struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
     private let shouldUseMockData: Bool
     private let decoder: JSONDecoder
 
-    init(
+    nonisolated init(
         networkManager: NetworkManaging = NetworkManager(),
         shouldUseMockData: Bool = true,
         decoder: JSONDecoder = JSONDecoder()
@@ -27,7 +27,7 @@ struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
         self.decoder = decoder
     }
 
-    func fetchUserProfile() async throws -> UserProfile {
+    nonisolated func fetchUserProfile() async throws -> UserProfile {
         let request = ProfileUrlRequest.getUserProfile.asURLRequest()
 
         if shouldUseMockData {
@@ -39,7 +39,7 @@ struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
         return response.toUserProfile()
     }
 
-    func searchUserProfiles(query: String) async throws -> [UserProfile] {
+    nonisolated func searchUserProfiles(query: String) async throws -> [UserProfile] {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else {
             return []

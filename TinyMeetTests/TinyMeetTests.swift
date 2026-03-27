@@ -27,23 +27,42 @@ struct TinyMeetTests {
         #expect(deletedDetail.members.contains(where: { $0.id == addedMember.id }) == false)
     }
 
+    @Test func profileRepositoryMockSearchReturnsExpectedUsers() async throws {
+        let repository = ProfileRespository()
+
+        let swiftUIResults = try await repository.searchUserProfiles(query: "swiftui")
+        #expect(swiftUIResults.contains(where: { $0.username == "miapark" }))
+        #expect(swiftUIResults.contains(where: { $0.username == "noahpatel" }))
+
+        let coffeeResults = try await repository.searchUserProfiles(query: " coffee ")
+        #expect(coffeeResults.contains(where: { $0.username == "amychen" }))
+        #expect(coffeeResults.contains(where: { $0.username == "sofiawang" }))
+
+        let emptyResults = try await repository.searchUserProfiles(query: "   ")
+        #expect(emptyResults.isEmpty)
+    }
+
     @MainActor
-    @Test func discoverViewModelFiltersGroups() async throws {
-        let viewModel = DiscoverViewModel(groupsRepository: GroupsRepository())
+    @Test func discoverViewModelSearchesProfilesAndAddsToGroup() async throws {
+        let viewModel = DiscoverViewModel(
+            profileRespository: ProfileRespository(),
+            groupsRepository: GroupsRepository()
+        )
 
-        await viewModel.fetchGroups()
+        await viewModel.loadGroups()
+        #expect(viewModel.groups.isEmpty == false)
 
-        #expect(viewModel.filteredGroups.count == viewModel.groups.count)
+        viewModel.searchText = "bay area"
+        await viewModel.searchProfiles()
 
-        viewModel.searchText = "swiftui"
-        #expect(viewModel.filteredGroups.count == 1)
-        #expect(viewModel.filteredGroups.first?.name == "SwiftUI Builders")
+        #expect(viewModel.profiles.contains(where: { $0.username == "ethannguyen" }))
+        #expect(viewModel.profiles.contains(where: { $0.username == "chloegarcia" }))
 
-        viewModel.searchText = "  palo alto  "
-        #expect(viewModel.filteredGroups.count == 1)
-        #expect(viewModel.filteredGroups.first?.name == "Weekend Hikers")
+        let selectedProfile = try #require(viewModel.profiles.first(where: { $0.username == "chloegarcia" }))
+        let selectedGroup = try #require(viewModel.groups.first)
 
-        viewModel.searchText = "no-match-query"
-        #expect(viewModel.filteredGroups.isEmpty)
+        await viewModel.addProfileToGroup(selectedProfile, groupID: selectedGroup.id)
+        #expect(viewModel.successMessage?.contains("@chloegarcia") == true)
+        #expect(viewModel.errorMessage == nil)
     }
 }
