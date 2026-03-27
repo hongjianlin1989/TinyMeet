@@ -26,4 +26,24 @@ struct TinyMeetTests {
         #expect(deletedDetail.members.count == originalDetail.members.count)
         #expect(deletedDetail.members.contains(where: { $0.id == addedMember.id }) == false)
     }
+
+    @MainActor
+    @Test func discoverViewModelFiltersGroups() async throws {
+        let viewModel = DiscoverViewModel(groupsRepository: GroupsRepository())
+
+        await viewModel.fetchGroups()
+
+        #expect(viewModel.filteredGroups.count == viewModel.groups.count)
+
+        viewModel.searchText = "swiftui"
+        #expect(viewModel.filteredGroups.count == 1)
+        #expect(viewModel.filteredGroups.first?.name == "SwiftUI Builders")
+
+        viewModel.searchText = "  palo alto  "
+        #expect(viewModel.filteredGroups.count == 1)
+        #expect(viewModel.filteredGroups.first?.name == "Weekend Hikers")
+
+        viewModel.searchText = "no-match-query"
+        #expect(viewModel.filteredGroups.isEmpty)
+    }
 }

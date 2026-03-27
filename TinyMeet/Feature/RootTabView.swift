@@ -13,7 +13,7 @@ struct RootTabView: View {
                     Label("tab.home", systemImage: "map")
                 }
 
-            DiscoverView()
+            DiscoverView(viewModel: DiscoverViewModel.makeDefault())
                 .tabItem {
                     Label("tab.discover", systemImage: "magnifyingglass")
                 }

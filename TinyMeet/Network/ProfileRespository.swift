@@ -9,6 +9,7 @@ import Foundation
 
 protocol ProfileRespositoryProtocol: Sendable {
     func fetchUserProfile() async throws -> UserProfile
+    func searchUserProfiles(query: String) async throws -> [UserProfile]
 }
 
 struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
@@ -36,5 +37,19 @@ struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
 
         let response = try await networkManager.perform(request) as UserProfileResponse
         return response.toUserProfile()
+    }
+
+    func searchUserProfiles(query: String) async throws -> [UserProfile] {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else {
+            return []
+        }
+
+        if shouldUseMockData {
+            try await Task.sleep(for: .milliseconds(250))
+            return UserProfile.mockSearchResults(for: trimmedQuery)
+        }
+
+        return []
     }
 }
