@@ -26,9 +26,14 @@ struct GroupsView: View {
                     )
                 } else {
                     List(viewModel.groups) { group in
-                        groupRow(group)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                        NavigationLink {
+                            GroupDetailView(viewModel: GroupDetailViewModel.makeDefault(groupID: group.id))
+                        } label: {
+                            groupRow(group)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                     }
                     .listStyle(.plain)
                 }
