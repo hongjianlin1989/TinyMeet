@@ -1,0 +1,27 @@
+opt_out_usage
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Resolve Swift packages and run unit tests for TinyMeet"
+  lane :tests do
+    ENV["LANG"] ||= "en_US.UTF-8"
+    ENV["LC_ALL"] ||= "en_US.UTF-8"
+
+    project_path = "TinyMeet.xcodeproj"
+    scheme_name = "TinyMeet"
+    simulator_name = ENV.fetch("SIMULATOR_NAME", "iPhone 16")
+    simulator_os = ENV.fetch("SIMULATOR_OS", "latest")
+
+    sh("xcodebuild -resolvePackageDependencies -project '#{project_path}'")
+
+    run_tests(
+      project: project_path,
+      scheme: scheme_name,
+      devices: ["#{simulator_name} (#{simulator_os})"],
+      clean: true,
+      code_coverage: true,
+      xcargs: "CODE_SIGNING_ALLOWED=NO"
+    )
+  end
+end

@@ -1,0 +1,52 @@
+version: 2.1
+
+jobs:
+  test:
+    macos:
+      xcode: "16.2.0"
+    resource_class: m4pro.medium
+    working_directory: ~/project
+    environment:
+      BUNDLE_PATH: vendor/bundle
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - bundler-v1-{{ checksum "Gemfile" }}
+            - bundler-v1-
+
+      - run:
+          name: Install Ruby gems
+          command: |
+            bundle config set path "$BUNDLE_PATH"
+            bundle install
+
+      - save_cache:
+          key: bundler-v1-{{ checksum "Gemfile" }}
+          paths:
+            - vendor/bundle
+
+      - run:
+          name: Show Xcode version
+          command: xcodebuild -version
+
+      - run:
+          name: Run Fastlane tests lane
+          command: bundle exec fastlane ios tests
+
+      - store_test_results:
+          path: fastlane/test_output
+
+      - store_artifacts:
+          path: fastlane/test_output
+
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - test

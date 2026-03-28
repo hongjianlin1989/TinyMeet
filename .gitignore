@@ -1,2 +1,5 @@
 xcuserdata/
 *.xcuserstate
+.bundle/
+vendor/bundle/
+.build/
