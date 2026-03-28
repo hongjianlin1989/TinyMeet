@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @StateObject private var viewModel: ProfileViewModel
+    @State private var isShowingCreateEvent = false
 
     init(viewModel: ProfileViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -29,6 +30,14 @@ struct ProfileView: View {
                 await viewModel.fetchUserProfile()
             }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        isShowingCreateEvent = true
+                    } label: {
+                        Label("Create Event", systemImage: "calendar.badge.plus")
+                    }
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Refresh") {
                         Task {
@@ -38,6 +47,9 @@ struct ProfileView: View {
                     .disabled(viewModel.isLoading)
                 }
             }
+        }
+        .sheet(isPresented: $isShowingCreateEvent) {
+            CreateEventView()
         }
     }
 
