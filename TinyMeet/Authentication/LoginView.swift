@@ -3,6 +3,7 @@ import SwiftUI
 struct LoginView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = LoginViewModel()
+    @State private var isShowingSignUp = false
 
     var body: some View {
         NavigationStack {
@@ -57,7 +58,7 @@ struct LoginView: View {
 
                     Button("login.signup") {
                         viewModel.signUpTapped()
-                        dismiss()
+                        isShowingSignUp = true
                     }
                     .buttonStyle(.bordered)
                     .frame(maxWidth: .infinity)
@@ -74,6 +75,9 @@ struct LoginView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $isShowingSignUp) {
+            SignUpView(viewModel: SignUpViewModel.makeDefault())
         }
     }
 }
