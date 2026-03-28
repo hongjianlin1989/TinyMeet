@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ProfileView: View {
     @StateObject private var viewModel: ProfileViewModel
-    @State private var isShowingCreateEvent = false
 
     init(viewModel: ProfileViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -32,13 +31,19 @@ struct ProfileView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        isShowingCreateEvent = true
+                        viewModel.inviteFriendsTapped()
                     } label: {
-                        Label("Create Event", systemImage: "calendar.badge.plus")
+                        Label("Invite Your Friend", systemImage: "person.badge.plus")
                     }
                 }
 
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.createEventTapped()
+                    } label: {
+                        Label("Create Event", systemImage: "calendar.badge.plus")
+                    }
+
                     Button("Refresh") {
                         Task {
                             await viewModel.fetchUserProfile()
@@ -48,8 +53,13 @@ struct ProfileView: View {
                 }
             }
         }
-        .sheet(isPresented: $isShowingCreateEvent) {
+        .sheet(isPresented: $viewModel.isShowingCreateEvent) {
             CreateEventView(viewModel: CreateEventViewModel.makeDefault())
+        }
+        .sheet(item: $viewModel.inviteSharePayload, onDismiss: {
+            viewModel.clearInviteSharePayload()
+        }) { payload in
+            ShareSheetView(activityItems: payload.activityItems)
         }
     }
 
