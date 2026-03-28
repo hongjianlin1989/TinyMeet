@@ -49,7 +49,7 @@ struct ProfileView: View {
             }
         }
         .sheet(isPresented: $isShowingCreateEvent) {
-            CreateEventView()
+            CreateEventView(viewModel: CreateEventViewModel.makeDefault())
         }
     }
 
