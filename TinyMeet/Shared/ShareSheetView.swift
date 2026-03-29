@@ -3,7 +3,7 @@ import UIKit
 
 struct ShareSheetView: UIViewControllerRepresentable {
     let activityItems: [Any]
-    var applicationActivities: [UIActivity]? = nil
+    var applicationActivities: [UIActivity]?
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
         UIActivityViewController(

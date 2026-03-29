@@ -14,7 +14,7 @@ struct TinyMeetTests {
         let repository = GroupsRepository()
         let originalDetail = try await repository.fetchGroupDetail(groupID: 1)
 
-        #expect(originalDetail.members.count > 0)
+        #expect(!originalDetail.members.isEmpty)
 
         let addedDetail = try await repository.addMember(named: "Taylor Brooks", to: originalDetail)
         #expect(addedDetail.members.count == originalDetail.members.count + 1)
@@ -28,7 +28,7 @@ struct TinyMeetTests {
     }
 
     @Test func profileRepositoryMockSearchReturnsExpectedUsers() async throws {
-        let repository = ProfileRespository()
+        let repository = await ProfileRespository()
 
         let swiftUIResults = try await repository.searchUserProfiles(query: "swiftui")
         #expect(swiftUIResults.contains(where: { $0.username == "miapark" }))

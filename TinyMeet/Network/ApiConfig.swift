@@ -8,6 +8,6 @@
 import Foundation
 
 enum ApiConfig {
-    static let baseURL = URL(string: "https://api.tinymeet.mock")!
+    static let baseURL: URL = URL(string: "https://api.tinymeet.mock") ?? URL(fileURLWithPath: "/")
     static let timeoutInterval: TimeInterval = 15
 }

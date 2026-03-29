@@ -2,9 +2,10 @@
 
 ## CI / Fastlane setup
 
-This project includes a lightweight Fastlane + CircleCI setup for validating the `TinyMeet` Xcode project in CI.
+This project includes CI setup for validating the `TinyMeet` Xcode project with both GitHub Actions and CircleCI.
 
 ### Files used by CI
+- `.github/workflows/ios-ci.yml`
 - `.circleci/config.yml`
 - `.swiftlint.yml`
 - `Gemfile`
@@ -37,7 +38,7 @@ If you need a different simulator, override the environment variables:
 SIMULATOR_NAME="iPhone 16" SIMULATOR_OS="18.2" bundle exec fastlane ios tests
 ```
 
-### Optional local parity with CircleCI
+### Optional local parity with CI
 If you want to mirror the main CI checks locally, run:
 
 ```bash
@@ -46,7 +47,22 @@ xcodebuild -project "TinyMeet.xcodeproj" -scheme "TinyMeet" -destination "generi
 bundle exec fastlane ios tests
 ```
 
-### CircleCI behavior
+## GitHub Actions
+The GitHub Actions workflow lives at:
+
+- `.github/workflows/ios-ci.yml`
+
+It runs on:
+- pushes
+- pull requests targeting `main` or `develop`
+
+The workflow currently runs these checks:
+- SwiftLint
+- Xcode unit tests
+
+This is the workflow that should appear on GitHub pull requests as status checks.
+
+## CircleCI
 The CircleCI workflow currently uses a macOS Xcode image and runs on branch pushes, including commits that update an open pull request.
 
 That validation workflow runs these checks in order:
@@ -58,27 +74,30 @@ That validation workflow runs these checks in order:
 - store Fastlane test output as artifacts
 
 ### Pull request validation
-When you create or update a pull request, CircleCI will validate the branch with:
-- lint
-- build
+When you create or update a pull request on GitHub, GitHub Actions should validate the branch with:
+- SwiftLint
 - unit tests
 
-This means unit-test checks are part of pull request validation, not just manual or post-merge runs.
+If you do not see those checks on the PR page, the usual causes are:
+- no workflow file under `.github/workflows/`
+- GitHub Actions disabled for the repository
+- the workflow file not present on the PR branch
+- missing shared Xcode scheme in source control
 
 ### Important Xcode prerequisite
 CI needs the `TinyMeet` scheme to be shared in source control.
 
-If CircleCI cannot find the scheme, open Xcode and make sure the scheme is shared, then commit the generated file under:
+If CI cannot find the scheme, open Xcode and make sure the scheme is shared, then commit the generated file under:
 
 - `TinyMeet.xcodeproj/xcshareddata/xcschemes/`
 
-At the moment, make sure that shared scheme file is committed before relying on CircleCI build/test runs.
+At the moment, this repository still appears to be missing a committed shared `.xcscheme` file, so GitHub Actions and CircleCI may still fail the Xcode test step until that file is added.
 
 ### Current scope
 This setup currently focuses on core validation for pull requests and branch pushes:
 - lint
-- build
 - unit tests
+- build checks on CircleCI
 
 Possible next steps:
 - add UI-test coverage in a separate job

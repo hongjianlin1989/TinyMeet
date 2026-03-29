@@ -5,10 +5,10 @@
 //  Created by Hongjian Lin on 3/25/26.
 //
 
-import SwiftUI
 import CoreData
-import MapKit
 import CoreLocation
+import MapKit
+import SwiftUI
 
 struct HomeMapView: View {
     @StateObject private var viewModel = HomeMapViewModel()
@@ -58,7 +58,12 @@ struct HomeMapView: View {
         }
     }
 
-    private func overlayCard(titleKey: LocalizedStringResource, messageKey: LocalizedStringResource, buttonTitleKey: LocalizedStringResource?, action: (() -> Void)?) -> some View {
+    private func overlayCard(
+        titleKey: LocalizedStringResource,
+        messageKey: LocalizedStringResource,
+        buttonTitleKey: LocalizedStringResource?,
+        action: (() -> Void)?
+    ) -> some View {
         VStack {
             Spacer()
 
@@ -71,8 +76,10 @@ struct HomeMapView: View {
                     .foregroundStyle(.secondary)
 
                 if let buttonTitleKey, let action {
-                    Button(buttonTitleKey, action: action)
-                        .buttonStyle(.borderedProminent)
+                    Button(action: action) {
+                        Text(buttonTitleKey)
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
             }
             .padding()

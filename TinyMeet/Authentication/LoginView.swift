@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LoginView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var appSession: AppSession
     @StateObject private var viewModel = LoginViewModel()
     @State private var isShowingSignUp = false
 
@@ -50,6 +51,7 @@ struct LoginView: View {
                 VStack(spacing: 12) {
                     Button("login.submit") {
                         viewModel.loginTapped()
+                        appSession.logIn()
                         dismiss()
                     }
                     .buttonStyle(.borderedProminent)
@@ -84,4 +86,5 @@ struct LoginView: View {
 
 #Preview {
     LoginView()
+        .environmentObject(AppSession())
 }
