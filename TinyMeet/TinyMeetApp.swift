@@ -11,11 +11,13 @@ import CoreData
 @main
 struct TinyMeetApp: App {
     let persistenceController = PersistenceController.shared
+    @StateObject private var appSession = AppSession()
 
     var body: some Scene {
         WindowGroup {
             RootTabView()
                 .tint(TinyMeetTheme.accent)
+                .environmentObject(appSession)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }

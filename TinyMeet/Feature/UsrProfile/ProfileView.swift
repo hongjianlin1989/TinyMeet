@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @EnvironmentObject private var appSession: AppSession
     @StateObject private var viewModel: ProfileViewModel
 
     init(viewModel: ProfileViewModel) {
@@ -10,24 +11,28 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.isLoading && viewModel.userProfile == nil {
-                    ProgressView("Loading profile...")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let userProfile = viewModel.userProfile {
-                    profileContent(userProfile)
+                if appSession.isLoggedIn {
+                    if viewModel.isLoading && viewModel.userProfile == nil {
+                        ProgressView("Loading profile...")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if let userProfile = viewModel.userProfile {
+                        profileContent(userProfile)
+                    } else {
+                        ContentUnavailableView(
+                            "Profile unavailable",
+                            systemImage: "person.crop.circle.badge.exclamationmark",
+                            description: Text(viewModel.errorMessage ?? "We couldn't load your profile yet.")
+                        )
+                    }
                 } else {
-                    ContentUnavailableView(
-                        "Profile unavailable",
-                        systemImage: "person.crop.circle.badge.exclamationmark",
-                        description: Text(viewModel.errorMessage ?? "We couldn't load your profile yet.")
-                    )
+                    signedOutContent
                 }
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationTitle("profile.navigation.title")
-            .task {
-                await viewModel.fetchUserProfile()
+            .task(id: appSession.isLoggedIn) {
+                await viewModel.fetchUserProfile(isLoggedIn: appSession.isLoggedIn)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -47,25 +52,72 @@ struct ProfileView: View {
                     }
                     .buttonStyle(TinyMeetSecondaryButtonStyle())
 
-                    Button("Refresh") {
-                        Task {
-                            await viewModel.fetchUserProfile()
+                    if appSession.isLoggedIn {
+                        Button {
+                            viewModel.settingsTapped()
+                        } label: {
+                            Image(systemName: "gearshape.fill")
+                        }
+                        .buttonStyle(TinyMeetSecondaryButtonStyle())
+                    } else {
+                        Button("Login") {
+                            viewModel.loginTapped()
+                        }
+                        .buttonStyle(TinyMeetSecondaryButtonStyle())
+                    }
+                }
+            }
+            .navigationDestination(isPresented: $viewModel.isShowingSettings) {
+                SettingsView(viewModel: SettingsViewModel.makeDefault())
+                    .onDisappear {
+                        if !appSession.isLoggedIn {
+                            viewModel.handleLogout()
                         }
                     }
-                    .buttonStyle(TinyMeetSecondaryButtonStyle())
-                    .disabled(viewModel.isLoading)
-                }
             }
         }
         .tinyMeetPageBackground()
         .sheet(isPresented: $viewModel.isShowingCreateEvent) {
             CreateEventView(viewModel: CreateEventViewModel.makeDefault())
         }
+        .sheet(isPresented: $viewModel.isShowingLogin) {
+            LoginView()
+        }
         .sheet(item: $viewModel.inviteSharePayload, onDismiss: {
             viewModel.clearInviteSharePayload()
         }) { payload in
             ShareSheetView(activityItems: payload.activityItems)
         }
+    }
+
+    private var signedOutContent: some View {
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(TinyMeetTheme.heroGradient)
+                    .frame(width: 118, height: 118)
+
+                Image(systemName: "person.crop.circle.badge.questionmark")
+                    .font(.system(size: 60))
+                    .foregroundStyle(.white)
+            }
+            .shadow(color: TinyMeetTheme.shadow, radius: 14, x: 0, y: 8)
+
+            Text("Welcome to TinyMeet")
+                .font(.title2.weight(.bold))
+
+            Text("Log in to see your profile, open settings, and manage your groups.")
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+
+            Button("Log In") {
+                viewModel.loginTapped()
+            }
+            .buttonStyle(TinyMeetPrimaryButtonStyle())
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity)
+        .tinyMeetCardStyle()
     }
 
     @ViewBuilder
@@ -155,4 +207,5 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView(viewModel: ProfileViewModel.makeDefault())
+        .environmentObject(AppSession())
 }

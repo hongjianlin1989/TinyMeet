@@ -19,6 +19,8 @@ final class ProfileViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published var inviteSharePayload: InviteSharePayload?
     @Published var isShowingCreateEvent = false
+    @Published var isShowingLogin = false
+    @Published var isShowingSettings = false
 
     private let profileRespository: ProfileRespositoryProtocol
 
@@ -30,7 +32,14 @@ final class ProfileViewModel: ObservableObject {
         ProfileViewModel(profileRespository: ProfileRespository())
     }
 
-    func fetchUserProfile() async {
+    func fetchUserProfile(isLoggedIn: Bool) async {
+        guard isLoggedIn else {
+            userProfile = nil
+            errorMessage = nil
+            isLoading = false
+            return
+        }
+
         guard !isLoading else { return }
 
         isLoading = true
@@ -59,6 +68,20 @@ final class ProfileViewModel: ObservableObject {
 
     func createEventTapped() {
         isShowingCreateEvent = true
+    }
+
+    func loginTapped() {
+        isShowingLogin = true
+    }
+
+    func settingsTapped() {
+        isShowingSettings = true
+    }
+
+    func handleLogout() {
+        isShowingSettings = false
+        userProfile = nil
+        errorMessage = nil
     }
 
     private var inviteMessage: String {
