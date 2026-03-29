@@ -2,10 +2,11 @@
 
 ## CI / Fastlane setup
 
-This project includes a minimal Fastlane + CircleCI setup for running iOS unit tests on the `TinyMeet` scheme.
+This project includes a lightweight Fastlane + CircleCI setup for validating the `TinyMeet` Xcode project in CI.
 
-### Files added
+### Files used by CI
 - `.circleci/config.yml`
+- `.swiftlint.yml`
 - `Gemfile`
 - `fastlane/Appfile`
 - `fastlane/Fastfile`
@@ -13,7 +14,7 @@ This project includes a minimal Fastlane + CircleCI setup for running iOS unit t
 ### What the Fastlane lane does
 The `ios tests` lane will:
 - resolve Swift package dependencies
-- run unit tests for the `TinyMeet` scheme
+- run tests for the `TinyMeet` scheme
 - target an iOS simulator
 - disable code signing for CI test runs
 
@@ -24,7 +25,7 @@ Install gems with Bundler:
 bundle install
 ```
 
-Run the test lane locally:
+Run the Fastlane test lane locally:
 
 ```bash
 bundle exec fastlane ios tests
@@ -36,10 +37,21 @@ If you need a different simulator, override the environment variables:
 SIMULATOR_NAME="iPhone 16" SIMULATOR_OS="18.2" bundle exec fastlane ios tests
 ```
 
+### Optional local parity with CircleCI
+If you want to mirror the main CI checks locally, run:
+
+```bash
+swiftlint lint --strict --config .swiftlint.yml
+xcodebuild -project "TinyMeet.xcodeproj" -scheme "TinyMeet" -destination "generic/platform=iOS Simulator" CODE_SIGNING_ALLOWED=NO build
+bundle exec fastlane ios tests
+```
+
 ### CircleCI behavior
-The CircleCI workflow will:
-- use a macOS Xcode image
+The CircleCI workflow currently uses a macOS Xcode image and runs these checks in order:
 - install Ruby gems with Bundler
+- install SwiftLint with Homebrew
+- run `swiftlint lint --strict --config .swiftlint.yml`
+- run an Xcode build check for the `TinyMeet` scheme
 - run `bundle exec fastlane ios tests`
 - store Fastlane test output as artifacts
 
@@ -50,11 +62,16 @@ If CircleCI cannot find the scheme, open Xcode and make sure the scheme is share
 
 - `TinyMeet.xcodeproj/xcshareddata/xcschemes/`
 
+At the moment, make sure that shared scheme file is committed before relying on CircleCI build/test runs.
+
 ### Current scope
-This setup is intentionally minimal and currently focuses on unit-test CI.
+This setup currently focuses on core validation for pull requests and branch pushes:
+- lint
+- build
+- test
 
 Possible next steps:
 - add UI-test coverage in a separate job
-- add linting
-- add Fastlane lanes for beta/TestFlight delivery
+- add a dedicated Fastlane build lane for CI consistency
+- add beta/TestFlight delivery lanes
 - add signing and App Store Connect configuration
