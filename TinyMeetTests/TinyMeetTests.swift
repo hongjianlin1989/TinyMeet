@@ -28,7 +28,7 @@ struct TinyMeetTests {
     }
 
     @Test func profileRepositoryMockSearchReturnsExpectedUsers() async throws {
-        let repository = ProfileRespository()
+        let repository = await ProfileRespository()
 
         let swiftUIResults = try await repository.searchUserProfiles(query: "swiftui")
         #expect(swiftUIResults.contains(where: { $0.username == "miapark" }))

@@ -76,8 +76,10 @@ struct HomeMapView: View {
                     .foregroundStyle(.secondary)
 
                 if let buttonTitleKey, let action {
-                    Button(buttonTitleKey, action: action)
-                        .buttonStyle(.borderedProminent)
+                    Button(action: action) {
+                        Text(buttonTitleKey)
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
             }
             .padding()
