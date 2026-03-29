@@ -3,14 +3,14 @@ import SwiftUI
 struct RootTabView: View {
     var body: some View {
         TabView {
-            GroupsView(viewModel: GroupsViewModel.makeDefault())
+            HomeEventsView(viewModel: HomeEventsViewModel.makeDefault())
                 .tabItem {
-                    Label("Groups", systemImage: "person.3.fill")
+                    Label("Home", systemImage: "house.fill")
                 }
 
             HomeMapView()
                 .tabItem {
-                    Label("tab.home", systemImage: "map.fill")
+                    Label("Map", systemImage: "map.fill")
                 }
 
             DiscoverView(viewModel: DiscoverViewModel.makeDefault())
