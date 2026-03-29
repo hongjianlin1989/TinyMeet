@@ -15,6 +15,7 @@ struct TinyMeetApp: App {
     var body: some Scene {
         WindowGroup {
             RootTabView()
+                .tint(TinyMeetTheme.accent)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }

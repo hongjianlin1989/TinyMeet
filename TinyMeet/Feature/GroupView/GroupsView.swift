@@ -12,6 +12,7 @@ struct GroupsView: View {
             Group {
                 if viewModel.isLoading && viewModel.groups.isEmpty {
                     ProgressView("Loading groups...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let errorMessage = viewModel.errorMessage, viewModel.groups.isEmpty {
                     ContentUnavailableView(
                         "Groups unavailable",
@@ -25,17 +26,20 @@ struct GroupsView: View {
                         description: Text("Check back soon for nearby communities.")
                     )
                 } else {
-                    List(viewModel.groups) { group in
-                        NavigationLink {
-                            GroupDetailView(viewModel: GroupDetailViewModel.makeDefault(groupID: group.id))
-                        } label: {
-                            groupRow(group)
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
+                            ForEach(viewModel.groups) { group in
+                                NavigationLink {
+                                    GroupDetailView(viewModel: GroupDetailViewModel.makeDefault(groupID: group.id))
+                                } label: {
+                                    groupRow(group)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
-                        .buttonStyle(.plain)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 24)
                     }
-                    .listStyle(.plain)
                 }
             }
             .padding(viewModel.groups.isEmpty ? 16 : 0)
@@ -50,19 +54,26 @@ struct GroupsView: View {
                             await viewModel.fetchGroups()
                         }
                     }
+                    .buttonStyle(TinyMeetSecondaryButtonStyle())
                     .disabled(viewModel.isLoading)
                 }
             }
         }
+        .tinyMeetPageBackground()
     }
 
     @ViewBuilder
     private func groupRow(_ group: MeetupGroup) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(group.name)
-                        .font(.headline)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Text(group.name)
+                            .font(.headline)
+
+                        Image(systemName: "sparkles")
+                            .foregroundStyle(TinyMeetTheme.sunshine)
+                    }
 
                     if let location = group.location, !location.isEmpty {
                         Label(location, systemImage: "mappin.and.ellipse")
@@ -74,10 +85,10 @@ struct GroupsView: View {
                 Spacer(minLength: 12)
 
                 Text("\(group.memberCount) members")
-                    .font(.caption)
+                    .font(.caption.weight(.semibold))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color(.secondarySystemBackground))
+                    .background(TinyMeetTheme.badge)
                     .clipShape(Capsule())
             }
 
@@ -87,14 +98,9 @@ struct GroupsView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(16)
+        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(.separator).opacity(0.2), lineWidth: 1)
-        }
+        .tinyMeetCardStyle()
     }
 }
 

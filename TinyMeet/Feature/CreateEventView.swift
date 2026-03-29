@@ -18,8 +18,8 @@ struct CreateEventView: View {
                     createButton
                 }
                 .padding(20)
+                .padding(.bottom, 24)
             }
-            .background(Color(.systemGroupedBackground))
             .navigationTitle("Create Playdate")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -27,20 +27,27 @@ struct CreateEventView: View {
                     Button("Close") {
                         dismiss()
                     }
+                    .buttonStyle(TinyMeetSecondaryButtonStyle())
                 }
             }
         }
+        .tinyMeetPageBackground()
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Create Playdate")
                 .font(.title2.weight(.bold))
 
-            Text("Set up a quick event and decide who can join.")
+            Text("Set up a cheerful meet-up and decide who gets to join the fun.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(TinyMeetTheme.heroGradient)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: TinyMeetTheme.shadow, radius: 14, x: 0, y: 8)
     }
 
     private var inputSection: some View {
@@ -51,8 +58,7 @@ struct CreateEventView: View {
             formField(title: "Kids Age", text: $viewModel.kidsAge, prompt: "3 - 5")
         }
         .padding(18)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .tinyMeetCardStyle()
     }
 
     private var visibilitySection: some View {
@@ -68,22 +74,25 @@ struct CreateEventView: View {
                         HStack(spacing: 12) {
                             Image(systemName: viewModel.joinVisibility == option ? "largecircle.fill.circle" : "circle")
                                 .font(.title3)
-                                .foregroundStyle(viewModel.joinVisibility == option ? Color.accentColor : Color.secondary)
+                                .foregroundStyle(viewModel.joinVisibility == option ? TinyMeetTheme.accent : Color.secondary)
 
                             Text(option.rawValue)
                                 .foregroundStyle(.primary)
+                                .fontWeight(.semibold)
 
                             Spacer()
                         }
-                        .contentShape(Rectangle())
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(viewModel.joinVisibility == option ? TinyMeetTheme.badge : Color.white.opacity(0.55))
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
         .padding(18)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .tinyMeetCardStyle()
     }
 
     private var createButton: some View {
@@ -92,11 +101,8 @@ struct CreateEventView: View {
             dismiss()
         } label: {
             Text("Create")
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(TinyMeetPrimaryButtonStyle())
         .disabled(!viewModel.isFormValid)
     }
 
@@ -109,7 +115,7 @@ struct CreateEventView: View {
                 .textInputAutocapitalization(.words)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(Color(.systemBackground))
+                .background(TinyMeetTheme.badge)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
     }
