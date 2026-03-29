@@ -17,7 +17,7 @@ struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
     private let shouldUseMockData: Bool
     private let decoder: JSONDecoder
 
-    nonisolated init(
+    init(
         networkManager: NetworkManaging = NetworkManager(),
         shouldUseMockData: Bool = true,
         decoder: JSONDecoder = JSONDecoder()
@@ -27,8 +27,8 @@ struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
         self.decoder = decoder
     }
 
-    nonisolated func fetchUserProfile() async throws -> UserProfile {
-        let request = ProfileUrlRequest.getUserProfile.asURLRequest()
+    func fetchUserProfile() async throws -> UserProfile {
+        let request = await ProfileUrlRequest.getUserProfile.asURLRequest()
 
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(300))
@@ -36,10 +36,10 @@ struct ProfileRespository: ProfileRespositoryProtocol, Sendable {
         }
 
         let response = try await networkManager.perform(request) as UserProfileResponse
-        return response.toUserProfile()
+        return await response.toUserProfile()
     }
 
-    nonisolated func searchUserProfiles(query: String) async throws -> [UserProfile] {
+    func searchUserProfiles(query: String) async throws -> [UserProfile] {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else {
             return []
