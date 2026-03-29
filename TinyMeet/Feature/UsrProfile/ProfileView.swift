@@ -115,6 +115,40 @@ struct ProfileView: View {
             .padding(24)
             .frame(maxWidth: .infinity)
             .tinyMeetCardStyle()
+
+            NavigationLink {
+                GroupsView(viewModel: GroupsViewModel.makeDefault())
+            } label: {
+                HStack(spacing: 14) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(TinyMeetTheme.playfulGradient)
+                            .frame(width: 52, height: 52)
+
+                        Image(systemName: "person.3.fill")
+                            .foregroundStyle(.white)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("My Groups")
+                            .font(.headline)
+
+                        Text("View and manage your parenting groups")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .tinyMeetCardStyle()
+            }
+            .buttonStyle(.plain)
         }
     }
 }
