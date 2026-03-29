@@ -1,0 +1,44 @@
+included:
+  - TinyMeet
+  - TinyMeetTests
+  - TinyMeetUITests
+
+excluded:
+  - .build
+  - vendor
+  - fastlane
+  - TinyMeet.xcodeproj
+  - TinyMeet/Localizable.xcstrings
+
+opt_in_rules:
+  - empty_count
+  - explicit_init
+  - first_where
+  - force_unwrapping
+  - redundant_nil_coalescing
+  - sorted_imports
+
+line_length:
+  warning: 140
+  error: 180
+  ignores_comments: true
+  ignores_urls: true
+
+type_body_length:
+  warning: 300
+  error: 400
+
+file_length:
+  warning: 500
+  error: 700
+
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - id
+    - x
+    - y
+    - i
+
+reporter: "xcode"
