@@ -5,12 +5,12 @@ struct RootTabView: View {
         TabView {
             HomeEventsView(viewModel: HomeEventsViewModel.makeDefault())
                 .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                    Label("tab.home", systemImage: "house.fill")
                 }
 
             HomeMapView()
                 .tabItem {
-                    Label("Map", systemImage: "map.fill")
+                    Label("tab.map", systemImage: "map.fill")
                 }
 
             DiscoverView(viewModel: DiscoverViewModel.makeDefault())

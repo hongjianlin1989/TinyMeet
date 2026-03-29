@@ -13,15 +13,15 @@ struct ProfileView: View {
             Group {
                 if appSession.isLoggedIn {
                     if viewModel.isLoading && viewModel.userProfile == nil {
-                        ProgressView("Loading profile...")
+                        ProgressView("profile.loading")
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if let userProfile = viewModel.userProfile {
                         profileContent(userProfile)
                     } else {
                         ContentUnavailableView(
-                            "Profile unavailable",
+                            "profile.unavailable.title",
                             systemImage: "person.crop.circle.badge.exclamationmark",
-                            description: Text(viewModel.errorMessage ?? "We couldn't load your profile yet.")
+                            description: Text(viewModel.errorMessage ?? String(localized: "profile.unavailable.message"))
                         )
                     }
                 } else {
@@ -39,7 +39,7 @@ struct ProfileView: View {
                     Button {
                         viewModel.inviteFriendsTapped()
                     } label: {
-                        Label("Invite Your Friend", systemImage: "person.badge.plus")
+                        Label("profile.invite", systemImage: "person.badge.plus")
                     }
                     .buttonStyle(TinyMeetSecondaryButtonStyle())
                 }
@@ -48,7 +48,7 @@ struct ProfileView: View {
                     Button {
                         viewModel.createEventTapped()
                     } label: {
-                        Label("Create Event", systemImage: "calendar.badge.plus")
+                        Label("profile.createEvent", systemImage: "calendar.badge.plus")
                     }
                     .buttonStyle(TinyMeetSecondaryButtonStyle())
 
@@ -60,7 +60,7 @@ struct ProfileView: View {
                         }
                         .buttonStyle(TinyMeetSecondaryButtonStyle())
                     } else {
-                        Button("Login") {
+                        Button("login.submit") {
                             viewModel.loginTapped()
                         }
                         .buttonStyle(TinyMeetSecondaryButtonStyle())
@@ -103,14 +103,14 @@ struct ProfileView: View {
             }
             .shadow(color: TinyMeetTheme.shadow, radius: 14, x: 0, y: 8)
 
-            Text("Welcome to TinyMeet")
+            Text("profile.signedOut.title")
                 .font(.title2.weight(.bold))
 
-            Text("Log in to see your profile, open settings, and manage your groups.")
+            Text("profile.signedOut.message")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
 
-            Button("Log In") {
+            Button("profile.login") {
                 viewModel.loginTapped()
             }
             .buttonStyle(TinyMeetPrimaryButtonStyle())
@@ -154,7 +154,7 @@ struct ProfileView: View {
                 }
 
                 if let avatarURL = userProfile.avatarURL {
-                    Label("Avatar link ready", systemImage: "sparkles")
+                    Label("profile.avatar.ready", systemImage: "sparkles")
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(TinyMeetTheme.accent)
 
@@ -182,10 +182,10 @@ struct ProfileView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("My Groups")
+                        Text("profile.groups.title")
                             .font(.headline)
 
-                        Text("View and manage your parenting groups")
+                        Text("profile.groups.message")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }

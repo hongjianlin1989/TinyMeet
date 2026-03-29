@@ -18,6 +18,7 @@ struct TinyMeetApp: App {
             RootTabView()
                 .tint(TinyMeetTheme.accent)
                 .environmentObject(appSession)
+                .environment(\.locale, appSession.locale)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
