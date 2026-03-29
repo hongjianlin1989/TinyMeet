@@ -14,7 +14,7 @@ This project includes a lightweight Fastlane + CircleCI setup for validating the
 ### What the Fastlane lane does
 The `ios tests` lane will:
 - resolve Swift package dependencies
-- run tests for the `TinyMeet` scheme
+- run unit tests for the `TinyMeet` scheme
 - target an iOS simulator
 - disable code signing for CI test runs
 
@@ -47,13 +47,23 @@ bundle exec fastlane ios tests
 ```
 
 ### CircleCI behavior
-The CircleCI workflow currently uses a macOS Xcode image and runs these checks in order:
+The CircleCI workflow currently uses a macOS Xcode image and runs on branch pushes, including commits that update an open pull request.
+
+That validation workflow runs these checks in order:
 - install Ruby gems with Bundler
 - install SwiftLint with Homebrew
 - run `swiftlint lint --strict --config .swiftlint.yml`
 - run an Xcode build check for the `TinyMeet` scheme
 - run `bundle exec fastlane ios tests`
 - store Fastlane test output as artifacts
+
+### Pull request validation
+When you create or update a pull request, CircleCI will validate the branch with:
+- lint
+- build
+- unit tests
+
+This means unit-test checks are part of pull request validation, not just manual or post-merge runs.
 
 ### Important Xcode prerequisite
 CI needs the `TinyMeet` scheme to be shared in source control.
@@ -68,7 +78,7 @@ At the moment, make sure that shared scheme file is committed before relying on 
 This setup currently focuses on core validation for pull requests and branch pushes:
 - lint
 - build
-- test
+- unit tests
 
 Possible next steps:
 - add UI-test coverage in a separate job
