@@ -11,6 +11,10 @@ jobs:
       FASTLANE_SKIP_UPDATE_CHECK: "1"
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      SCHEME_NAME: TinyMeet
+      PROJECT_PATH: TinyMeet.xcodeproj
+      DESTINATION: generic/platform=iOS Simulator
 
     steps:
       - checkout
@@ -32,8 +36,28 @@ jobs:
             - vendor/bundle
 
       - run:
+          name: Install SwiftLint
+          command: |
+            brew install swiftlint
+            swiftlint version
+
+      - run:
           name: Show Xcode version
           command: xcodebuild -version
+
+      - run:
+          name: SwiftLint check
+          command: swiftlint lint --strict --config .swiftlint.yml
+
+      - run:
+          name: Xcode build check
+          command: |
+            xcodebuild \
+              -project "$PROJECT_PATH" \
+              -scheme "$SCHEME_NAME" \
+              -destination "$DESTINATION" \
+              CODE_SIGNING_ALLOWED=NO \
+              build
 
       - run:
           name: Run Fastlane tests lane
