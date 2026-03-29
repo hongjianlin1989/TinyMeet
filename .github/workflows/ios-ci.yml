@@ -35,8 +35,8 @@ jobs:
     env:
       PROJECT_PATH: TinyMeet.xcodeproj
       SCHEME_NAME: TinyMeet
-      SIMULATOR_NAME: iPhone 16
-      SIMULATOR_OS: latest
+      SIMULATOR_NAME: iPhone 17
+      SIMULATOR_OS: '26.1'
 
     steps:
       - name: Checkout repository
