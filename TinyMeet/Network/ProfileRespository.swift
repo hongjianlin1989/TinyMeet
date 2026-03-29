@@ -7,12 +7,12 @@
 
 import Foundation
 
-protocol ProfileRespositoryProtocol {
+protocol ProfileRespositoryProtocol: Sendable {
     func fetchUserProfile() async throws -> UserProfile
     func searchUserProfiles(query: String) async throws -> [UserProfile]
 }
 
-actor ProfileRespository: ProfileRespositoryProtocol {
+struct ProfileRespository: ProfileRespositoryProtocol {
     private let networkManager: NetworkManaging
     private let shouldUseMockData: Bool
     private let decoder: JSONDecoder
@@ -28,7 +28,7 @@ actor ProfileRespository: ProfileRespositoryProtocol {
     }
 
     func fetchUserProfile() async throws -> UserProfile {
-        let request = await ProfileUrlRequest.getUserProfile.asURLRequest()
+        let request = ProfileUrlRequest.getUserProfile.asURLRequest()
 
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(300))
@@ -36,7 +36,7 @@ actor ProfileRespository: ProfileRespositoryProtocol {
         }
 
         let response: UserProfileResponse = try await networkManager.perform(request)
-        return await response.toUserProfile()
+        return response.toUserProfile()
     }
 
     func searchUserProfiles(query: String) async throws -> [UserProfile] {
