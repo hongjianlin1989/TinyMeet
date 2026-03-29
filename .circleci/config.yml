@@ -60,7 +60,7 @@ jobs:
               build
 
       - run:
-          name: Run Fastlane tests lane
+          name: Run Fastlane unit-test lane
           command: bundle exec fastlane ios tests
 
       - store_test_results:
@@ -71,6 +71,6 @@ jobs:
 
 workflows:
   version: 2
-  ci:
+  pull-request-and-branch-validation:
     jobs:
       - test
