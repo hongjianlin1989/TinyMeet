@@ -1,0 +1,57 @@
+name: iOS CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  swiftlint:
+    name: SwiftLint
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: |
+          brew install swiftlint
+          swiftlint version
+
+      - name: Run SwiftLint
+        run: swiftlint lint --strict --config .swiftlint.yml
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: macos-15
+    needs: swiftlint
+    env:
+      PROJECT_PATH: TinyMeet.xcodeproj
+      SCHEME_NAME: TinyMeet
+      SIMULATOR_NAME: iPhone 16
+      SIMULATOR_OS: latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Resolve Swift package dependencies
+        run: xcodebuild -resolvePackageDependencies -project "$PROJECT_PATH"
+
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -project "$PROJECT_PATH" \
+            -scheme "$SCHEME_NAME" \
+            -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
+            CODE_SIGNING_ALLOWED=NO
