@@ -5,8 +5,8 @@
 //  Created by Hongjian Lin on 3/25/26.
 //
 
-import SwiftUI
 import CoreData
+import SwiftUI
 
 @main
 struct TinyMeetApp: App {

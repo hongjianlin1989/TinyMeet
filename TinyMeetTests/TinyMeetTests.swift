@@ -14,7 +14,7 @@ struct TinyMeetTests {
         let repository = GroupsRepository()
         let originalDetail = try await repository.fetchGroupDetail(groupID: 1)
 
-        #expect(originalDetail.members.count > 0)
+        #expect(!originalDetail.members.isEmpty)
 
         let addedDetail = try await repository.addMember(named: "Taylor Brooks", to: originalDetail)
         #expect(addedDetail.members.count == originalDetail.members.count + 1)

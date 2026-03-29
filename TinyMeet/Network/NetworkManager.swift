@@ -38,7 +38,6 @@ struct NetworkManager: NetworkManaging {
     }
 
     func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
-      
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {

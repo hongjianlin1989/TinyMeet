@@ -1,6 +1,6 @@
 import Combine
-import SwiftUI
 import Foundation
+import SwiftUI
 
 @MainActor
 final class SettingsViewModel: ObservableObject {

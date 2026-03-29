@@ -66,9 +66,17 @@ struct TinyMeetPrimaryButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(TinyMeetTheme.playfulGradient)
             )
-            .shadow(color: TinyMeetTheme.shadow.opacity(configuration.isPressed ? 0.10 : 0.22), radius: configuration.isPressed ? 6 : 12, x: 0, y: configuration.isPressed ? 3 : 8)
+            .shadow(
+                color: TinyMeetTheme.shadow.opacity(configuration.isPressed ? 0.10 : 0.22),
+                radius: configuration.isPressed ? 6 : 12,
+                x: 0,
+                y: configuration.isPressed ? 3 : 8
+            )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
-            .animation(.spring(response: 0.22, dampingFraction: 0.75), value: configuration.isPressed)
+            .animation(
+                .spring(response: 0.22, dampingFraction: 0.75),
+                value: configuration.isPressed
+            )
     }
 }
 
@@ -88,7 +96,10 @@ struct TinyMeetSecondaryButtonStyle: ButtonStyle {
                     .stroke(TinyMeetTheme.accent.opacity(0.22), lineWidth: 1)
             }
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.spring(response: 0.22, dampingFraction: 0.75), value: configuration.isPressed)
+            .animation(
+                .spring(response: 0.22, dampingFraction: 0.75),
+                value: configuration.isPressed
+            )
     }
 }
 

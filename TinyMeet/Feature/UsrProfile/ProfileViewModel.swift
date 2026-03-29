@@ -86,7 +86,8 @@ final class ProfileViewModel: ObservableObject {
 
     private var inviteMessage: String {
         let inviterName = userProfile?.username ?? "a friend"
-        return "\(inviterName) invited you to join TinyMeet so you can plan playdates together. Open your invite here: \(inviteDeepLinkURL.absoluteString)"
+        return "\(inviterName) invited you to join TinyMeet so you can plan playdates together. " +
+            "Open your invite here: \(inviteDeepLinkURL.absoluteString)"
     }
 
     private var inviteDeepLinkURL: URL {
@@ -100,6 +101,6 @@ final class ProfileViewModel: ObservableObject {
             ]
         }
 
-        return components.url ?? URL(string: "https://tinymeet.app/invite")!
+        return components.url ?? ApiConfig.baseURL.appending(path: "invite")
     }
 }
