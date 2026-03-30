@@ -32,7 +32,9 @@ struct HomeEventsView: View {
                             filterSection
 
                             ForEach(viewModel.filteredEvents) { event in
-                                eventCard(event)
+                                HomeEventCardView(
+                                    viewModel: HomeEventCardViewModel(event: event)
+                                )
                             }
                         }
                         .padding(16)
@@ -140,88 +142,6 @@ struct HomeEventsView: View {
             }
         }
         .buttonStyle(.plain)
-    }
-
-    private func eventCard(_ event: NearbyEvent) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 12) {
-                Text(event.themeEmoji)
-                    .font(.system(size: 34))
-                    .frame(width: 56, height: 56)
-                    .background(TinyMeetTheme.badge)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 8) {
-                        Text(event.title)
-                            .font(.headline)
-
-                        visibilityBadge(for: event.visibility)
-                    }
-
-                    Label(event.locationName, systemImage: "mappin.and.ellipse")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer(minLength: 8)
-
-                Text(event.distanceDescription)
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(TinyMeetTheme.badge)
-                    .clipShape(Capsule())
-            }
-
-            Text(event.summary)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            HStack(spacing: 10) {
-                detailPill(title: event.timeDescription, color: TinyMeetTheme.sky)
-                detailPill(title: event.ageRange, color: TinyMeetTheme.mint)
-            }
-
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(event.hostName)
-                        .font(.subheadline.weight(.semibold))
-
-                    Text(event.attendeeSummary)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                Button("Interested") {}
-                    .buttonStyle(TinyMeetSecondaryButtonStyle())
-            }
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .tinyMeetCardStyle()
-    }
-
-    private func visibilityBadge(for visibility: NearbyEventVisibility) -> some View {
-        Text(visibility.title)
-            .font(.caption2.weight(.bold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(visibility == .public ? TinyMeetTheme.sky.opacity(0.22) : TinyMeetTheme.peach.opacity(0.25))
-            .foregroundStyle(.primary)
-            .clipShape(Capsule())
-    }
-
-    private func detailPill(title: String, color: Color) -> some View {
-        Text(title)
-            .font(.caption.weight(.semibold))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(color.opacity(0.18))
-            .foregroundStyle(.primary)
-            .clipShape(Capsule())
     }
 }
 
