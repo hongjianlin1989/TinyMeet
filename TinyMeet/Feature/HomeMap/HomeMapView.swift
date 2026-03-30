@@ -15,19 +15,12 @@ struct HomeMapView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Map(position: $viewModel.cameraPosition) {
-                    UserAnnotation()
+            GeometryReader { geometry in
+                ZStack {
+                    mapContent(for: geometry.size)
+                    permissionOverlay
                 }
-                .mapStyle(.standard(elevation: .realistic))
-                .mapControls {
-                    MapCompass()
-                    MapPitchToggle()
-                    MapUserLocationButton()
-                }
-                .ignoresSafeArea(edges: .bottom)
-
-                permissionOverlay
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle("home.navigation.title")
             .toolbar {
@@ -47,6 +40,31 @@ struct HomeMapView: View {
     }
 
     @ViewBuilder
+    private func mapContent(for size: CGSize) -> some View {
+        if size.width > 0, size.height > 0 {
+            Map(position: $viewModel.cameraPosition) {
+                UserAnnotation()
+
+                ForEach(viewModel.privateEvents) { event in
+                    Annotation(event.title, coordinate: event.coordinate) {
+                        privateEventAnnotation(event)
+                    }
+                }
+            }
+            .frame(width: size.width, height: size.height)
+            .mapStyle(.standard(elevation: .realistic))
+            .mapControls {
+                MapCompass()
+                MapPitchToggle()
+                MapUserLocationButton()
+            }
+            .ignoresSafeArea(edges: .bottom)
+        } else {
+            Color.clear
+        }
+    }
+
+    @ViewBuilder
     private var permissionOverlay: some View {
         if let overlay = viewModel.overlayState {
             overlayCard(
@@ -55,6 +73,43 @@ struct HomeMapView: View {
                 buttonTitleKey: overlay.buttonTitleKey,
                 action: overlay.buttonTitleKey == nil ? nil : { viewModel.requestLocationAccess() }
             )
+        }
+    }
+
+    private func privateEventAnnotation(_ event: PrivateEventMapItem) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: event.symbolName)
+                .font(.headline)
+                .foregroundStyle(.white)
+                .padding(10)
+                .background(annotationColor(for: event.tintName))
+                .clipShape(Circle())
+
+            VStack(spacing: 2) {
+                Text(event.title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                Text(event.subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+    }
+
+    private func annotationColor(for tintName: String) -> Color {
+        switch tintName {
+        case "mint":
+            return TinyMeetTheme.mint
+        case "orange":
+            return TinyMeetTheme.peach
+        default:
+            return TinyMeetTheme.accent
         }
     }
 
