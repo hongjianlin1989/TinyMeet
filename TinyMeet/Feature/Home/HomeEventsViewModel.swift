@@ -6,9 +6,28 @@ final class HomeEventsViewModel: ObservableObject {
     @Published private(set) var events: [NearbyEvent] = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var selectedFilter: NearbyEventVisibility
+
+    private let userDefaults: UserDefaults
 
     static func makeDefault() -> HomeEventsViewModel {
         HomeEventsViewModel()
+    }
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
+        let savedFilter = userDefaults.string(forKey: Self.selectedFilterKey)
+        self.selectedFilter = NearbyEventVisibility(rawValue: savedFilter ?? "") ?? .public
+    }
+
+    var filteredEvents: [NearbyEvent] {
+        events.filter { $0.visibility == selectedFilter }
+    }
+
+    func selectFilter(_ filter: NearbyEventVisibility) {
+        guard selectedFilter != filter else { return }
+        selectedFilter = filter
+        userDefaults.set(filter.rawValue, forKey: Self.selectedFilterKey)
     }
 
     func loadNearbyEvents() async {
@@ -27,6 +46,8 @@ final class HomeEventsViewModel: ObservableObject {
         events = Self.mockEvents
     }
 
+    private static let selectedFilterKey = "home.events.selectedVisibility"
+
     private static let mockEvents: [NearbyEvent] = [
         NearbyEvent(
             title: "Playground Picnic Crew",
@@ -37,7 +58,8 @@ final class HomeEventsViewModel: ObservableObject {
             hostName: "Hosted by Mia",
             attendeeSummary: "8 families going",
             themeEmoji: "🛝",
-            summary: "Meet other families for snacks, bubbles, and easy playground fun after nap time."
+            summary: "Meet other families for snacks, bubbles, and easy playground fun after nap time.",
+            visibility: .public
         ),
         NearbyEvent(
             title: "Little Artists Meet-Up",
@@ -48,7 +70,20 @@ final class HomeEventsViewModel: ObservableObject {
             hostName: "Hosted by Noah",
             attendeeSummary: "12 kids signed up",
             themeEmoji: "🎨",
-            summary: "Finger painting, sticker crafts, and story time with plenty of room to wiggle."
+            summary: "Finger painting, sticker crafts, and story time with plenty of room to wiggle.",
+            visibility: .public
+        ),
+        NearbyEvent(
+            title: "Neighborhood Sandbox Circle",
+            locationName: "Oak Lane Backyard",
+            timeDescription: "Saturday · 2:00 PM",
+            ageRange: "Ages 2-5",
+            distanceDescription: "0.6 mi away",
+            hostName: "Hosted by Emma",
+            attendeeSummary: "Private group · 4 families",
+            themeEmoji: "🪣",
+            summary: "A cozy backyard sandbox playdate for nearby families who already know one another.",
+            visibility: .private
         ),
         NearbyEvent(
             title: "Mini Soccer Kickaround",
@@ -59,7 +94,8 @@ final class HomeEventsViewModel: ObservableObject {
             hostName: "Hosted by Ava",
             attendeeSummary: "6 teammates ready",
             themeEmoji: "⚽️",
-            summary: "A playful beginner-friendly soccer morning for kids who want to run, pass, and laugh."
+            summary: "A playful beginner-friendly soccer morning for kids who want to run, pass, and laugh.",
+            visibility: .public
         ),
         NearbyEvent(
             title: "Music & Wiggles Circle",
@@ -70,7 +106,20 @@ final class HomeEventsViewModel: ObservableObject {
             hostName: "Hosted by Ethan",
             attendeeSummary: "10 little dancers",
             themeEmoji: "🎵",
-            summary: "Shake instruments, sing favorite songs, and enjoy a bright movement session for toddlers."
+            summary: "Shake instruments, sing favorite songs, and enjoy a bright movement session for toddlers.",
+            visibility: .public
+        ),
+        NearbyEvent(
+            title: "Pajama Story Snuggle",
+            locationName: "Willow House Living Room",
+            timeDescription: "Sunday · 6:30 PM",
+            ageRange: "Ages 3-6",
+            distanceDescription: "0.9 mi away",
+            hostName: "Hosted by Sofia",
+            attendeeSummary: "Private group · 3 families",
+            themeEmoji: "📚",
+            summary: "An invite-only wind-down with bedtime stories, soft music, and cocoa for little ones.",
+            visibility: .private
         )
     ]
 }

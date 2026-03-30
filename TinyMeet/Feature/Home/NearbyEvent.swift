@@ -1,5 +1,21 @@
 import Foundation
 
+enum NearbyEventVisibility: String, CaseIterable, Identifiable {
+    case `public`
+    case `private`
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .public:
+            return "Public"
+        case .private:
+            return "Private"
+        }
+    }
+}
+
 struct NearbyEvent: Identifiable, Equatable {
     let id: UUID
     let title: String
@@ -11,6 +27,7 @@ struct NearbyEvent: Identifiable, Equatable {
     let attendeeSummary: String
     let themeEmoji: String
     let summary: String
+    let visibility: NearbyEventVisibility
 
     init(
         id: UUID = UUID(),
@@ -22,7 +39,8 @@ struct NearbyEvent: Identifiable, Equatable {
         hostName: String,
         attendeeSummary: String,
         themeEmoji: String,
-        summary: String
+        summary: String,
+        visibility: NearbyEventVisibility
     ) {
         self.id = id
         self.title = title
@@ -34,5 +52,6 @@ struct NearbyEvent: Identifiable, Equatable {
         self.attendeeSummary = attendeeSummary
         self.themeEmoji = themeEmoji
         self.summary = summary
+        self.visibility = visibility
     }
 }

@@ -19,18 +19,19 @@ struct HomeEventsView: View {
                         systemImage: "party.popper.fill",
                         description: Text(errorMessage)
                     )
-                } else if viewModel.events.isEmpty {
+                } else if viewModel.filteredEvents.isEmpty {
                     ContentUnavailableView(
-                        "No nearby events yet",
-                        systemImage: "figure.and.child.holdinghands",
-                        description: Text("Check back soon for playful meet-ups around you.")
+                        emptyStateTitle,
+                        systemImage: emptyStateSystemImage,
+                        description: Text(emptyStateDescription)
                     )
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 18) {
                             heroSection
+                            filterSection
 
-                            ForEach(viewModel.events) { event in
+                            ForEach(viewModel.filteredEvents) { event in
                                 eventCard(event)
                             }
                         }
@@ -75,6 +76,72 @@ struct HomeEventsView: View {
         .shadow(color: TinyMeetTheme.shadow, radius: 14, x: 0, y: 8)
     }
 
+    private var filterSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Event type")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 10) {
+                ForEach(NearbyEventVisibility.allCases) { filter in
+                    filterButton(filter)
+                }
+            }
+        }
+    }
+
+    private var emptyStateTitle: String {
+        switch viewModel.selectedFilter {
+        case .public:
+            return "No public events yet"
+        case .private:
+            return "No private events yet"
+        }
+    }
+
+    private var emptyStateDescription: String {
+        switch viewModel.selectedFilter {
+        case .public:
+            return "Try again soon for new community events nearby."
+        case .private:
+            return "Private invitations and family-only meet-ups will show up here."
+        }
+    }
+
+    private var emptyStateSystemImage: String {
+        switch viewModel.selectedFilter {
+        case .public:
+            return "figure.and.child.holdinghands"
+        case .private:
+            return "person.2.badge.gearshape"
+        }
+    }
+
+    private func filterButton(_ filter: NearbyEventVisibility) -> some View {
+        Button {
+            viewModel.selectFilter(filter)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: filter == .public ? "globe" : "lock.fill")
+                    .font(.caption.weight(.bold))
+
+                Text(filter.title)
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(viewModel.selectedFilter == filter ? Color.white : Color.primary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .background(viewModel.selectedFilter == filter ? TinyMeetTheme.accent : TinyMeetTheme.badge)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(TinyMeetTheme.cardBorder, lineWidth: viewModel.selectedFilter == filter ? 0 : 1)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
     private func eventCard(_ event: NearbyEvent) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
@@ -85,8 +152,12 @@ struct HomeEventsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(event.title)
-                        .font(.headline)
+                    HStack(spacing: 8) {
+                        Text(event.title)
+                            .font(.headline)
+
+                        visibilityBadge(for: event.visibility)
+                    }
 
                     Label(event.locationName, systemImage: "mappin.and.ellipse")
                         .font(.subheadline)
@@ -131,6 +202,16 @@ struct HomeEventsView: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .tinyMeetCardStyle()
+    }
+
+    private func visibilityBadge(for visibility: NearbyEventVisibility) -> some View {
+        Text(visibility.title)
+            .font(.caption2.weight(.bold))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .background(visibility == .public ? TinyMeetTheme.sky.opacity(0.22) : TinyMeetTheme.peach.opacity(0.25))
+            .foregroundStyle(.primary)
+            .clipShape(Capsule())
     }
 
     private func detailPill(title: String, color: Color) -> some View {
