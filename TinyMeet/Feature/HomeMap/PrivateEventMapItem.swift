@@ -41,21 +41,21 @@ extension PrivateEventMapItem {
         PrivateEventMapItem(
             title: "Backyard Playdate",
             subtitle: "Today · 4:30 PM",
-            coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+            coordinate: CLLocationCoordinate2D(latitude: 40.3573, longitude: -74.6514),
             tintName: "pink",
             symbolName: "house.fill"
         ),
         PrivateEventMapItem(
             title: "Private Story Time",
             subtitle: "Tomorrow · 10:00 AM",
-            coordinate: CLLocationCoordinate2D(latitude: 37.7768, longitude: -122.4142),
+            coordinate: CLLocationCoordinate2D(latitude: 40.3497, longitude: -74.6593),
             tintName: "mint",
             symbolName: "book.fill"
         ),
         PrivateEventMapItem(
             title: "Family Picnic Circle",
             subtitle: "Saturday · 11:15 AM",
-            coordinate: CLLocationCoordinate2D(latitude: 37.7711, longitude: -122.4236),
+            coordinate: CLLocationCoordinate2D(latitude: 40.3548, longitude: -74.6637),
             tintName: "orange",
             symbolName: "basket.fill"
         )

@@ -15,25 +15,12 @@ struct HomeMapView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Map(position: $viewModel.cameraPosition) {
-                    UserAnnotation()
-
-                    ForEach(viewModel.privateEvents) { event in
-                        Annotation(event.title, coordinate: event.coordinate) {
-                            privateEventAnnotation(event)
-                        }
-                    }
+            GeometryReader { geometry in
+                ZStack {
+                    mapContent(for: geometry.size)
+                    permissionOverlay
                 }
-                .mapStyle(.standard(elevation: .realistic))
-                .mapControls {
-                    MapCompass()
-                    MapPitchToggle()
-                    MapUserLocationButton()
-                }
-                .ignoresSafeArea(edges: .bottom)
-
-                permissionOverlay
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle("home.navigation.title")
             .toolbar {
@@ -49,6 +36,31 @@ struct HomeMapView: View {
         }
         .sheet(isPresented: $viewModel.isShowingLoginView) {
             LoginView()
+        }
+    }
+
+    @ViewBuilder
+    private func mapContent(for size: CGSize) -> some View {
+        if size.width > 0, size.height > 0 {
+            Map(position: $viewModel.cameraPosition) {
+                UserAnnotation()
+
+                ForEach(viewModel.privateEvents) { event in
+                    Annotation(event.title, coordinate: event.coordinate) {
+                        privateEventAnnotation(event)
+                    }
+                }
+            }
+            .frame(width: size.width, height: size.height)
+            .mapStyle(.standard(elevation: .realistic))
+            .mapControls {
+                MapCompass()
+                MapPitchToggle()
+                MapUserLocationButton()
+            }
+            .ignoresSafeArea(edges: .bottom)
+        } else {
+            Color.clear
         }
     }
 
