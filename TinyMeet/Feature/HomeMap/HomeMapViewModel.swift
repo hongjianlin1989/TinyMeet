@@ -15,6 +15,7 @@ final class HomeMapViewModel: ObservableObject {
     @Published var cameraPosition: MapCameraPosition = .automatic
     @Published private(set) var authorizationStatus: CLAuthorizationStatus
     @Published private(set) var overlayState: OverlayState?
+    @Published private(set) var privateEvents: [PrivateEventMapItem]
 
     private let locationManager: LocationManager
     private var cancellables = Set<AnyCancellable>()
@@ -24,11 +25,13 @@ final class HomeMapViewModel: ObservableObject {
         let locationManager = locationManager ?? LocationManager()
         self.locationManager = locationManager
         self.authorizationStatus = locationManager.authorizationStatus
+        self.privateEvents = PrivateEventMapItem.mockItems
         bindLocationManager()
         updateOverlayState(for: authorizationStatus)
     }
 
     func onAppear() {
+        loadPrivateEvents()
         requestLocationAccess()
     }
 
@@ -38,6 +41,10 @@ final class HomeMapViewModel: ObservableObject {
 
     func requestLocationAccess() {
         locationManager.requestLocationAccess()
+    }
+
+    private func loadPrivateEvents() {
+        privateEvents = PrivateEventMapItem.mockItems
     }
 
     private func bindLocationManager() {
