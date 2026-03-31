@@ -29,12 +29,12 @@ jobs:
         run: swiftlint lint --strict --config .swiftlint.yml
 
   unit-tests:
-    name: Unit Tests
+    name: Unit Tests (Staging)
     runs-on: macos-15
     needs: swiftlint
     env:
       PROJECT_PATH: TinyMeet.xcodeproj
-      SCHEME_NAME: TinyMeet
+      SCHEME_NAME: TinyMeet-Staging
       SIMULATOR_NAME: iPhone 17
       SIMULATOR_OS: '26.1'
 

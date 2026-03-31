@@ -3,13 +3,13 @@ opt_out_usage
 default_platform(:ios)
 
 platform :ios do
-  desc "Resolve Swift packages and run unit tests for TinyMeet"
+  desc "Resolve Swift packages and run unit tests for TinyMeet staging"
   lane :tests do
     ENV["LANG"] ||= "en_US.UTF-8"
     ENV["LC_ALL"] ||= "en_US.UTF-8"
 
     project_path = "TinyMeet.xcodeproj"
-    scheme_name = "TinyMeet"
+    scheme_name = "TinyMeet-Staging"
     simulator_name = ENV.fetch("SIMULATOR_NAME", "iPhone 16")
     simulator_os = ENV.fetch("SIMULATOR_OS", "latest")
 
