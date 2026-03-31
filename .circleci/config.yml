@@ -12,7 +12,7 @@ jobs:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
       HOMEBREW_NO_AUTO_UPDATE: "1"
-      SCHEME_NAME: TinyMeet
+      SCHEME_NAME: TinyMeet-Staging
       PROJECT_PATH: TinyMeet.xcodeproj
       DESTINATION: generic/platform=iOS Simulator
 
@@ -50,7 +50,7 @@ jobs:
           command: swiftlint lint --strict --config .swiftlint.yml
 
       - run:
-          name: Xcode build check
+          name: Xcode staging build check
           command: |
             xcodebuild \
               -project "$PROJECT_PATH" \
@@ -60,7 +60,7 @@ jobs:
               build
 
       - run:
-          name: Run Fastlane unit-test lane
+          name: Run Fastlane staging unit-test lane
           command: bundle exec fastlane ios tests
 
       - store_test_results:
