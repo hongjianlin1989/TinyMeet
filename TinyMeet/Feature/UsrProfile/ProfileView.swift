@@ -30,24 +30,13 @@ struct ProfileView: View {
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     createEventToolbarButton
-                    authToolbarButton
+                    AuthToolbarButton()
                 }
-            }
-            .navigationDestination(isPresented: $viewModel.isShowingSettings) {
-                SettingsView(viewModel: SettingsViewModel.makeDefault())
-                    .onDisappear {
-                        if !appSession.isLoggedIn {
-                            viewModel.handleLogout()
-                        }
-                    }
             }
         }
         .tinyMeetPageBackground()
         .sheet(isPresented: $viewModel.isShowingCreateEvent) {
             CreateEventView(viewModel: CreateEventViewModel.makeDefault())
-        }
-        .sheet(isPresented: $viewModel.isShowingLogin) {
-            LoginView()
         }
         .sheet(item: $viewModel.inviteSharePayload, onDismiss: {
             viewModel.clearInviteSharePayload()
@@ -86,23 +75,6 @@ struct ProfileView: View {
             viewModel.createEventTapped()
         } label: {
             Label("profile.createEvent", systemImage: "calendar.badge.plus")
-        }
-        .buttonStyle(TinyMeetSecondaryButtonStyle())
-    }
-
-    private var authToolbarButton: some View {
-        Group {
-            if appSession.isLoggedIn {
-                Button {
-                    viewModel.settingsTapped()
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                }
-            } else {
-                Button("login.submit") {
-                    viewModel.loginTapped()
-                }
-            }
         }
         .buttonStyle(TinyMeetSecondaryButtonStyle())
     }
@@ -218,10 +190,7 @@ struct ProfileView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
 
-            Button("profile.login") {
-                viewModel.loginTapped()
-            }
-            .buttonStyle(TinyMeetPrimaryButtonStyle())
+            AuthToolbarButton()
         }
         .padding(24)
         .frame(maxWidth: .infinity)

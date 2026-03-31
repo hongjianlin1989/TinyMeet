@@ -11,7 +11,6 @@ final class HomeMapViewModel: ObservableObject {
         let buttonTitleKey: LocalizedStringResource?
     }
 
-    @Published var isShowingLoginView = false
     @Published var cameraPosition: MapCameraPosition = .automatic
     @Published private(set) var authorizationStatus: CLAuthorizationStatus
     @Published private(set) var overlayState: OverlayState?
@@ -33,10 +32,6 @@ final class HomeMapViewModel: ObservableObject {
     func onAppear() {
         loadPrivateEvents()
         requestLocationAccess()
-    }
-
-    func loginTapped() {
-        isShowingLoginView = true
     }
 
     func requestLocationAccess() {
