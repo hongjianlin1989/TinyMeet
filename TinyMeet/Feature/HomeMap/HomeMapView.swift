@@ -25,17 +25,12 @@ struct HomeMapView: View {
             .navigationTitle("home.navigation.title")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("home.login.action") {
-                        viewModel.loginTapped()
-                    }
+                    AuthToolbarButton()
                 }
             }
         }
         .onAppear {
             viewModel.onAppear()
-        }
-        .sheet(isPresented: $viewModel.isShowingLoginView) {
-            LoginView()
         }
     }
 

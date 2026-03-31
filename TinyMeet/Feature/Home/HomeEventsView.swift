@@ -49,13 +49,7 @@ struct HomeEventsView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Refresh") {
-                        Task {
-                            await viewModel.refreshNearbyEvents()
-                        }
-                    }
-                    .buttonStyle(TinyMeetSecondaryButtonStyle())
-                    .disabled(viewModel.isLoading)
+                    AuthToolbarButton()
                 }
             }
         }

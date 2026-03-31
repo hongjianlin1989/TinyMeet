@@ -57,13 +57,7 @@ struct DiscoverView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Search") {
-                        Task {
-                            await viewModel.searchProfiles()
-                        }
-                    }
-                    .buttonStyle(TinyMeetSecondaryButtonStyle())
-                    .disabled(viewModel.isLoading)
+                    AuthToolbarButton()
                 }
             }
             .safeAreaInset(edge: .bottom) {
