@@ -84,6 +84,7 @@ struct ProfileView: View {
         VStack(spacing: 20) {
             profileSummaryCard(userProfile)
             groupsNavigationCard
+            interestedEventsNavigationCard
         }
     }
 
@@ -153,6 +154,42 @@ struct ProfileView: View {
                         .font(.headline)
 
                     Text("profile.groups.message")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .tinyMeetCardStyle()
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var interestedEventsNavigationCard: some View {
+        NavigationLink {
+            InterestedEventsView(viewModel: InterestedEventsViewModel.makeDefault())
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(TinyMeetTheme.heroGradient)
+                        .frame(width: 52, height: 52)
+
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Interested Events")
+                        .font(.headline)
+
+                    Text("See events you’ve marked interested")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
