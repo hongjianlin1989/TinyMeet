@@ -63,7 +63,7 @@ struct InterestedEventsView: View {
         .tinyMeetPageBackground()
     }
 
-    private func interestedEventRow(_ event: InterestedEventsViewModel.InterestedEventRow) -> some View {
+    private func interestedEventRow(_ event: InterestedEventRow) -> some View {
         HStack(spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
