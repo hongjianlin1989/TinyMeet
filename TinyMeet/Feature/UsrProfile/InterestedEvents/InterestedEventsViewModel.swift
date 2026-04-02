@@ -1,6 +1,64 @@
 import Combine
 import Foundation
 
+// MARK: - Models
+
+enum InterestedEventSource: Equatable {
+    case nearby(NearbyEvent)
+    case privateMap(PrivateEventMapItem)
+
+    var visibility: NearbyEventVisibility {
+        switch self {
+        case .nearby(let event):
+            return event.visibility
+        case .privateMap:
+            return .private
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .nearby(let event):
+            return event.title
+        case .privateMap(let event):
+            return event.title
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .nearby(let event):
+            return "\(event.locationName) · \(event.timeDescription)"
+        case .privateMap(let event):
+            return event.subtitle
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .nearby:
+            return "calendar"
+        case .privateMap(let event):
+            return event.symbolName
+        }
+    }
+}
+
+struct InterestedEventRow: Identifiable, Equatable {
+    let id: UUID
+    let source: InterestedEventSource
+
+    var title: String { source.title }
+    var subtitle: String { source.subtitle }
+    var visibility: NearbyEventVisibility { source.visibility }
+    var symbolName: String { source.symbolName }
+
+    init(id: UUID = UUID(), source: InterestedEventSource) {
+        self.id = id
+        self.source = source
+    }
+}
+
 @MainActor
 final class InterestedEventsViewModel: ObservableObject {
     enum Filter: String, CaseIterable, Identifiable {
@@ -19,62 +77,6 @@ final class InterestedEventsViewModel: ObservableObject {
             case .private:
                 return "Private"
             }
-        }
-    }
-
-    struct InterestedEventRow: Identifiable, Equatable {
-        enum Source: Equatable {
-            case nearby(NearbyEvent)
-            case privateMap(PrivateEventMapItem)
-
-            var visibility: NearbyEventVisibility {
-                switch self {
-                case .nearby(let event):
-                    return event.visibility
-                case .privateMap:
-                    return .private
-                }
-            }
-
-            var title: String {
-                switch self {
-                case .nearby(let event):
-                    return event.title
-                case .privateMap(let event):
-                    return event.title
-                }
-            }
-
-            var subtitle: String {
-                switch self {
-                case .nearby(let event):
-                    return "\(event.locationName) · \(event.timeDescription)"
-                case .privateMap(let event):
-                    return event.subtitle
-                }
-            }
-
-            var symbolName: String {
-                switch self {
-                case .nearby:
-                    return "calendar"
-                case .privateMap(let event):
-                    return event.symbolName
-                }
-            }
-        }
-
-        let id: UUID
-        let source: Source
-
-        var title: String { source.title }
-        var subtitle: String { source.subtitle }
-        var visibility: NearbyEventVisibility { source.visibility }
-        var symbolName: String { source.symbolName }
-
-        init(id: UUID = UUID(), source: Source) {
-            self.id = id
-            self.source = source
         }
     }
 
