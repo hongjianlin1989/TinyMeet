@@ -102,7 +102,6 @@ final class InterestedEventsViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
 
-        // TODO: Replace mocks with real "interested" fetch once backend endpoints exist.
         // For now we merge the existing mock sources used elsewhere in the app.
         let nearbyEvents = HomeEventsViewModel.mockEventsForInterestedList()
         let privateEvents = PrivateEventMapItem.mockItems
