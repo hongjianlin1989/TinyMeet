@@ -1,5 +1,5 @@
-import Foundation
 internal import _LocationEssentials
+import Foundation
 
 protocol InterestedEventsRepositoryProtocol: Sendable {
     func fetchInterestedEvents() async throws -> [InterestedEventRow]
