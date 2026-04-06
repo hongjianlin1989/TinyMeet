@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "id": "6E5B1D2C-4D9D-4E28-A5CE-7E8B3E2A1E1A",
+      "title": "Backyard Playdate",
+      "subtitle": "Today · 4:30 PM",
+      "latitude": 40.3573,
+      "longitude": -74.6514,
+      "tintName": "pink",
+      "symbolName": "house.fill"
+    },
+    {
+      "id": "9C0F9D40-7A43-4B2E-A2D3-1F8A9E1D0E3B",
+      "title": "Private Story Time",
+      "subtitle": "Tomorrow · 10:00 AM",
+      "latitude": 40.3497,
+      "longitude": -74.6593,
+      "tintName": "mint",
+      "symbolName": "book.fill"
+    },
+    {
+      "id": "AC2B2F75-3C5D-4A67-B2E2-ED0D5AE3C1D5",
+      "title": "Family Picnic Circle",
+      "subtitle": "Saturday · 11:15 AM",
+      "latitude": 40.3548,
+      "longitude": -74.6637,
+      "tintName": "orange",
+      "symbolName": "basket.fill"
+    }
+  ]
+}
