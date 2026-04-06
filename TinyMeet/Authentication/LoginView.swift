@@ -56,7 +56,7 @@ struct LoginView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity)
-                    .disabled(!viewModel.isFormValid)
+                  //  .disabled(!viewModel.isFormValid)
 
                     Button("login.signup") {
                         viewModel.signUpTapped()

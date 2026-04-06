@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "id": "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F",
+      "title": "Neighborhood Sandbox Circle",
+      "locationName": "Oak Lane Backyard",
+      "timeDescription": "Saturday · 2:00 PM",
+      "ageRange": "Ages 2-5",
+      "distanceDescription": "0.6 mi away",
+      "hostName": "Hosted by Emma",
+      "attendeeSummary": "Private group · 4 families",
+      "themeEmoji": "🪣",
+      "summary": "A cozy backyard sandbox playdate for nearby families who already know one another."
+    },
+    {
+      "id": "B64B0FD3-A0B2-4BCB-9D28-320C0B2C3F15",
+      "title": "Pajama Story Snuggle",
+      "locationName": "Willow House Living Room",
+      "timeDescription": "Sunday · 6:30 PM",
+      "ageRange": "Ages 3-6",
+      "distanceDescription": "0.9 mi away",
+      "hostName": "Hosted by Sofia",
+      "attendeeSummary": "Private group · 3 families",
+      "themeEmoji": "📚",
+      "summary": "An invite-only wind-down with bedtime stories, soft music, and cocoa for little ones."
+    }
+  ]
+}

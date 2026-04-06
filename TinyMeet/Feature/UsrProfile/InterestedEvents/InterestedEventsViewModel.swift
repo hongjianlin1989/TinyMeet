@@ -86,6 +86,12 @@ final class InterestedEventsViewModel: ObservableObject {
     @Published var selectedFilter: Filter = .all
     @Published private(set) var events: [InterestedEventRow] = []
 
+    private let repository: InterestedEventsRepositoryProtocol
+
+    init(repository: InterestedEventsRepositoryProtocol = InterestedEventsRepository()) {
+        self.repository = repository
+    }
+
     var filteredEvents: [InterestedEventRow] {
         switch selectedFilter {
         case .all:
@@ -102,52 +108,16 @@ final class InterestedEventsViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
 
-        // For now we merge the existing mock sources used elsewhere in the app.
-        let nearbyEvents = HomeEventsViewModel.mockEventsForInterestedList()
-        let privateEvents = PrivateEventMapItem.mockItems
-
-        var rows: [InterestedEventRow] = []
-        rows.append(contentsOf: nearbyEvents.map { InterestedEventRow(source: .nearby($0)) })
-        rows.append(contentsOf: privateEvents.map { InterestedEventRow(source: .privateMap($0)) })
-
-        // Stable-ish ordering.
-        events = rows.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+        do {
+            let rows = try await repository.fetchInterestedEvents()
+            events = rows.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            events = []
+        }
     }
 
     static func makeDefault() -> InterestedEventsViewModel {
         InterestedEventsViewModel()
-    }
-}
-
-private extension HomeEventsViewModel {
-    /// We keep the Interested Events list decoupled from the Home screen state by exposing a lightweight mock builder.
-    static func mockEventsForInterestedList() -> [NearbyEvent] {
-        // If HomeEventsViewModel ever stops being mock-backed, we can remove this and plug into a repository.
-        return [
-            NearbyEvent(
-                title: "Playground Picnic Crew",
-                locationName: "Central Park Playground",
-                timeDescription: "Today · 4:00 PM",
-                ageRange: "Ages 3-5",
-                distanceDescription: "0.4 mi away",
-                hostName: "Hosted by Mia",
-                attendeeSummary: "8 families going",
-                themeEmoji: "🛝",
-                summary: "Meet other families for snacks, bubbles, and easy playground fun after nap time.",
-                visibility: .public
-            ),
-            NearbyEvent(
-                title: "Private Craft Hour",
-                locationName: "Community Center",
-                timeDescription: "Tomorrow · 11:00 AM",
-                ageRange: "Ages 4-7",
-                distanceDescription: "1.2 mi away",
-                hostName: "Hosted by Alex",
-                attendeeSummary: "5 families going",
-                themeEmoji: "🎨",
-                summary: "A smaller invite-only craft circle with open play afterward.",
-                visibility: .private
-            )
-        ]
     }
 }
