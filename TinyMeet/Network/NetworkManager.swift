@@ -32,7 +32,7 @@ struct NetworkManager: NetworkManaging {
     private let session: URLSession
     private let decoder: JSONDecoder
 
-    init(session: URLSession = .shared, decoder: JSONDecoder = JSONDecoder()) {
+    nonisolated init(session: URLSession = .shared, decoder: JSONDecoder = JSONDecoder()) {
         self.session = session
         self.decoder = decoder
     }
