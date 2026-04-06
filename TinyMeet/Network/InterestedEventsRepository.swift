@@ -1,4 +1,4 @@
-internal import _LocationEssentials
+import CoreLocation
 import Foundation
 
 protocol InterestedEventsRepositoryProtocol: Sendable {
