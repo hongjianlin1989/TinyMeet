@@ -1,13 +1,12 @@
 import Foundation
 
-enum PrivatePlaydateUrlRequest {
+enum InterestedEventsUrlRequest {
     case list
 
     private var path: String {
         switch self {
         case .list:
-            // Private playdates are served via the same endpoint as private events.
-            return "/events/private"
+            return "/users/interested-events"
         }
     }
 
