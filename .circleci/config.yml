@@ -21,36 +21,36 @@ jobs:
 
       - restore_cache:
           keys:
-            - bundler-v1-{{ checksum "Gemfile" }}
+            - "bundler-v1-{{ checksum \"Gemfile\" }}"
             - bundler-v1-
 
       - run:
-          name: Install Ruby gems
+          name: "Install Ruby gems"
           command: |
             bundle config set path "$BUNDLE_PATH"
             bundle install
 
       - save_cache:
-          key: bundler-v1-{{ checksum "Gemfile" }}
+          key: "bundler-v1-{{ checksum \"Gemfile\" }}"
           paths:
             - vendor/bundle
 
       - run:
-          name: Install SwiftLint
+          name: "Install SwiftLint"
           command: |
             brew install swiftlint
             swiftlint version
 
       - run:
-          name: Show Xcode version
+          name: "Show Xcode version"
           command: xcodebuild -version
 
       - run:
-          name: SwiftLint check
+          name: "SwiftLint check"
           command: swiftlint lint --strict --config .swiftlint.yml
 
       - run:
-          name: Xcode staging build check
+          name: "Xcode staging build check"
           command: |
             xcodebuild \
               -project "$PROJECT_PATH" \
@@ -60,7 +60,7 @@ jobs:
               build
 
       - run:
-          name: Run Fastlane staging unit-test lane
+          name: "Run Fastlane staging unit-test lane"
           command: bundle exec fastlane ios tests
 
       - store_test_results:
@@ -69,8 +69,78 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
 
+  nightly_testflight:
+    macos:
+      xcode: "16.2.0"
+    resource_class: m4pro.medium
+    working_directory: ~/project
+    environment:
+      BUNDLE_PATH: vendor/bundle
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      SCHEME_NAME: TinyMeet-Staging
+      PROJECT_PATH: TinyMeet.xcodeproj
+      NIGHTLY_LAST_SUCCESS_TAG: nightly-testflight-last-success
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - "bundler-v1-{{ checksum \"Gemfile\" }}"
+            - bundler-v1-
+
+      - run:
+          name: "Install Ruby gems"
+          command: |
+            bundle config set path "$BUNDLE_PATH"
+            bundle install
+
+      - save_cache:
+          key: "bundler-v1-{{ checksum \"Gemfile\" }}"
+          paths:
+            - vendor/bundle
+
+      - run:
+          name: "Show Xcode version"
+          command: xcodebuild -version
+
+      - run:
+          name: "Gate: only run nightly when new commits"
+          command: |
+            if ./ci/should_upload_nightly.sh; then
+              echo "[nightly] Proceeding with TestFlight upload"
+            else
+              echo "[nightly] Nothing new since last nightly; halting job"
+              circleci-agent step halt
+            fi
+
+      - run:
+          name: "Upload TinyMeet-Staging to TestFlight"
+          command: bundle exec fastlane ios nightly_beta
+
+      - run:
+          name: "Mark nightly success"
+          command: ./ci/mark_nightly_success.sh
+
+      - store_artifacts:
+          path: fastlane
+
 workflows:
   version: 2
   pull-request-and-branch-validation:
     jobs:
       - test
+
+  nightly-testflight:
+    triggers:
+      - schedule:
+          cron: "0 7 * * *" # daily at 07:00 UTC
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - nightly_testflight
