@@ -4,6 +4,42 @@
 
 This project includes CI setup for validating the `TinyMeet` Xcode project, with automated build and unit-test checks targeting the shared `TinyMeet-Staging` scheme.
 
+### Nightly builds (CircleCI) — only when new merges landed
+
+CircleCI contains a scheduled workflow named `nightly-testflight`.
+
+- It runs nightly on the `main` branch.
+- It only performs the nightly work if there were **new commits merged** since the last successful nightly run.
+
+How the “only if merged” logic works:
+- CI compares `HEAD` to a tag in the repo: `nightly-testflight-last-success`
+- If they match, the job halts early (no build/upload)
+- If they differ (or the tag doesn’t exist), the job runs the nightly lane and then force-updates the tag
+
+Scripts:
+- `ci/should_upload_nightly.sh`
+- `ci/mark_nightly_success.sh`
+
+### Required CircleCI configuration for nightly TestFlight
+
+1) **App Store Connect API key** (recommended for CI)
+
+Add these environment variables in CircleCI Project Settings:
+- `ASC_KEY_ID`
+- `ASC_ISSUER_ID`
+- `ASC_KEY_CONTENT` (base64-encoded `.p8` content)
+
+These are used by `fastlane ios nightly_beta`.
+
+2) **Repo write access to push the gating tag**
+
+The nightly job updates the git tag `nightly-testflight-last-success` on `origin`.
+
+In CircleCI:
+- Project Settings → **SSH Keys** → add an SSH key with **write access** to the repo
+
+Without this, the nightly job can still build/upload, but it won’t be able to update the tag, and you’ll upload every night.
+
 ### Files used by CI
 - `.github/workflows/ios-ci.yml`
 - `.circleci/config.yml`
