@@ -1,5 +1,4 @@
-opt_out_usage
-
+# Fastfile
 default_platform(:ios)
 
 platform :ios do
@@ -11,7 +10,8 @@ platform :ios do
     project_path = "TinyMeet.xcodeproj"
     scheme_name = "TinyMeet-Staging"
     simulator_name = ENV.fetch("SIMULATOR_NAME", "iPhone 16")
-    simulator_os = ENV.fetch("SIMULATOR_OS", "latest")
+    # Use a concrete runtime like "iOS 17.4" (match one from `xcrun simctl list runtimes`)
+    simulator_os = ENV.fetch("SIMULATOR_OS", "iOS 17.4")
 
     sh("xcodebuild -resolvePackageDependencies -project '#{project_path}'")
 
