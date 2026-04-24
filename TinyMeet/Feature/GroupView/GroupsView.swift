@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GroupsView: View {
     @StateObject private var viewModel: GroupsViewModel
+    @State private var isShowingCreateGroup = false
 
     init(viewModel: GroupsViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -47,19 +48,29 @@ struct GroupsView: View {
             .task {
                 await viewModel.fetchGroups()
             }
+            .refreshable {
+                await viewModel.fetchGroups()
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Refresh") {
-                        Task {
-                            await viewModel.fetchGroups()
-                        }
+                    Button {
+                        isShowingCreateGroup = true
+                    } label: {
+                        Image(systemName: "person.3.sequence.fill")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(10)
+                            .background(TinyMeetTheme.playfulGradient, in: Circle())
+                            .shadow(color: TinyMeetTheme.shadow, radius: 8, x: 0, y: 4)
                     }
-                    .buttonStyle(TinyMeetSecondaryButtonStyle())
-                    .disabled(viewModel.isLoading)
+                    .accessibilityLabel("Create Group")
                 }
             }
         }
         .tinyMeetPageBackground()
+        .sheet(isPresented: $isShowingCreateGroup) {
+            CreateGroupView(viewModel: CreateGroupViewModel.makeDefault())
+        }
     }
 
     @ViewBuilder
