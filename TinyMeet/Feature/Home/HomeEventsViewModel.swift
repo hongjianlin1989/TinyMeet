@@ -9,13 +9,18 @@ final class HomeEventsViewModel: ObservableObject {
     @Published private(set) var selectedFilter: NearbyEventVisibility
 
     private let userDefaults: UserDefaults
+    private let eventsRepository: EventsRepositoryProtocol
 
     static func makeDefault() -> HomeEventsViewModel {
         HomeEventsViewModel()
     }
 
-    init(userDefaults: UserDefaults = .standard) {
+    init(
+        userDefaults: UserDefaults = .standard,
+        eventsRepository: EventsRepositoryProtocol = EventsRepository()
+    ) {
         self.userDefaults = userDefaults
+        self.eventsRepository = eventsRepository
         let savedFilter = userDefaults.string(forKey: Self.selectedFilterKey)
         self.selectedFilter = NearbyEventVisibility(rawValue: savedFilter ?? "") ?? .public
     }
@@ -43,12 +48,21 @@ final class HomeEventsViewModel: ObservableObject {
 
         defer { isLoading = false }
 
-        events = Self.mockEvents
+        do {
+            async let publicEvents = eventsRepository.fetchPublicEvents()
+            async let privateEvents = eventsRepository.fetchPrivateEvents()
+
+            let (publicResults, privateResults) = try await (publicEvents, privateEvents)
+            events = (publicResults + privateResults)
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            events = []
+        }
     }
 
     private static let selectedFilterKey = "home.events.selectedVisibility"
 
-    private static let mockEvents: [NearbyEvent] = [
+    static let mockEvents: [NearbyEvent] = [
         NearbyEvent(
             title: "Playground Picnic Crew",
             locationName: "Central Park Playground",

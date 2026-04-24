@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "id": "2C5A7E61-9B7D-4E10-9ED6-6BE2CDB9D1B1",
+      "kind": "nearby",
+      "visibility": "public",
+      "title": "Playground Picnic Crew",
+      "subtitle": "Central Park Playground · Today · 4:00 PM",
+      "symbolName": "calendar"
+    },
+    {
+      "id": "4D0D7EC9-3F8A-4F05-AF3C-9DDE7E61B61B",
+      "kind": "privateMap",
+      "visibility": "private",
+      "title": "Backyard Playdate",
+      "subtitle": "Today · 4:30 PM",
+      "symbolName": "house.fill"
+    }
+  ]
+}

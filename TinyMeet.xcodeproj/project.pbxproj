@@ -1,634 +1,927 @@
 // !$*UTF8*$!
 {
-	archiveVersion = 1;
-	classes = {
-	};
-	objectVersion = 77;
-	objects = {
+    archiveVersion = 1;
+    classes = {
+    };
+    objectVersion = 77;
+    objects = {
 
 /* Begin PBXBuildFile section */
-		A1B2C3D41E00000100000001 /* Quick in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D31E00000100000001 /* Quick */; };
-		A1B2C3D61E00000100000001 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D51E00000100000001 /* Nimble */; };
+        A1B2C3D41E00000100000001 /* Quick in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D31E00000100000001 /* Quick */; };
+        A1B2C3D61E00000100000001 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D51E00000100000001 /* Nimble */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		276128912F74441300B1F9F0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 276128762F74441100B1F9F0 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2761287D2F74441100B1F9F0;
-			remoteInfo = TinyMeet;
-		};
-		2761289B2F74441300B1F9F0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 276128762F74441100B1F9F0 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2761287D2F74441100B1F9F0;
-			remoteInfo = TinyMeet;
-		};
+        276128912F74441300B1F9F0 /* PBXContainerItemProxy */ = {
+            isa = PBXContainerItemProxy;
+            containerPortal = 276128762F74441100B1F9F0 /* Project object */;
+            proxyType = 1;
+            remoteGlobalIDString = 2761287D2F74441100B1F9F0;
+            remoteInfo = TinyMeet;
+        };
+        2761289B2F74441300B1F9F0 /* PBXContainerItemProxy */ = {
+            isa = PBXContainerItemProxy;
+            containerPortal = 276128762F74441100B1F9F0 /* Project object */;
+            proxyType = 1;
+            remoteGlobalIDString = 2761287D2F74441100B1F9F0;
+            remoteInfo = TinyMeet;
+        };
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2761287E2F74441100B1F9F0 /* TinyMeet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TinyMeet.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		276128902F74441300B1F9F0 /* TinyMeetTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TinyMeetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		2761289A2F74441300B1F9F0 /* TinyMeetUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TinyMeetUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		C4D5E6F71E00000100000001 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
+        2761287E2F74441100B1F9F0 /* TinyMeet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TinyMeet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+        276128902F74441300B1F9F0 /* TinyMeetTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TinyMeetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+        2761289A2F74441300B1F9F0 /* TinyMeetUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TinyMeetUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+        C4D5E6F71E00000100000001 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		276128802F74441100B1F9F0 /* TinyMeet */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TinyMeet;
-			sourceTree = "<group>";
-		};
-		276128932F74441300B1F9F0 /* TinyMeetTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TinyMeetTests;
-			sourceTree = "<group>";
-		};
-		2761289D2F74441300B1F9F0 /* TinyMeetUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TinyMeetUITests;
-			sourceTree = "<group>";
-		};
+        276128802F74441100B1F9F0 /* TinyMeet */ = {
+            isa = PBXFileSystemSynchronizedRootGroup;
+            path = TinyMeet;
+            sourceTree = "<group>";
+        };
+        276128932F74441300B1F9F0 /* TinyMeetTests */ = {
+            isa = PBXFileSystemSynchronizedRootGroup;
+            path = TinyMeetTests;
+            sourceTree = "<group>";
+        };
+        2761289D2F74441300B1F9F0 /* TinyMeetUITests */ = {
+            isa = PBXFileSystemSynchronizedRootGroup;
+            path = TinyMeetUITests;
+            sourceTree = "<group>";
+        };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		2761287B2F74441100B1F9F0 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2761288D2F74441300B1F9F0 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A1B2C3D41E00000100000001 /* Quick in Frameworks */,
-				A1B2C3D61E00000100000001 /* Nimble in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		276128972F74441300B1F9F0 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+        2761287B2F74441100B1F9F0 /* Frameworks */ = {
+            isa = PBXFrameworksBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        2761288D2F74441300B1F9F0 /* Frameworks */ = {
+            isa = PBXFrameworksBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+                A1B2C3D41E00000100000001 /* Quick in Frameworks */,
+                A1B2C3D61E00000100000001 /* Nimble in Frameworks */,
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        276128972F74441300B1F9F0 /* Frameworks */ = {
+            isa = PBXFrameworksBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		276128752F74441100B1F9F0 = {
-			isa = PBXGroup;
-			children = (
-				C4D5E6F71E00000100000001 /* Package.swift */,
-				276128802F74441100B1F9F0 /* TinyMeet */,
-				276128932F74441300B1F9F0 /* TinyMeetTests */,
-				2761289D2F74441300B1F9F0 /* TinyMeetUITests */,
-				2761287F2F74441100B1F9F0 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		2761287F2F74441100B1F9F0 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2761287E2F74441100B1F9F0 /* TinyMeet.app */,
-				276128902F74441300B1F9F0 /* TinyMeetTests.xctest */,
-				2761289A2F74441300B1F9F0 /* TinyMeetUITests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
+        276128752F74441100B1F9F0 = {
+            isa = PBXGroup;
+            children = (
+                C4D5E6F71E00000100000001 /* Package.swift */,
+                276128802F74441100B1F9F0 /* TinyMeet */,
+                276128932F74441300B1F9F0 /* TinyMeetTests */,
+                2761289D2F74441300B1F9F0 /* TinyMeetUITests */,
+                2761287F2F74441100B1F9F0 /* Products */,
+            );
+            sourceTree = "<group>";
+        };
+        2761287F2F74441100B1F9F0 /* Products */ = {
+            isa = PBXGroup;
+            children = (
+                2761287E2F74441100B1F9F0 /* TinyMeet.app */,
+                276128902F74441300B1F9F0 /* TinyMeetTests.xctest */,
+                2761289A2F74441300B1F9F0 /* TinyMeetUITests.xctest */,
+            );
+            name = Products;
+            sourceTree = "<group>";
+        };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2761287D2F74441100B1F9F0 /* TinyMeet */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 276128A42F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeet" */;
-			buildPhases = (
-				2761287A2F74441100B1F9F0 /* Sources */,
-				2761287B2F74441100B1F9F0 /* Frameworks */,
-				2761287C2F74441100B1F9F0 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				276128802F74441100B1F9F0 /* TinyMeet */,
-			);
-			name = TinyMeet;
-			packageProductDependencies = (
-			);
-			productName = TinyMeet;
-			productReference = 2761287E2F74441100B1F9F0 /* TinyMeet.app */;
-			productType = "com.apple.product-type.application";
-		};
-		2761288F2F74441300B1F9F0 /* TinyMeetTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 276128A72F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeetTests" */;
-			buildPhases = (
-				2761288C2F74441300B1F9F0 /* Sources */,
-				2761288D2F74441300B1F9F0 /* Frameworks */,
-				2761288E2F74441300B1F9F0 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				276128922F74441300B1F9F0 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				276128932F74441300B1F9F0 /* TinyMeetTests */,
-			);
-			name = TinyMeetTests;
-			packageProductDependencies = (
-				A1B2C3D31E00000100000001 /* Quick */,
-				A1B2C3D51E00000100000001 /* Nimble */,
-			);
-			productName = TinyMeetTests;
-			productReference = 276128902F74441300B1F9F0 /* TinyMeetTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		276128992F74441300B1F9F0 /* TinyMeetUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 276128AA2F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeetUITests" */;
-			buildPhases = (
-				276128962F74441300B1F9F0 /* Sources */,
-				276128972F74441300B1F9F0 /* Frameworks */,
-				276128982F74441300B1F9F0 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				2761289C2F74441300B1F9F0 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				2761289D2F74441300B1F9F0 /* TinyMeetUITests */,
-			);
-			name = TinyMeetUITests;
-			packageProductDependencies = (
-			);
-			productName = TinyMeetUITests;
-			productReference = 2761289A2F74441300B1F9F0 /* TinyMeetUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
+        2761287D2F74441100B1F9F0 /* TinyMeet */ = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = 276128A42F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeet" */;
+            buildPhases = (
+                2761287A2F74441100B1F9F0 /* Sources */,
+                2761287B2F74441100B1F9F0 /* Frameworks */,
+                2761287C2F74441100B1F9F0 /* Resources */,
+            );
+            buildRules = (
+            );
+            dependencies = (
+            );
+            fileSystemSynchronizedGroups = (
+                276128802F74441100B1F9F0 /* TinyMeet */,
+            );
+            name = TinyMeet;
+            packageProductDependencies = (
+            );
+            productName = TinyMeet;
+            productReference = 2761287E2F74441100B1F9F0 /* TinyMeet.app */;
+            productType = "com.apple.product-type.application";
+        };
+        2761288F2F74441300B1F9F0 /* TinyMeetTests */ = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = 276128A72F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeetTests" */;
+            buildPhases = (
+                2761288C2F74441300B1F9F0 /* Sources */,
+                2761288D2F74441300B1F9F0 /* Frameworks */,
+                2761288E2F74441300B1F9F0 /* Resources */,
+            );
+            buildRules = (
+            );
+            dependencies = (
+                276128922F74441300B1F9F0 /* PBXTargetDependency */,
+            );
+            fileSystemSynchronizedGroups = (
+                276128932F74441300B1F9F0 /* TinyMeetTests */,
+            );
+            name = TinyMeetTests;
+            packageProductDependencies = (
+                A1B2C3D31E00000100000001 /* Quick */,
+                A1B2C3D51E00000100000001 /* Nimble */,
+            );
+            productName = TinyMeetTests;
+            productReference = 276128902F74441300B1F9F0 /* TinyMeetTests.xctest */;
+            productType = "com.apple.product-type.bundle.unit-test";
+        };
+        276128992F74441300B1F9F0 /* TinyMeetUITests */ = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = 276128AA2F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeetUITests" */;
+            buildPhases = (
+                276128962F74441300B1F9F0 /* Sources */,
+                276128972F74441300B1F9F0 /* Frameworks */,
+                276128982F74441300B1F9F0 /* Resources */,
+            );
+            buildRules = (
+            );
+            dependencies = (
+                2761289C2F74441300B1F9F0 /* PBXTargetDependency */,
+            );
+            fileSystemSynchronizedGroups = (
+                2761289D2F74441300B1F9F0 /* TinyMeetUITests */,
+            );
+            name = TinyMeetUITests;
+            packageProductDependencies = (
+            );
+            productName = TinyMeetUITests;
+            productReference = 2761289A2F74441300B1F9F0 /* TinyMeetUITests.xctest */;
+            productType = "com.apple.product-type.bundle.ui-testing";
+        };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		276128762F74441100B1F9F0 /* Project object */ = {
-			isa = PBXProject;
-			attributes = {
-				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2610;
-				LastUpgradeCheck = 2610;
-				TargetAttributes = {
-					2761287D2F74441100B1F9F0 = {
-						CreatedOnToolsVersion = 26.1.1;
-					};
-					2761288F2F74441300B1F9F0 = {
-						CreatedOnToolsVersion = 26.1.1;
-						TestTargetID = 2761287D2F74441100B1F9F0;
-					};
-					276128992F74441300B1F9F0 = {
-						CreatedOnToolsVersion = 26.1.1;
-						TestTargetID = 2761287D2F74441100B1F9F0;
-					};
-				};
-			};
-			buildConfigurationList = 276128792F74441100B1F9F0 /* Build configuration list for PBXProject "TinyMeet" */;
-			developmentRegion = en;
-			hasScannedForEncodings = 0;
-			knownRegions = (
-				en,
-				Base,
-			);
-			mainGroup = 276128752F74441100B1F9F0;
-			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				A1B2C3D11E00000100000001 /* XCRemoteSwiftPackageReference "Quick" */,
-				A1B2C3D21E00000100000001 /* XCRemoteSwiftPackageReference "Nimble" */,
-			);
-			preferredProjectObjectVersion = 77;
-			productRefGroup = 2761287F2F74441100B1F9F0 /* Products */;
-			projectDirPath = "";
-			projectRoot = "";
-			targets = (
-				2761287D2F74441100B1F9F0 /* TinyMeet */,
-				2761288F2F74441300B1F9F0 /* TinyMeetTests */,
-				276128992F74441300B1F9F0 /* TinyMeetUITests */,
-			);
-		};
+        276128762F74441100B1F9F0 /* Project object */ = {
+            isa = PBXProject;
+            attributes = {
+                BuildIndependentTargetsInParallel = 1;
+                LastSwiftUpdateCheck = 2610;
+                LastUpgradeCheck = 2610;
+                TargetAttributes = {
+                    2761287D2F74441100B1F9F0 = {
+                        CreatedOnToolsVersion = 26.1.1;
+                    };
+                    2761288F2F74441300B1F9F0 = {
+                        CreatedOnToolsVersion = 26.1.1;
+                        TestTargetID = 2761287D2F74441100B1F9F0;
+                    };
+                    276128992F74441300B1F9F0 = {
+                        CreatedOnToolsVersion = 26.1.1;
+                        TestTargetID = 2761287D2F74441100B1F9F0;
+                    };
+                };
+            };
+            buildConfigurationList = 276128792F74441100B1F9F0 /* Build configuration list for PBXProject "TinyMeet" */;
+            developmentRegion = en;
+            hasScannedForEncodings = 0;
+            knownRegions = (
+                en,
+                Base,
+            );
+            mainGroup = 276128752F74441100B1F9F0;
+            minimizedProjectReferenceProxies = 1;
+            packageReferences = (
+                A1B2C3D11E00000100000001 /* XCRemoteSwiftPackageReference "Quick" */,
+                A1B2C3D21E00000100000001 /* XCRemoteSwiftPackageReference "Nimble" */,
+            );
+            preferredProjectObjectVersion = 77;
+            productRefGroup = 2761287F2F74441100B1F9F0 /* Products */;
+            projectDirPath = "";
+            projectRoot = "";
+            targets = (
+                2761287D2F74441100B1F9F0 /* TinyMeet */,
+                2761288F2F74441300B1F9F0 /* TinyMeetTests */,
+                276128992F74441300B1F9F0 /* TinyMeetUITests */,
+            );
+        };
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		2761287C2F74441100B1F9F0 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2761288E2F74441300B1F9F0 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		276128982F74441300B1F9F0 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+        2761287C2F74441100B1F9F0 /* Resources */ = {
+            isa = PBXResourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        2761288E2F74441300B1F9F0 /* Resources */ = {
+            isa = PBXResourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        276128982F74441300B1F9F0 /* Resources */ = {
+            isa = PBXResourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		2761287A2F74441100B1F9F0 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2761288C2F74441300B1F9F0 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		276128962F74441300B1F9F0 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+        2761287A2F74441100B1F9F0 /* Sources */ = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        2761288C2F74441300B1F9F0 /* Sources */ = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        276128962F74441300B1F9F0 /* Sources */ = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		276128922F74441300B1F9F0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2761287D2F74441100B1F9F0 /* TinyMeet */;
-			targetProxy = 276128912F74441300B1F9F0 /* PBXContainerItemProxy */;
-		};
-		2761289C2F74441300B1F9F0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2761287D2F74441100B1F9F0 /* TinyMeet */;
-			targetProxy = 2761289B2F74441300B1F9F0 /* PBXContainerItemProxy */;
-		};
+        276128922F74441300B1F9F0 /* PBXTargetDependency */ = {
+            isa = PBXTargetDependency;
+            target = 2761287D2F74441100B1F9F0 /* TinyMeet */;
+            targetProxy = 276128912F74441300B1F9F0 /* PBXContainerItemProxy */;
+        };
+        2761289C2F74441300B1F9F0 /* PBXTargetDependency */ = {
+            isa = PBXTargetDependency;
+            target = 2761287D2F74441100B1F9F0 /* TinyMeet */;
+            targetProxy = 2761289B2F74441300B1F9F0 /* PBXContainerItemProxy */;
+        };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		276128A22F74441300B1F9F0 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = FRL84QEC3S;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-			};
-			name = Debug;
-		};
-		276128A32F74441300B1F9F0 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = FRL84QEC3S;
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		276128A52F74441300B1F9F0 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FRL84QEC3S;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeet;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		276128A62F74441300B1F9F0 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FRL84QEC3S;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeet;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		276128A82F74441300B1F9F0 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FRL84QEC3S;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TinyMeet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TinyMeet";
-			};
-			name = Debug;
-		};
-		276128A92F74441300B1F9F0 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FRL84QEC3S;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TinyMeet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TinyMeet";
-			};
-			name = Release;
-		};
-		276128AB2F74441300B1F9F0 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FRL84QEC3S;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = TinyMeet;
-			};
-			name = Debug;
-		};
-		276128AC2F74441300B1F9F0 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FRL84QEC3S;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = TinyMeet;
-			};
-			name = Release;
-		};
+        276128A22F74441300B1F9F0 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+                CLANG_ANALYZER_NONNULL = YES;
+                CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+                CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+                CLANG_ENABLE_MODULES = YES;
+                CLANG_ENABLE_OBJC_ARC = YES;
+                CLANG_ENABLE_OBJC_WEAK = YES;
+                CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+                CLANG_WARN_BOOL_CONVERSION = YES;
+                CLANG_WARN_COMMA = YES;
+                CLANG_WARN_CONSTANT_CONVERSION = YES;
+                CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+                CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+                CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+                CLANG_WARN_EMPTY_BODY = YES;
+                CLANG_WARN_ENUM_CONVERSION = YES;
+                CLANG_WARN_INFINITE_RECURSION = YES;
+                CLANG_WARN_INT_CONVERSION = YES;
+                CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+                CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+                CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+                CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+                CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+                CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+                CLANG_WARN_STRICT_PROTOTYPES = YES;
+                CLANG_WARN_SUSPICIOUS_MOVE = YES;
+                CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+                CLANG_WARN_UNREACHABLE_CODE = YES;
+                CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+                COPY_PHASE_STRIP = NO;
+                DEBUG_INFORMATION_FORMAT = dwarf;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                ENABLE_STRICT_OBJC_MSGSEND = YES;
+                ENABLE_TESTABILITY = YES;
+                ENABLE_USER_SCRIPT_SANDBOXING = YES;
+                GCC_C_LANGUAGE_STANDARD = gnu17;
+                GCC_DYNAMIC_NO_PIC = NO;
+                GCC_NO_COMMON_BLOCKS = YES;
+                GCC_OPTIMIZATION_LEVEL = 0;
+                GCC_PREPROCESSOR_DEFINITIONS = (
+                    "DEBUG=1",
+                    "$(inherited)",
+                );
+                GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+                GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+                GCC_WARN_UNDECLARED_SELECTOR = YES;
+                GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+                GCC_WARN_UNUSED_FUNCTION = YES;
+                GCC_WARN_UNUSED_VARIABLE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+                LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+                MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+                MTL_FAST_MATH = YES;
+                ONLY_ACTIVE_ARCH = YES;
+                SDKROOT = iphoneos;
+                SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+                SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+            };
+            name = Debug;
+        };
+        276128A32F74441300B1F9F0 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+                CLANG_ANALYZER_NONNULL = YES;
+                CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+                CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+                CLANG_ENABLE_MODULES = YES;
+                CLANG_ENABLE_OBJC_ARC = YES;
+                CLANG_ENABLE_OBJC_WEAK = YES;
+                CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+                CLANG_WARN_BOOL_CONVERSION = YES;
+                CLANG_WARN_COMMA = YES;
+                CLANG_WARN_CONSTANT_CONVERSION = YES;
+                CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+                CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+                CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+                CLANG_WARN_EMPTY_BODY = YES;
+                CLANG_WARN_ENUM_CONVERSION = YES;
+                CLANG_WARN_INFINITE_RECURSION = YES;
+                CLANG_WARN_INT_CONVERSION = YES;
+                CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+                CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+                CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+                CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+                CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+                CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+                CLANG_WARN_STRICT_PROTOTYPES = YES;
+                CLANG_WARN_SUSPICIOUS_MOVE = YES;
+                CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+                CLANG_WARN_UNREACHABLE_CODE = YES;
+                CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+                COPY_PHASE_STRIP = NO;
+                DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                ENABLE_NS_ASSERTIONS = NO;
+                ENABLE_STRICT_OBJC_MSGSEND = YES;
+                ENABLE_USER_SCRIPT_SANDBOXING = YES;
+                GCC_C_LANGUAGE_STANDARD = gnu17;
+                GCC_NO_COMMON_BLOCKS = YES;
+                GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+                GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+                GCC_WARN_UNDECLARED_SELECTOR = YES;
+                GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+                GCC_WARN_UNUSED_FUNCTION = YES;
+                GCC_WARN_UNUSED_VARIABLE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+                LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+                MTL_ENABLE_DEBUG_INFO = NO;
+                MTL_FAST_MATH = YES;
+                SDKROOT = iphoneos;
+                SWIFT_COMPILATION_MODE = wholemodule;
+                VALIDATE_PRODUCT = YES;
+            };
+            name = Release;
+        };
+        276128A52F74441300B1F9F0 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                API_BASE_URL = "https://api.tinymeet.mock";
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                ENABLE_PREVIEWS = YES;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
+                INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+                INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+                INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+                INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/Frameworks",
+                );
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeet;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = YES;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+                SWIFT_EMIT_LOC_STRINGS = YES;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+            };
+            name = Debug;
+        };
+        276128A62F74441300B1F9F0 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                API_BASE_URL = "https://api.tinymeet.mock";
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                ENABLE_PREVIEWS = YES;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
+                INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+                INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+                INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+                INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/Frameworks",
+                );
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeet;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = YES;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+                SWIFT_EMIT_LOC_STRINGS = YES;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+            };
+            name = Release;
+        };
+        276128A82F74441300B1F9F0 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                BUNDLE_LOADER = "$(TEST_HOST)";
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetTests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = NO;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_EMIT_LOC_STRINGS = NO;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TinyMeet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TinyMeet";
+            };
+            name = Debug;
+        };
+        276128A92F74441300B1F9F0 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                BUNDLE_LOADER = "$(TEST_HOST)";
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetTests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = NO;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_EMIT_LOC_STRINGS = NO;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TinyMeet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TinyMeet";
+            };
+            name = Release;
+        };
+        276128AB2F74441300B1F9F0 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetUITests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = NO;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_EMIT_LOC_STRINGS = NO;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_TARGET_NAME = TinyMeet;
+            };
+            name = Debug;
+        };
+        276128AC2F74441300B1F9F0 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetUITests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = NO;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_EMIT_LOC_STRINGS = NO;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_TARGET_NAME = TinyMeet;
+            };
+            name = Release;
+        };
+        B4C5D6E12F00000100000001 /* Debug-Staging */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+                CLANG_ANALYZER_NONNULL = YES;
+                CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+                CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+                CLANG_ENABLE_MODULES = YES;
+                CLANG_ENABLE_OBJC_ARC = YES;
+                CLANG_ENABLE_OBJC_WEAK = YES;
+                CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+                CLANG_WARN_BOOL_CONVERSION = YES;
+                CLANG_WARN_COMMA = YES;
+                CLANG_WARN_CONSTANT_CONVERSION = YES;
+                CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+                CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+                CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+                CLANG_WARN_EMPTY_BODY = YES;
+                CLANG_WARN_ENUM_CONVERSION = YES;
+                CLANG_WARN_INFINITE_RECURSION = YES;
+                CLANG_WARN_INT_CONVERSION = YES;
+                CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+                CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+                CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+                CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+                CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+                CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+                CLANG_WARN_STRICT_PROTOTYPES = YES;
+                CLANG_WARN_SUSPICIOUS_MOVE = YES;
+                CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+                CLANG_WARN_UNREACHABLE_CODE = YES;
+                CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+                COPY_PHASE_STRIP = NO;
+                DEBUG_INFORMATION_FORMAT = dwarf;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                ENABLE_STRICT_OBJC_MSGSEND = YES;
+                ENABLE_TESTABILITY = YES;
+                ENABLE_USER_SCRIPT_SANDBOXING = YES;
+                GCC_C_LANGUAGE_STANDARD = gnu17;
+                GCC_DYNAMIC_NO_PIC = NO;
+                GCC_NO_COMMON_BLOCKS = YES;
+                GCC_OPTIMIZATION_LEVEL = 0;
+                GCC_PREPROCESSOR_DEFINITIONS = (
+                    "DEBUG=1",
+                    "STAGING=1",
+                    "$(inherited)",
+                );
+                GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+                GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+                GCC_WARN_UNDECLARED_SELECTOR = YES;
+                GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+                GCC_WARN_UNUSED_FUNCTION = YES;
+                GCC_WARN_UNUSED_VARIABLE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+                LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+                MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+                MTL_FAST_MATH = YES;
+                ONLY_ACTIVE_ARCH = YES;
+                SDKROOT = iphoneos;
+                SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG STAGING $(inherited)";
+                SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+            };
+            name = "Debug-Staging";
+        };
+        B4C5D6E22F00000100000001 /* Release-Staging */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+                CLANG_ANALYZER_NONNULL = YES;
+                CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+                CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+                CLANG_ENABLE_MODULES = YES;
+                CLANG_ENABLE_OBJC_ARC = YES;
+                CLANG_ENABLE_OBJC_WEAK = YES;
+                CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+                CLANG_WARN_BOOL_CONVERSION = YES;
+                CLANG_WARN_COMMA = YES;
+                CLANG_WARN_CONSTANT_CONVERSION = YES;
+                CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+                CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+                CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+                CLANG_WARN_EMPTY_BODY = YES;
+                CLANG_WARN_ENUM_CONVERSION = YES;
+                CLANG_WARN_INFINITE_RECURSION = YES;
+                CLANG_WARN_INT_CONVERSION = YES;
+                CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+                CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+                CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+                CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+                CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+                CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+                CLANG_WARN_STRICT_PROTOTYPES = YES;
+                CLANG_WARN_SUSPICIOUS_MOVE = YES;
+                CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+                CLANG_WARN_UNREACHABLE_CODE = YES;
+                CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+                COPY_PHASE_STRIP = NO;
+                DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                ENABLE_NS_ASSERTIONS = NO;
+                ENABLE_STRICT_OBJC_MSGSEND = YES;
+                ENABLE_USER_SCRIPT_SANDBOXING = YES;
+                GCC_C_LANGUAGE_STANDARD = gnu17;
+                GCC_NO_COMMON_BLOCKS = YES;
+                GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+                GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+                GCC_WARN_UNDECLARED_SELECTOR = YES;
+                GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+                GCC_WARN_UNUSED_FUNCTION = YES;
+                GCC_WARN_UNUSED_VARIABLE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+                LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+                MTL_ENABLE_DEBUG_INFO = NO;
+                MTL_FAST_MATH = YES;
+                SDKROOT = iphoneos;
+                SWIFT_ACTIVE_COMPILATION_CONDITIONS = "STAGING $(inherited)";
+                SWIFT_COMPILATION_MODE = wholemodule;
+                VALIDATE_PRODUCT = YES;
+            };
+            name = "Release-Staging";
+        };
+        B4C5D6E32F00000100000001 /* Debug-Staging */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                API_BASE_URL = "https://staging-api.tinymeet.mock";
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                ENABLE_PREVIEWS = YES;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_KEY_CFBundleDisplayName = "TinyMeet-Staging";
+                INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
+                INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+                INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+                INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+                INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/Frameworks",
+                );
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeet.staging;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = YES;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+                SWIFT_EMIT_LOC_STRINGS = YES;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+            };
+            name = "Debug-Staging";
+        };
+        B4C5D6E42F00000100000001 /* Release-Staging */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                API_BASE_URL = "https://staging-api.tinymeet.mock";
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                ENABLE_PREVIEWS = YES;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_KEY_CFBundleDisplayName = "TinyMeet-Staging";
+                INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
+                INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+                INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+                INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+                INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/Frameworks",
+                );
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeet.staging;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = YES;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+                SWIFT_EMIT_LOC_STRINGS = YES;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+            };
+            name = "Release-Staging";
+        };
+        B4C5D6E52F00000100000001 /* Debug-Staging */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                BUNDLE_LOADER = "$(TEST_HOST)";
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetTests.staging;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = NO;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_EMIT_LOC_STRINGS = NO;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TinyMeet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TinyMeet";
+            };
+            name = "Debug-Staging";
+        };
+        B4C5D6E62F00000100000001 /* Release-Staging */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                BUNDLE_LOADER = "$(TEST_HOST)";
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetTests.staging;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = NO;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_EMIT_LOC_STRINGS = NO;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TinyMeet.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TinyMeet";
+            };
+            name = "Release-Staging";
+        };
+        B4C5D6E72F00000100000001 /* Debug-Staging */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetUITests.staging;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = NO;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_EMIT_LOC_STRINGS = NO;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_TARGET_NAME = TinyMeet;
+            };
+            name = "Debug-Staging";
+        };
+        B4C5D6E82F00000100000001 /* Release-Staging */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = FRL84QEC3S;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = hongjian.TinyMeetUITests.staging;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                STRING_CATALOG_GENERATE_SYMBOLS = NO;
+                SWIFT_APPROACHABLE_CONCURRENCY = YES;
+                SWIFT_EMIT_LOC_STRINGS = NO;
+                SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_TARGET_NAME = TinyMeet;
+            };
+            name = "Release-Staging";
+        };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		276128792F74441100B1F9F0 /* Build configuration list for PBXProject "TinyMeet" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				276128A22F74441300B1F9F0 /* Debug */,
-				276128A32F74441300B1F9F0 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		276128A42F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeet" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				276128A52F74441300B1F9F0 /* Debug */,
-				276128A62F74441300B1F9F0 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		276128A72F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeetTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				276128A82F74441300B1F9F0 /* Debug */,
-				276128A92F74441300B1F9F0 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		276128AA2F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeetUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				276128AB2F74441300B1F9F0 /* Debug */,
-				276128AC2F74441300B1F9F0 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
+        276128792F74441100B1F9F0 /* Build configuration list for PBXProject "TinyMeet" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                276128A22F74441300B1F9F0 /* Debug */,
+                276128A32F74441300B1F9F0 /* Release */,
+                B4C5D6E12F00000100000001 /* Debug-Staging */,
+                B4C5D6E22F00000100000001 /* Release-Staging */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        276128A42F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeet" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                276128A52F74441300B1F9F0 /* Debug */,
+                276128A62F74441300B1F9F0 /* Release */,
+                B4C5D6E32F00000100000001 /* Debug-Staging */,
+                B4C5D6E42F00000100000001 /* Release-Staging */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        276128A72F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeetTests" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                276128A82F74441300B1F9F0 /* Debug */,
+                276128A92F74441300B1F9F0 /* Release */,
+                B4C5D6E52F00000100000001 /* Debug-Staging */,
+                B4C5D6E62F00000100000001 /* Release-Staging */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        276128AA2F74441300B1F9F0 /* Build configuration list for PBXNativeTarget "TinyMeetUITests" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                276128AB2F74441300B1F9F0 /* Debug */,
+                276128AC2F74441300B1F9F0 /* Release */,
+                B4C5D6E72F00000100000001 /* Debug-Staging */,
+                B4C5D6E82F00000100000001 /* Release-Staging */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		A1B2C3D11E00000100000001 /* XCRemoteSwiftPackageReference "Quick" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Quick/Quick.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.6.2;
-			};
-		};
-		A1B2C3D21E00000100000001 /* XCRemoteSwiftPackageReference "Nimble" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Quick/Nimble.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 13.8.0;
-			};
-		};
+        A1B2C3D11E00000100000001 /* XCRemoteSwiftPackageReference "Quick" */ = {
+            isa = XCRemoteSwiftPackageReference;
+            repositoryURL = "https://github.com/Quick/Quick.git";
+            requirement = {
+                kind = upToNextMajorVersion;
+                minimumVersion = 7.6.2;
+            };
+        };
+        A1B2C3D21E00000100000001 /* XCRemoteSwiftPackageReference "Nimble" */ = {
+            isa = XCRemoteSwiftPackageReference;
+            repositoryURL = "https://github.com/Quick/Nimble.git";
+            requirement = {
+                kind = upToNextMajorVersion;
+                minimumVersion = 13.8.0;
+            };
+        };
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A1B2C3D31E00000100000001 /* Quick */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A1B2C3D11E00000100000001 /* XCRemoteSwiftPackageReference "Quick" */;
-			productName = Quick;
-		};
-		A1B2C3D51E00000100000001 /* Nimble */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A1B2C3D21E00000100000001 /* XCRemoteSwiftPackageReference "Nimble" */;
-			productName = Nimble;
-		};
+        A1B2C3D31E00000100000001 /* Quick */ = {
+            isa = XCSwiftPackageProductDependency;
+            package = A1B2C3D11E00000100000001 /* XCRemoteSwiftPackageReference "Quick" */;
+            productName = Quick;
+        };
+        A1B2C3D51E00000100000001 /* Nimble */ = {
+            isa = XCSwiftPackageProductDependency;
+            package = A1B2C3D21E00000100000001 /* XCRemoteSwiftPackageReference "Nimble" */;
+            productName = Nimble;
+        };
 /* End XCSwiftPackageProductDependency section */
-	};
-	rootObject = 276128762F74441100B1F9F0 /* Project object */;
+    };
+    rootObject = 276128762F74441100B1F9F0 /* Project object */;
 }

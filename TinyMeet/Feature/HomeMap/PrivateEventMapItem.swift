@@ -35,29 +35,3 @@ struct PrivateEventMapItem: Identifiable, Equatable {
         self.symbolName = symbolName
     }
 }
-
-extension PrivateEventMapItem {
-    static let mockItems: [PrivateEventMapItem] = [
-        PrivateEventMapItem(
-            title: "Backyard Playdate",
-            subtitle: "Today · 4:30 PM",
-            coordinate: CLLocationCoordinate2D(latitude: 40.3573, longitude: -74.6514),
-            tintName: "pink",
-            symbolName: "house.fill"
-        ),
-        PrivateEventMapItem(
-            title: "Private Story Time",
-            subtitle: "Tomorrow · 10:00 AM",
-            coordinate: CLLocationCoordinate2D(latitude: 40.3497, longitude: -74.6593),
-            tintName: "mint",
-            symbolName: "book.fill"
-        ),
-        PrivateEventMapItem(
-            title: "Family Picnic Circle",
-            subtitle: "Saturday · 11:15 AM",
-            coordinate: CLLocationCoordinate2D(latitude: 40.3548, longitude: -74.6637),
-            tintName: "orange",
-            symbolName: "basket.fill"
-        )
-    ]
-}
