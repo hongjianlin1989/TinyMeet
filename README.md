@@ -31,6 +31,12 @@ Add these environment variables in CircleCI Project Settings:
 
 These are used by `fastlane ios nightly_beta`.
 
+The `nightly_beta` lane will:
+- resolve Swift package dependencies
+- set a timestamp-based build number
+- archive the `TinyMeet-Staging` scheme for App Store distribution
+- upload the generated IPA to TestFlight
+
 2) **Repo write access to push the gating tag**
 
 The nightly job updates the git tag `nightly-testflight-last-success` on `origin`.
@@ -39,6 +45,16 @@ In CircleCI:
 - Project Settings → **SSH Keys** → add an SSH key with **write access** to the repo
 
 Without this, the nightly job can still build/upload, but it won’t be able to update the tag, and you’ll upload every night.
+
+3) **Signing for archive/export**
+
+The nightly lane performs an App Store archive/export, so CircleCI must also have valid signing available for the `TinyMeet-Staging` app target.
+
+Examples:
+- Xcode automatic signing with the required certificates/profiles available on the CircleCI machine
+- or a Fastlane-managed signing setup such as `match`
+
+Without signing, the nightly job can pass the gate step but fail during `build_app` before upload.
 
 ### Files used by CI
 - `.github/workflows/ios-ci.yml`
