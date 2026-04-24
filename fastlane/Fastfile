@@ -1,4 +1,6 @@
 # Fastfile
+require "time"
+
 default_platform(:ios)
 
 platform :ios do
@@ -22,6 +24,50 @@ platform :ios do
       clean: true,
       code_coverage: true,
       xcargs: "CODE_SIGNING_ALLOWED=NO"
+    )
+  end
+
+  desc "Build TinyMeet-Staging and upload it to TestFlight for nightly releases"
+  lane :nightly_beta do
+    ENV["LANG"] ||= "en_US.UTF-8"
+    ENV["LC_ALL"] ||= "en_US.UTF-8"
+
+    project_path = "TinyMeet.xcodeproj"
+    scheme_name = "TinyMeet-Staging"
+    output_directory = "fastlane/build"
+    output_name = "TinyMeet-Staging"
+    build_number = Time.now.utc.strftime("%Y%m%d%H%M")
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_CONTENT"),
+      is_key_content_base64: true,
+      duration: 1200
+    )
+
+    sh("xcodebuild -resolvePackageDependencies -project '#{project_path}'")
+
+    increment_build_number(
+      xcodeproj: project_path,
+      build_number: build_number
+    )
+
+    build_app(
+      project: project_path,
+      scheme: scheme_name,
+      clean: true,
+      export_method: "app-store",
+      output_directory: output_directory,
+      output_name: output_name,
+      skip_package_dependencies_resolution: true
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: File.join(output_directory, "#{output_name}.ipa"),
+      skip_waiting_for_build_processing: true,
+      changelog: "Nightly staging build from #{Actions.git_branch} @ #{Actions.last_git_commit[:abbreviated_commit_hash]}"
     )
   end
 end
