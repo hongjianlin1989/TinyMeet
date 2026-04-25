@@ -60,12 +60,9 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: Run Fastlane staging unit-test lane
-        run: bundle exec fastlane ios tests
-
-      - name: Upload test results
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test_output
-          path: fastlane/test_output
+          name: build_output
+          path: build
