@@ -31,8 +31,12 @@ jobs:
 
       - name: Show available destinations
         run: |
-          xcrun simctl list devices available -j
+          echo "=== SDKS ==="
           xcodebuild -showsdks
+          echo "=== SIMCTL LIST ==="
+          xcrun simctl list -v
+          echo "=== DEVICE TYPES ==="
+          xcrun simctl list devicetypes
 
       - name: Xcode build check
         run: |
