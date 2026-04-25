@@ -18,7 +18,7 @@ jobs:
     env:
       SCHEME_NAME: TinyMeet-Staging
       PROJECT_PATH: TinyMeet.xcodeproj
-      DESTINATION: generic/platform=iOS
+      DESTINATION: generic/platform=iOS Simulator
       RUNNER_PASSWORD: ${{ secrets.RUNNER_PASSWORD }}
 
     steps:
@@ -31,6 +31,7 @@ jobs:
 
       - name: Xcode build check
         run: |
+          xcrun simctl list devices available
           /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild \
             -project "$PROJECT_PATH" \
             -scheme "$SCHEME_NAME" \
