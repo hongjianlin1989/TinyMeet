@@ -19,10 +19,15 @@ jobs:
       SCHEME_NAME: TinyMeet-Staging
       PROJECT_PATH: TinyMeet.xcodeproj
       DESTINATION: generic/platform=iOS
+      RUNNER_PASSWORD: ${{ secrets.RUNNER_PASSWORD }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          echo $RUNNER_PASSWORD | sudo -S xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Xcode build check
         run: |
