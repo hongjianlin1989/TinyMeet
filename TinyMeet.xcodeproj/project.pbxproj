@@ -38,9 +38,22 @@
 		C4D5E6F71E00000100000001 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		27E306772F9D33D30012CFEC /* Exceptions for "TinyMeet" folder in "TinyMeet" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2761287D2F74441100B1F9F0 /* TinyMeet */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		276128802F74441100B1F9F0 /* TinyMeet */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				27E306772F9D33D30012CFEC /* Exceptions for "TinyMeet" folder in "TinyMeet" target */,
+			);
 			path = TinyMeet;
 			sourceTree = "<group>";
 		};
@@ -427,6 +440,7 @@
 				DEVELOPMENT_TEAM = FRL84QEC3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TinyMeet/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -462,6 +476,7 @@
 				DEVELOPMENT_TEAM = FRL84QEC3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TinyMeet/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -706,6 +721,7 @@
 				DEVELOPMENT_TEAM = FRL84QEC3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TinyMeet/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -741,6 +757,7 @@
 				DEVELOPMENT_TEAM = FRL84QEC3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TinyMeet/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = system.location.usage;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
