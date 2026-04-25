@@ -29,9 +29,13 @@ jobs:
         run: |
           echo $RUNNER_PASSWORD | sudo -S xcode-select -s /Applications/Xcode.app/Contents/Developer
 
+      - name: Show available destinations
+        run: |
+          xcrun simctl list devices available -j
+          xcodebuild -showsdks
+
       - name: Xcode build check
         run: |
-          xcrun simctl list devices available
           /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild \
             -project "$PROJECT_PATH" \
             -scheme "$SCHEME_NAME" \
