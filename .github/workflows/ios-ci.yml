@@ -12,46 +12,61 @@ on:
       - develop
 
 jobs:
-  swiftlint:
-    name: SwiftLint
-    runs-on: macos-15
+  test:
+    name: Test
+    runs-on: [self-hosted, macos, x86-64]
+    env:
+      BUNDLE_PATH: vendor/bundle
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      SCHEME_NAME: TinyMeet-Staging
+      PROJECT_PATH: TinyMeet.xcodeproj
+      DESTINATION: generic/platform=iOS
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache Ruby gems
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: bundler-v1-${{ hashFiles('Gemfile') }}
+          restore-keys: bundler-v1-
+
+      - name: Install Ruby gems
+        run: |
+          bundle config set path "$BUNDLE_PATH"
+          bundle install
 
       - name: Install SwiftLint
         run: |
           brew install swiftlint
           swiftlint version
 
-      - name: Run SwiftLint
-        run: swiftlint lint --strict --config .swiftlint.yml
-
-  unit-tests:
-    name: Unit Tests (Staging)
-    runs-on: macos-15
-    needs: swiftlint
-    env:
-      PROJECT_PATH: TinyMeet.xcodeproj
-      SCHEME_NAME: TinyMeet-Staging
-      SIMULATOR_NAME: iPhone 17
-      SIMULATOR_OS: '26.1'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Resolve Swift package dependencies
-        run: xcodebuild -resolvePackageDependencies -project "$PROJECT_PATH"
+      - name: SwiftLint check
+        run: swiftlint lint --strict --config .swiftlint.yml
 
-      - name: Run unit tests
+      - name: Xcode staging build check
         run: |
-          xcodebuild test \
+          xcodebuild \
             -project "$PROJECT_PATH" \
             -scheme "$SCHEME_NAME" \
-            -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS" \
-            CODE_SIGNING_ALLOWED=NO
+            -destination "$DESTINATION" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Run Fastlane staging unit-test lane
+        run: bundle exec fastlane ios tests
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test_output
+          path: fastlane/test_output
