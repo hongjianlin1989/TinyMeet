@@ -43,7 +43,7 @@ jobs:
 
       - name: Install SwiftLint
         run: |
-          curl -sL https://github.com/realm/SwiftLint/releases/download/0.57.0/portable_swiftlint.zip -o swiftlint.zip
+          curl -sL https://github.com/realm/SwiftLint/releases/download/0.56.0/portable_swiftlint.zip -o swiftlint.zip
           unzip -o swiftlint.zip
           chmod +x swiftlint
           ./swiftlint version
