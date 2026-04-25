@@ -1,5 +1,7 @@
 import Combine
+import FirebaseAuth
 import Foundation
+import GoogleSignIn
 
 @MainActor
 final class AppSession: ObservableObject {
@@ -23,6 +25,8 @@ final class AppSession: ObservableObject {
     }
 
     func logOut() {
+        GIDSignIn.sharedInstance.signOut()
+        try? Auth.auth().signOut()
         isLoggedIn = false
     }
 

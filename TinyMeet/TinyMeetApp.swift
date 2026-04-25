@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import GoogleSignIn
 import SwiftUI
 
 @main
@@ -21,6 +22,9 @@ struct TinyMeetApp: App {
                 .environmentObject(appSession)
                 .environment(\.locale, appSession.locale)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .onOpenURL { url in
+                    _ = GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }

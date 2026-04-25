@@ -64,6 +64,47 @@ struct LoginView: View {
                     }
                     .buttonStyle(.bordered)
                     .frame(maxWidth: .infinity)
+
+                    Button {
+                        Task {
+                            let didSignIn = await viewModel.signInWithGoogleTapped()
+                            if didSignIn {
+                                appSession.logIn()
+                                dismiss()
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 24, height: 24)
+
+                                Text("G")
+                                    .font(.subheadline.weight(.bold))
+                                    .foregroundStyle(Color(red: 0.26, green: 0.52, blue: 0.96))
+                            }
+
+                            if viewModel.isGoogleSigningIn {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+
+                            Text(viewModel.isGoogleSigningIn ? "Signing in with Google..." : "Continue with Google")
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.black)
+                    .disabled(viewModel.isGoogleSigningIn)
+
+                    if let errorMessage = viewModel.errorMessage {
+                        Text(errorMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                    }
                 }
 
                 Spacer()

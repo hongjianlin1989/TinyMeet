@@ -15,14 +15,16 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Quick/Quick.git", from: "7.6.2"),
         .package(url: "https://github.com/Quick/Nimble.git", from: "13.8.0"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "12.12.0")
+        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "12.12.0"),
+        .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "8.0.0")
     ],
     targets: [
         .target(
             name: "TinyMeet",
             dependencies: [
                 .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseAuth", package: "firebase-ios-sdk")
+                .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
+                .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS")
             ],
             path: "TinyMeet"
         ),
