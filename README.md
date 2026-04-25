@@ -4,6 +4,15 @@
 
 This project includes CI setup for validating the `TinyMeet` Xcode project, with automated build and unit-test checks targeting the shared `TinyMeet-Staging` scheme.
 
+## Dependency management
+
+This repository contains both a root `Package.swift` and an Xcode app project.
+
+- `TinyMeet.xcodeproj` is the source of truth for the iOS app target's package dependencies.
+- `Package.swift` is kept aligned for local SwiftPM resolution and package-level tooling.
+
+If you add or update Firebase, GoogleSignIn, or test packages, make sure the Xcode project and `Package.swift` stay in sync.
+
 ### Nightly builds (CircleCI) — only when new merges landed
 
 CircleCI contains a scheduled workflow named `nightly-testflight`.

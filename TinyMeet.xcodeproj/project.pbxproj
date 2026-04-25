@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		A1B2C3D41E00000100000001 /* Quick in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D31E00000100000001 /* Quick */; };
 		A1B2C3D61E00000100000001 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D51E00000100000001 /* Nimble */; };
-		A1B2C3E61E00000100000001 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3E31E00000100000001 /* FirebaseCore */; };
-		A1B2C3E71E00000100000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3E41E00000100000001 /* FirebaseAuth */; };
-		A1B2C3E81E00000100000001 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3E51E00000100000001 /* GoogleSignIn */; };
+		A1B2C3E41E00000100000001 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3E31E00000100000001 /* FirebaseCore */; };
+		A1B2C3E61E00000100000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3E51E00000100000001 /* FirebaseAuth */; };
+		A1B2C3E81E00000100000001 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3E71E00000100000001 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,8 +61,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1B2C3E61E00000100000001 /* FirebaseCore in Frameworks */,
-				A1B2C3E71E00000100000001 /* FirebaseAuth in Frameworks */,
+				A1B2C3E41E00000100000001 /* FirebaseCore in Frameworks */,
+				A1B2C3E61E00000100000001 /* FirebaseAuth in Frameworks */,
 				A1B2C3E81E00000100000001 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -128,8 +128,8 @@
 			name = TinyMeet;
 			packageProductDependencies = (
 				A1B2C3E31E00000100000001 /* FirebaseCore */,
-				A1B2C3E41E00000100000001 /* FirebaseAuth */,
-				A1B2C3E51E00000100000001 /* GoogleSignIn */,
+				A1B2C3E51E00000100000001 /* FirebaseAuth */,
+				A1B2C3E71E00000100000001 /* GoogleSignIn */,
 			);
 			productName = TinyMeet;
 			productReference = 2761287E2F74441100B1F9F0 /* TinyMeet.app */;
@@ -905,32 +905,32 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Quick/Quick.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.6.2;
+				kind = exactVersion;
+				version = 7.6.2;
 			};
 		};
 		A1B2C3D21E00000100000001 /* XCRemoteSwiftPackageReference "Nimble" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Quick/Nimble.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 13.8.0;
+				kind = exactVersion;
+				version = 13.8.0;
 			};
 		};
 		A1B2C3E11E00000100000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 12.12.0;
+				kind = exactVersion;
+				version = 12.12.0;
 			};
 		};
 		A1B2C3E21E00000100000001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 8.0.0;
+				kind = exactVersion;
+				version = 8.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -951,12 +951,12 @@
 			package = A1B2C3E11E00000100000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
 		};
-		A1B2C3E41E00000100000001 /* FirebaseAuth */ = {
+		A1B2C3E51E00000100000001 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A1B2C3E11E00000100000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
-		A1B2C3E51E00000100000001 /* GoogleSignIn */ = {
+		A1B2C3E71E00000100000001 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A1B2C3E21E00000100000001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
