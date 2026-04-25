@@ -35,8 +35,7 @@ jobs:
           xcodebuild \
             -project "$PROJECT_PATH" \
             -scheme "$SCHEME_NAME" \
-            -sdk iphonesimulator26.4 \
-            -configuration Debug \
+            -sdk iphoneos16.4 \
             CODE_SIGNING_ALLOWED=NO \
             build
 
