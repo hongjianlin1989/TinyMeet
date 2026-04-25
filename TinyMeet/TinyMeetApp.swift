@@ -12,6 +12,7 @@ import SwiftUI
 struct TinyMeetApp: App {
     let persistenceController = PersistenceController.shared
     @StateObject private var appSession = AppSession()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
         WindowGroup {
