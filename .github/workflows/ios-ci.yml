@@ -1,5 +1,4 @@
 name: iOS CI
-# Auto-trigger
 
 on:
   push:
@@ -42,7 +41,7 @@ jobs:
           bundle config set path "$BUNDLE_PATH"
           bundle install
 
-- name: Install SwiftLint
+      - name: Install SwiftLint
         run: |
           curl -sL https://github.com/realm/SwiftLint/releases/download/0.57.0/portable_swiftlint.zip -o swiftlint.zip
           unzip -o swiftlint.zip
