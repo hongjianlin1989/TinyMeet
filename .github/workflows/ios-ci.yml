@@ -41,16 +41,15 @@ jobs:
           bundle config set path "$BUNDLE_PATH"
           bundle install
 
-      - name: Install SwiftLint
+- name: Install SwiftLint
         run: |
-          brew install swiftlint
-          swiftlint version
-
-      - name: Show Xcode version
-        run: xcodebuild -version
+          curl -sL https://github.com/realm/SwiftLint/releases/download/0.57.0/portable_swiftlint.zip -o swiftlint.zip
+          unzip -o swiftlint.zip
+          chmod +x swiftlint
+          ./swiftlint version
 
       - name: SwiftLint check
-        run: swiftlint lint --strict --config .swiftlint.yml
+        run: ./swiftlint lint --strict --config .swiftlint.yml
 
       - name: Xcode staging build check
         run: |
