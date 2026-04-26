@@ -15,6 +15,9 @@ struct CreateEventView: View {
                     headerSection
                     inputSection
                     visibilitySection
+                    if let errorMessage = viewModel.errorMessage {
+                        errorCard(message: errorMessage)
+                    }
                     createButton
                 }
                 .padding(20)
@@ -97,13 +100,32 @@ struct CreateEventView: View {
 
     private var createButton: some View {
         Button {
-            viewModel.createEvent()
-            dismiss()
+            Task {
+                let didCreate = await viewModel.createEvent()
+                if didCreate {
+                    dismiss()
+                }
+            }
         } label: {
-            Text("Create")
+            if viewModel.isSubmitting {
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity)
+            } else {
+                Text("Create")
+            }
         }
         .buttonStyle(TinyMeetPrimaryButtonStyle())
-        .disabled(!viewModel.isFormValid)
+        .disabled(!viewModel.isFormValid || viewModel.isSubmitting)
+    }
+
+    private func errorCard(message: String) -> some View {
+        Text(message)
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.white)
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(TinyMeetTheme.accent, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private func formField(title: String, text: Binding<String>, prompt: String) -> some View {

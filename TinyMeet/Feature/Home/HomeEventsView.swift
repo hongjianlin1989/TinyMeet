@@ -33,7 +33,15 @@ struct HomeEventsView: View {
 
                             ForEach(viewModel.filteredEvents) { event in
                                 HomeEventCardView(
-                                    viewModel: HomeEventCardViewModel(event: event)
+                                    viewModel: HomeEventCardViewModel(
+                                        event: event,
+                                        isInterestUpdating: viewModel.isUpdatingInterest(for: event.id),
+                                        onInterestTapped: {
+                                            Task {
+                                                await viewModel.toggleInterest(for: event.id)
+                                            }
+                                        }
+                                    )
                                 )
                             }
                         }

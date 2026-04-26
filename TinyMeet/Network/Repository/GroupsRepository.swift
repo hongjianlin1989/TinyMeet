@@ -9,15 +9,18 @@ protocol GroupsRepositoryProtocol: Sendable {
 }
 
 struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
+    private let networkManager: NetworkManaging
     private let shouldUseMockData: Bool
     private let bundle: Bundle
     private let decoder: JSONDecoder
 
     nonisolated init(
+        networkManager: NetworkManaging? = nil,
         shouldUseMockData: Bool = true,
         bundle: Bundle = .main,
         decoder: JSONDecoder = JSONDecoder()
     ) {
+        self.networkManager = networkManager ?? NetworkManager()
         self.shouldUseMockData = shouldUseMockData
         self.bundle = bundle
         self.decoder = decoder
@@ -37,7 +40,17 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
             }
         }
 
-        return []
+        let request = try GroupUrlRequest.list.asURLRequest()
+        let response: MockGroupsResponse = try await networkManager.perform(request)
+        return response.items.map { detail in
+            MeetupGroup(
+                id: detail.id,
+                name: detail.name,
+                location: detail.location,
+                memberCount: detail.members.count,
+                summary: detail.summary
+            )
+        }
     }
 
     nonisolated func fetchGroupDetail(groupID: Int) async throws -> GroupDetail {
@@ -51,7 +64,9 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
             return detail
         }
 
-        throw GroupsRepositoryError.groupNotFound
+        let request = try GroupUrlRequest.detail(groupID: groupID).asURLRequest()
+        let response: MockGroupDetailDTO = try await networkManager.perform(request)
+        return response.toGroupDetail()
     }
 
     nonisolated func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail {
@@ -73,7 +88,9 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
             )
         }
 
-        throw GroupsRepositoryError.groupNotFound
+        let request = try GroupUrlRequest.addMember(groupID: groupDetail.id, name: trimmedName).asURLRequest()
+        let response: MockGroupDetailDTO = try await networkManager.perform(request)
+        return response.toGroupDetail()
     }
 
     nonisolated func addUserProfile(_ userProfile: UserProfile, toGroupID groupID: Int) async throws -> GroupDetail {
@@ -96,7 +113,9 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
             )
         }
 
-        throw GroupsRepositoryError.groupNotFound
+        let request = try GroupUrlRequest.addUserProfile(groupID: groupID, userID: userProfile.id).asURLRequest()
+        let response: MockGroupDetailDTO = try await networkManager.perform(request)
+        return response.toGroupDetail()
     }
 
     nonisolated func deleteMember(memberID: Int, from groupDetail: GroupDetail) async throws -> GroupDetail {
@@ -116,7 +135,9 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
             )
         }
 
-        throw GroupsRepositoryError.memberNotFound
+        let request = try GroupUrlRequest.deleteMember(groupID: groupDetail.id, memberID: memberID).asURLRequest()
+        let response: MockGroupDetailDTO = try await networkManager.perform(request)
+        return response.toGroupDetail()
     }
 
     private func loadMockGroups() throws -> [GroupDetail] {

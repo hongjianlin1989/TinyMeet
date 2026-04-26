@@ -1,10 +1,16 @@
 import SwiftUI
 
 struct MyFriendsView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: MyFriendsViewModel
+    private let onAddFriendTapped: () -> Void
 
-    init(viewModel: MyFriendsViewModel) {
+    init(
+        viewModel: MyFriendsViewModel,
+        onAddFriendTapped: @escaping () -> Void = {}
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.onAddFriendTapped = onAddFriendTapped
     }
 
     var body: some View {
@@ -28,6 +34,12 @@ struct MyFriendsView: View {
                             : "Try a different name or keyword."
                     )
                 )
+                .overlay(alignment: .bottom) {
+                    if viewModel.friends.isEmpty {
+                        addFriendButton
+                            .padding(.bottom, 24)
+                    }
+                }
             } else {
                 ScrollView {
                     LazyVStack(spacing: 14) {
@@ -44,6 +56,11 @@ struct MyFriendsView: View {
         .searchable(text: $viewModel.searchText, prompt: "Search friends")
         .task {
             await viewModel.loadFriends()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                addFriendButton
+            }
         }
         .tinyMeetPageBackground()
     }
@@ -80,10 +97,39 @@ struct MyFriendsView: View {
             }
 
             Spacer(minLength: 12)
+
+            Button {
+                Task {
+                    await viewModel.removeFriend(friend)
+                }
+            } label: {
+                if viewModel.isRemoving(friend) {
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(width: 32, height: 32)
+                } else {
+                    Image(systemName: "person.badge.minus")
+                        .font(.title3)
+                        .foregroundStyle(TinyMeetTheme.accent)
+                        .frame(width: 32, height: 32)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(viewModel.isRemoving(friend))
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .tinyMeetCardStyle()
+    }
+
+    private var addFriendButton: some View {
+        Button {
+            dismiss()
+            onAddFriendTapped()
+        } label: {
+            Label("Add Friend", systemImage: "person.badge.plus")
+        }
+        .buttonStyle(TinyMeetSecondaryButtonStyle())
     }
 }
 

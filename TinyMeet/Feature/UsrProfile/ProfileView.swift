@@ -3,9 +3,14 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var appSession: AppSession
     @StateObject private var viewModel: ProfileViewModel
+    private let onNavigateToDiscover: () -> Void
 
-    init(viewModel: ProfileViewModel) {
+    init(
+        viewModel: ProfileViewModel,
+        onNavigateToDiscover: @escaping () -> Void = {}
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.onNavigateToDiscover = onNavigateToDiscover
     }
 
     var body: some View {
@@ -138,7 +143,10 @@ struct ProfileView: View {
 
     private var friendsNavigationCard: some View {
         NavigationLink {
-            MyFriendsView(viewModel: MyFriendsViewModel.makeDefault())
+            MyFriendsView(
+                viewModel: MyFriendsViewModel.makeDefault(),
+                onAddFriendTapped: onNavigateToDiscover
+            )
         } label: {
             HStack(spacing: 14) {
                 ZStack {

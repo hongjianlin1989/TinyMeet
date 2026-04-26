@@ -1,31 +1,27 @@
-//
-//  UrlRequest.swift
-//  TinyMeet
-//
-//  Created by Hongjian Lin on 3/26/26.
-//
-
 import Foundation
 
-enum ProfileUrlRequest {
-    case getUserProfile
-    case addFriend(userID: Int)
+enum InterestedEventsUrlRequest {
+    case list
+    case interested(eventID: UUID)
+    case uninterested(eventID: UUID)
 
     private var path: String {
         switch self {
-        case .getUserProfile:
-            return "/users/profile"
-        case .addFriend(let userID):
-            return "/users/\(userID)/friends"
+        case .list:
+            return "/users/interested-events"
+        case .interested(let eventID), .uninterested(let eventID):
+            return "/users/interested-events/\(eventID.uuidString)"
         }
     }
 
     private var method: String {
         switch self {
-        case .getUserProfile:
+        case .list:
             return "GET"
-        case .addFriend:
+        case .interested:
             return "POST"
+        case .uninterested:
+            return "DELETE"
         }
     }
 
@@ -36,7 +32,7 @@ enum ProfileUrlRequest {
         request.timeoutInterval = ApiConfig.timeoutInterval
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        if case .addFriend = self {
+        if case .interested = self {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
 

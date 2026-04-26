@@ -81,4 +81,58 @@ struct EventsRepositoryTests {
         #expect(event.title == "Private Event")
         #expect(event.eventUrl == nil)
     }
+
+    @Test func createEventReturnsMockNearbyEventWhenUsingMockData() async throws {
+        let repo = EventsRepository(shouldUseMockData: true)
+        let request = CreateEventRequest(
+            title: "Playground Party",
+            locationName: "Central Park",
+            timeDescription: "Tomorrow 3pm",
+            ageRange: "3 - 5",
+            joinVisibility: "friends"
+        )
+
+        let event = try await repo.createEvent(request)
+        #expect(event.title == "Playground Party")
+        #expect(event.locationName == "Central Park")
+        #expect(event.visibility == .private)
+    }
+
+    @Test func createEventUsesNetworkManagerWhenMockDisabled() async throws {
+        let id = UUID()
+        let payload = """
+        {
+          "id": "\(id.uuidString)",
+          "title": "Created Event",
+          "locationName": "Central Park",
+          "timeDescription": "Tomorrow 3pm",
+          "ageRange": "3 - 5",
+          "distanceDescription": "0.0 mi",
+          "hostName": "Hosted by You",
+          "attendeeSummary": "New public event",
+          "themeEmoji": "🎉",
+          "summary": "A newly created playdate for your TinyMeet community.",
+          "eventUrl": null
+        }
+        """
+
+        let repo = EventsRepository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
+            shouldUseMockData: false
+        )
+
+        let event = try await repo.createEvent(
+            CreateEventRequest(
+                title: "Created Event",
+                locationName: "Central Park",
+                timeDescription: "Tomorrow 3pm",
+                ageRange: "3 - 5",
+                joinVisibility: "public"
+            )
+        )
+
+        #expect(event.id == id)
+        #expect(event.title == "Created Event")
+        #expect(event.visibility == .public)
+    }
 }

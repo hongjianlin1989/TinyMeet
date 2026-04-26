@@ -17,6 +17,20 @@ struct ProfileRespositoryTests {
         )
     }
 
+    @Test func removeFriendSucceedsWithMockData() async throws {
+        let repository = ProfileRespository(shouldUseMockData: true)
+
+        try await repository.removeFriend(
+            UserProfile(
+                id: 999,
+                username: "friendcandidate",
+                bio: "Potential former friend",
+                age: 30,
+                avatarURL: nil
+            )
+        )
+    }
+
     @Test func searchUserProfilesUsesMockJSONWhenAvailable() async throws {
         let bundleFixture = try makeMockBundle(json: """
         {

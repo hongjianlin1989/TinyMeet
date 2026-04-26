@@ -7,9 +7,11 @@ final class HomeEventsViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var selectedFilter: NearbyEventVisibility
+    @Published private(set) var interestUpdateIDs: Set<UUID> = []
 
     private let userDefaults: UserDefaults
     private let eventsRepository: EventsRepositoryProtocol
+    private let interestedEventsRepository: InterestedEventsRepositoryProtocol
 
     static func makeDefault() -> HomeEventsViewModel {
         HomeEventsViewModel()
@@ -17,10 +19,12 @@ final class HomeEventsViewModel: ObservableObject {
 
     init(
         userDefaults: UserDefaults = .standard,
-        eventsRepository: EventsRepositoryProtocol = EventsRepository()
+        eventsRepository: EventsRepositoryProtocol = EventsRepository(),
+        interestedEventsRepository: InterestedEventsRepositoryProtocol = InterestedEventsRepository()
     ) {
         self.userDefaults = userDefaults
         self.eventsRepository = eventsRepository
+        self.interestedEventsRepository = interestedEventsRepository
         let savedFilter = userDefaults.string(forKey: Self.selectedFilterKey)
         self.selectedFilter = NearbyEventVisibility(rawValue: savedFilter ?? "") ?? .public
     }
@@ -53,10 +57,42 @@ final class HomeEventsViewModel: ObservableObject {
             async let privateEvents = eventsRepository.fetchPrivateEvents()
 
             let (publicResults, privateResults) = try await (publicEvents, privateEvents)
-            events = (publicResults + privateResults)
+            let interestedEventIDs = (try? await interestedEventsRepository.fetchInterestedEvents().map(\.id)) ?? []
+            let interestedIDSet = Set(interestedEventIDs)
+            events = (publicResults + privateResults).map { event in
+                var event = event
+                event.isInterested = interestedIDSet.contains(event.id)
+                return event
+            }
         } catch {
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             events = []
+        }
+    }
+
+    func isUpdatingInterest(for eventID: UUID) -> Bool {
+        interestUpdateIDs.contains(eventID)
+    }
+
+    func toggleInterest(for eventID: UUID) async {
+        guard !interestUpdateIDs.contains(eventID),
+              let index = events.firstIndex(where: { $0.id == eventID }) else {
+            return
+        }
+
+        let previousValue = events[index].isInterested
+        let newValue = !previousValue
+
+        interestUpdateIDs.insert(eventID)
+        events[index].isInterested = newValue
+
+        defer { interestUpdateIDs.remove(eventID) }
+
+        do {
+            try await interestedEventsRepository.setInterested(newValue, eventID: eventID)
+        } catch {
+            events[index].isInterested = previousValue
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }
     }
 

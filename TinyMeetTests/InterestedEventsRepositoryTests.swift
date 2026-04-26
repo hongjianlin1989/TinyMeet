@@ -98,4 +98,17 @@ struct InterestedEventsRepositoryTests {
         #expect(person.name == "Amy Chen")
         #expect(person.locationName == "Main Library")
     }
+
+    @Test func setInterestedAndUninterestedUseMutationRequests() async throws {
+        let payload = "{}"
+        let eventID = UUID()
+
+        let repository = InterestedEventsRepository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
+            shouldUseMockData: false
+        )
+
+        try await repository.setInterested(true, eventID: eventID)
+        try await repository.setInterested(false, eventID: eventID)
+    }
 }

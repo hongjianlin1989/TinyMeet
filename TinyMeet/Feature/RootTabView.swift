@@ -1,24 +1,40 @@
 import SwiftUI
 
+enum RootTab: Hashable {
+    case home
+    case map
+    case discover
+    case profile
+}
+
 struct RootTabView: View {
+    @State private var selectedTab: RootTab = .home
+
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             HomeEventsView(viewModel: HomeEventsViewModel.makeDefault())
+                .tag(RootTab.home)
                 .tabItem {
                     Label("tab.home", systemImage: "house.fill")
                 }
 
             HomeMapView()
+                .tag(RootTab.map)
                 .tabItem {
                     Label("tab.map", systemImage: "map.fill")
                 }
 
             DiscoverView(viewModel: DiscoverViewModel.makeDefault())
+                .tag(RootTab.discover)
                 .tabItem {
                     Label("tab.discover", systemImage: "sparkle.magnifyingglass")
                 }
 
-            ProfileView(viewModel: ProfileViewModel.makeDefault())
+            ProfileView(
+                viewModel: ProfileViewModel.makeDefault(),
+                onNavigateToDiscover: { selectedTab = .discover }
+            )
+                .tag(RootTab.profile)
                 .tabItem {
                     Label("tab.profile", systemImage: "face.smiling.fill")
                 }

@@ -7,6 +7,7 @@ final class MyFriendsViewModel: ObservableObject {
     @Published private(set) var friends: [UserProfile] = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var removingFriendIDs: Set<Int> = []
 
     private let profileRepository: ProfileRespositoryProtocol
 
@@ -43,6 +44,25 @@ final class MyFriendsViewModel: ObservableObject {
             friends = try await profileRepository.fetchFriendProfiles()
         } catch {
             friends = []
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func isRemoving(_ friend: UserProfile) -> Bool {
+        removingFriendIDs.contains(friend.id)
+    }
+
+    func removeFriend(_ friend: UserProfile) async {
+        guard !removingFriendIDs.contains(friend.id) else { return }
+
+        removingFriendIDs.insert(friend.id)
+        errorMessage = nil
+        defer { removingFriendIDs.remove(friend.id) }
+
+        do {
+            try await profileRepository.removeFriend(friend)
+            friends.removeAll { $0.id == friend.id }
+        } catch {
             errorMessage = error.localizedDescription
         }
     }

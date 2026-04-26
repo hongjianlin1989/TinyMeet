@@ -4,6 +4,7 @@ import Foundation
 protocol InterestedEventsRepositoryProtocol: Sendable {
     func fetchInterestedEvents() async throws -> [InterestedEventRow]
     func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail]
+    func setInterested(_ isInterested: Bool, eventID: UUID) async throws
 }
 
 struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
@@ -46,6 +47,19 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
         let request = InterestedEventsUrlRequest.list.asURLRequest()
         let response: InterestedEventsResponse = try await networkManager.perform(request)
         return response.items.compactMap { $0.toInterestedPrivatePlaydate() }
+    }
+
+    func setInterested(_ isInterested: Bool, eventID: UUID) async throws {
+        if shouldUseMockData {
+            try await Task.sleep(for: .milliseconds(150))
+            return
+        }
+
+        let request = isInterested
+            ? InterestedEventsUrlRequest.interested(eventID: eventID).asURLRequest()
+            : InterestedEventsUrlRequest.uninterested(eventID: eventID).asURLRequest()
+
+        let _: InterestMutationResponse = try await networkManager.perform(request)
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
@@ -187,4 +201,8 @@ struct InterestedPersonLocationDTO: Decodable, Sendable {
             coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         )
     }
+}
+
+private struct InterestMutationResponse: Decodable, Sendable {
+    let success: Bool?
 }

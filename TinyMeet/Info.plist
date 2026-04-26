@@ -14,5 +14,7 @@
 		</dict>
 		<dict/>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>TinyMeet uses your location to show nearby events and keep your current location up to date.</string>
 </dict>
 </plist>

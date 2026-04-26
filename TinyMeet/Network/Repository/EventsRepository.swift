@@ -3,6 +3,7 @@ import Foundation
 protocol EventsRepositoryProtocol: Sendable {
     func fetchPublicEvents() async throws -> [NearbyEvent]
     func fetchPrivateEvents() async throws -> [NearbyEvent]
+    func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent
 }
 
 struct EventsRepository: EventsRepositoryProtocol {
@@ -30,7 +31,7 @@ struct EventsRepository: EventsRepositoryProtocol {
             return response.items.map { $0.toNearbyEvent(visibility: .public) }
         }
 
-        let request = EventsUrlRequest.listPublic.asURLRequest()
+        let request = try EventsUrlRequest.listPublic.asURLRequest()
         let response: EventsListResponse = try await networkManager.perform(request)
         return response.items.map { $0.toNearbyEvent(visibility: .public) }
     }
@@ -42,9 +43,20 @@ struct EventsRepository: EventsRepositoryProtocol {
             return response.items.map { $0.toNearbyEvent(visibility: .private) }
         }
 
-        let request = EventsUrlRequest.listPrivate.asURLRequest()
+        let request = try EventsUrlRequest.listPrivate.asURLRequest()
         let response: EventsListResponse = try await networkManager.perform(request)
         return response.items.map { $0.toNearbyEvent(visibility: .private) }
+    }
+
+    func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent {
+        if shouldUseMockData {
+            try await Task.sleep(for: .milliseconds(200))
+            return request.toNearbyEvent()
+        }
+
+        let urlRequest = try EventsUrlRequest.create(request).asURLRequest()
+        let response: EventDTO = try await networkManager.perform(urlRequest)
+        return response.toNearbyEvent(visibility: request.nearbyEventVisibility)
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
@@ -107,6 +119,35 @@ struct EventDTO: Decodable, Sendable {
             summary: summary,
             eventUrl: eventUrl,
             visibility: visibility
+        )
+    }
+}
+
+struct CreateEventRequest: Encodable, Sendable {
+    let title: String
+    let locationName: String
+    let timeDescription: String
+    let ageRange: String
+    let joinVisibility: String
+
+    var nearbyEventVisibility: NearbyEventVisibility {
+        joinVisibility == "public" ? .public : .private
+    }
+
+    func toNearbyEvent(id: UUID = UUID()) -> NearbyEvent {
+        NearbyEvent(
+            id: id,
+            title: title,
+            locationName: locationName,
+            timeDescription: timeDescription,
+            ageRange: ageRange,
+            distanceDescription: "Just created",
+            hostName: "Hosted by You",
+            attendeeSummary: joinVisibility == "public" ? "New public event" : "Private invite event",
+            themeEmoji: "🎉",
+            summary: "A newly created playdate for your TinyMeet community.",
+            eventUrl: nil,
+            visibility: nearbyEventVisibility
         )
     }
 }

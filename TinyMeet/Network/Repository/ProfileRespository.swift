@@ -12,6 +12,7 @@ protocol ProfileRespositoryProtocol: Sendable {
     func fetchFriendProfiles() async throws -> [UserProfile]
     func searchUserProfiles(query: String) async throws -> [UserProfile]
     func addFriend(_ profile: UserProfile) async throws
+    func removeFriend(_ profile: UserProfile) async throws
 }
 
 struct ProfileRespository: ProfileRespositoryProtocol {
@@ -20,7 +21,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
     private let bundle: Bundle
     private let decoder: JSONDecoder
 
-    init(
+    nonisolated init(
         networkManager: NetworkManaging? = nil,
         shouldUseMockData: Bool = true,
         bundle: Bundle = .main,
@@ -33,7 +34,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
     }
 
     func fetchUserProfile() async throws -> UserProfile {
-        let request = ProfileUrlRequest.getUserProfile.asURLRequest()
+        let request = try ProfileUrlRequest.getUserProfile.asURLRequest()
 
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(300))
@@ -61,7 +62,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
 
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(250))
-            return try searchProfiles(try mockProfiles(), matching: trimmedQuery)
+            return searchProfiles(try mockProfiles(), matching: trimmedQuery)
         }
 
         return []
@@ -73,8 +74,18 @@ struct ProfileRespository: ProfileRespositoryProtocol {
             return
         }
 
-        let request = ProfileUrlRequest.addFriend(userID: profile.id).asURLRequest()
+        let request = try ProfileUrlRequest.addFriend(userID: profile.id).asURLRequest()
         let _: AddFriendResponse = try await networkManager.perform(request)
+    }
+
+    func removeFriend(_ profile: UserProfile) async throws {
+        if shouldUseMockData {
+            try await Task.sleep(for: .milliseconds(150))
+            return
+        }
+
+        let request = try ProfileUrlRequest.removeFriend(userID: profile.id).asURLRequest()
+        let _: RemoveFriendResponse = try await networkManager.perform(request)
     }
 
     private func mockProfiles() throws -> [UserProfile] {
@@ -129,5 +140,9 @@ private struct UserProfileListResponse: Decodable, Sendable {
 }
 
 private struct AddFriendResponse: Decodable, Sendable {
+    let success: Bool?
+}
+
+private struct RemoveFriendResponse: Decodable, Sendable {
     let success: Bool?
 }

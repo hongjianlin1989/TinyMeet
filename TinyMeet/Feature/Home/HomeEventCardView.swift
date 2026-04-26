@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct HomeEventCardView: View {
-    @StateObject private var viewModel: HomeEventCardViewModel
+    private let viewModel: HomeEventCardViewModel
 
     init(viewModel: HomeEventCardViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+        self.viewModel = viewModel
     }
 
     var body: some View {
@@ -62,10 +62,7 @@ struct HomeEventCardView: View {
 
                 Spacer()
 
-                Button("Interested") {
-                    viewModel.interestedTapped()
-                }
-                .buttonStyle(TinyMeetSecondaryButtonStyle())
+                interestButton
             }
         }
         .padding(18)
@@ -107,6 +104,43 @@ struct HomeEventCardView: View {
             .foregroundStyle(TinyMeetTheme.accent)
             .clipShape(Capsule())
     }
+
+    @ViewBuilder
+    private var interestButton: some View {
+        let buttonWidth: CGFloat = 150
+        let buttonHeight: CGFloat = 44
+
+        let label = Group {
+            if viewModel.isInterestUpdating {
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                Label(viewModel.interestButtonTitle, systemImage: viewModel.interestButtonSystemImage)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+
+        if viewModel.isInterested {
+            Button {
+                viewModel.interestedTapped()
+            } label: {
+                label
+            }
+            .buttonStyle(TinyMeetPrimaryButtonStyle())
+            .frame(width: buttonWidth, height: buttonHeight)
+            .disabled(viewModel.isInterestUpdating)
+        } else {
+            Button {
+                viewModel.interestedTapped()
+            } label: {
+                label
+            }
+            .buttonStyle(TinyMeetSecondaryButtonStyle())
+            .frame(width: buttonWidth, height: buttonHeight)
+            .disabled(viewModel.isInterestUpdating)
+        }
+    }
 }
 
 #Preview {
@@ -123,6 +157,7 @@ struct HomeEventCardView: View {
                 themeEmoji: "🛝",
                 summary: "Meet other families for snacks, bubbles, and easy playground fun after nap time.",
                 eventUrl: "https://tinymeet.app/events/playground-picnic-crew",
+                isInterested: true,
                 visibility: .public
             )
         )
