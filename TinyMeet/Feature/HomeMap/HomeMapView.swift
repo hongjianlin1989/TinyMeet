@@ -12,6 +12,7 @@ import SwiftUI
 
 struct HomeMapView: View {
     @StateObject private var viewModel = HomeMapViewModel()
+    @State private var isPlaydateSelectionVisible = true
 
     var body: some View {
         NavigationStack {
@@ -23,6 +24,9 @@ struct HomeMapView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle("home.navigation.title")
+            .safeAreaInset(edge: .top) {
+                playdateSelectionPanel
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     AuthToolbarButton()
@@ -40,9 +44,15 @@ struct HomeMapView: View {
             Map(position: $viewModel.cameraPosition) {
                 UserAnnotation()
 
-                ForEach(viewModel.privateEvents) { event in
+                if let event = viewModel.selectedPlaydateEvent {
                     Annotation(event.title, coordinate: event.coordinate) {
                         privateEventAnnotation(event)
+                    }
+                }
+
+                ForEach(viewModel.selectedInterestedPeople) { person in
+                    Annotation(person.name, coordinate: person.coordinate) {
+                        interestedPersonAnnotation(person)
                     }
                 }
             }
@@ -56,6 +66,115 @@ struct HomeMapView: View {
             .ignoresSafeArea(edges: .bottom)
         } else {
             Color.clear
+        }
+    }
+
+    @ViewBuilder
+    private var playdateSelectionPanel: some View {
+        if isPlaydateSelectionVisible == false {
+            panelCard {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Playdate view hidden")
+                            .font(.subheadline.weight(.semibold))
+
+                        if let selectedPlaydate = viewModel.selectedPlaydate {
+                            Text(selectedPlaydate.title)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    Spacer()
+
+                    Button {
+                        isPlaydateSelectionVisible = true
+                    } label: {
+                        Label("Show", systemImage: "eye")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                }
+            }
+        } else if viewModel.isLoadingInterestedPlaydates && viewModel.interestedPlaydates.isEmpty {
+            panelCard {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Loading interested playdates...")
+                        .font(.subheadline)
+                }
+            }
+        } else if let errorMessage = viewModel.interestedPlaydatesErrorMessage, viewModel.interestedPlaydates.isEmpty {
+            panelCard {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Couldn’t load your interested playdates")
+                        .font(.headline)
+
+                    Text(errorMessage)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } else if viewModel.interestedPlaydates.isEmpty {
+            panelCard {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("No interested playdates yet")
+                        .font(.headline)
+
+                    Text("Mark a private playdate as interested to see it on the map.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } else {
+            panelCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Selected playdate")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+
+                        Spacer()
+
+                        Button {
+                            isPlaydateSelectionVisible = false
+                        } label: {
+                            Label("Hide", systemImage: "eye.slash")
+                                .labelStyle(.titleAndIcon)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                    }
+
+                    Picker(
+                        "Choose playdate",
+                        selection: Binding(
+                            get: { viewModel.selectedPlaydateID },
+                            set: { newValue in
+                                if let newValue {
+                                    viewModel.selectPlaydate(newValue)
+                                }
+                            }
+                        )
+                    ) {
+                        ForEach(viewModel.interestedPlaydates) { playdate in
+                            Text(playdate.title)
+                                .tag(Optional(playdate.id))
+                        }
+                    }
+                    .pickerStyle(.menu)
+
+                    if let selectedPlaydate = viewModel.selectedPlaydate {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(selectedPlaydate.title)
+                                .font(.headline)
+                            Text(selectedPlaydate.subtitle)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -97,15 +216,43 @@ struct HomeMapView: View {
         }
     }
 
+    private func interestedPersonAnnotation(_ person: InterestedPersonLocation) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: "person.circle.fill")
+                .font(.title2)
+                .foregroundStyle(TinyMeetTheme.accent)
+                .padding(6)
+                .background(.ultraThinMaterial, in: Circle())
+
+            Text(person.name)
+                .font(.caption2.weight(.semibold))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(.ultraThinMaterial, in: Capsule())
+        }
+    }
+
     private func annotationColor(for tintName: String) -> Color {
         switch tintName {
         case "mint":
             return TinyMeetTheme.mint
         case "orange":
             return TinyMeetTheme.peach
+        case "pink":
+            return TinyMeetTheme.accent
         default:
             return TinyMeetTheme.accent
         }
+    }
+
+    private func panelCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .shadow(color: TinyMeetTheme.shadow, radius: 10, x: 0, y: 4)
     }
 
     private func overlayCard(

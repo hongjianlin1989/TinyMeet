@@ -1,0 +1,78 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Coffee Chat Crew",
+      "location": "Cupertino",
+      "summary": "Weekly casual meetups for coffee, product chats, and meeting new people.",
+      "members": [
+        {
+          "id": 1,
+          "name": "Amy Chen",
+          "role": "Organizer"
+        },
+        {
+          "id": 2,
+          "name": "Brian Lee",
+          "role": "Member"
+        },
+        {
+          "id": 3,
+          "name": "Sofia Wang",
+          "role": "Member"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "SwiftUI Builders",
+      "location": "San Jose",
+      "summary": "A small builder community for iOS developers shipping SwiftUI side projects.",
+      "members": [
+        {
+          "id": 4,
+          "name": "Mia Park",
+          "role": "Organizer"
+        },
+        {
+          "id": 5,
+          "name": "Noah Patel",
+          "role": "Member"
+        },
+        {
+          "id": 6,
+          "name": "Emma Davis",
+          "role": "Member"
+        },
+        {
+          "id": 7,
+          "name": "Lucas Kim",
+          "role": "Member"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Weekend Hikers",
+      "location": "Palo Alto",
+      "summary": "Plan easy weekend hikes and explore Bay Area trails together.",
+      "members": [
+        {
+          "id": 8,
+          "name": "Olivia Brown",
+          "role": "Organizer"
+        },
+        {
+          "id": 9,
+          "name": "Ethan Nguyen",
+          "role": "Member"
+        },
+        {
+          "id": 10,
+          "name": "Chloe Garcia",
+          "role": "Member"
+        }
+      ]
+    }
+  ]
+}

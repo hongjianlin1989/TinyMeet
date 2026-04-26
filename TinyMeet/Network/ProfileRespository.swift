@@ -79,7 +79,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
 
     private func mockProfiles() throws -> [UserProfile] {
         do {
-            let response: UserProfileListResponse = try loadMockResponse(named: "mock_profiles")
+            let response: UserProfileListResponse = try loadMockResponse(named: "mock_search_profiles")
             return response.items.map { $0.toUserProfile() }
         } catch ProfileRespositoryError.missingMockResource {
             return UserProfile.mockProfiles

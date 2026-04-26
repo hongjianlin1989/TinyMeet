@@ -92,7 +92,7 @@ struct ProfileRespositoryTests {
         )
 
         try plistData.write(to: bundleURL.appendingPathComponent("Info.plist"))
-        try Data(json.utf8).write(to: bundleURL.appendingPathComponent("mock_profiles.json"))
+        try Data(json.utf8).write(to: bundleURL.appendingPathComponent("mock_search_profiles.json"))
 
         let bundle = try #require(Bundle(url: bundleURL))
         return TemporaryBundleFixture(url: bundleURL, bundle: bundle)

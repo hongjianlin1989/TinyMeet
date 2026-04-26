@@ -1,0 +1,27 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Coffee Chat Crew",
+      "location": "Cupertino",
+      "summary": "Weekly casual meetups for coffee, product chats, and meeting new people.",
+      "members": [
+        {
+          "id": 1,
+          "name": "Amy Chen",
+          "role": "Organizer"
+        },
+        {
+          "id": 2,
+          "name": "Brian Lee",
+          "role": "Member"
+        },
+        {
+          "id": 3,
+          "name": "Sofia Wang",
+          "role": "Member"
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import Foundation
 
 protocol InterestedEventsRepositoryProtocol: Sendable {
     func fetchInterestedEvents() async throws -> [InterestedEventRow]
+    func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail]
 }
 
 struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
@@ -33,6 +34,18 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
         let request = InterestedEventsUrlRequest.list.asURLRequest()
         let response: InterestedEventsResponse = try await networkManager.perform(request)
         return response.items.map { $0.toInterestedEventRow() }
+    }
+
+    func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail] {
+        if shouldUseMockData {
+            try await Task.sleep(for: .milliseconds(250))
+            let response: InterestedEventsResponse = try loadMockResponse(named: "interested_events")
+            return response.items.compactMap { $0.toInterestedPrivatePlaydate() }
+        }
+
+        let request = InterestedEventsUrlRequest.list.asURLRequest()
+        let response: InterestedEventsResponse = try await networkManager.perform(request)
+        return response.items.compactMap { $0.toInterestedPrivatePlaydate() }
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
@@ -85,6 +98,11 @@ struct InterestedEventDTO: Decodable, Sendable {
     let title: String
     let subtitle: String
     let symbolName: String?
+    let tintName: String?
+    let latitude: Double?
+    let longitude: Double?
+    let scheduledAt: String?
+    let interestedPeople: [InterestedPersonLocationDTO]?
 
     func toInterestedEventRow() -> InterestedEventRow {
         switch kind {
@@ -109,11 +127,64 @@ struct InterestedEventDTO: Decodable, Sendable {
                 id: id,
                 title: title,
                 subtitle: subtitle,
-                coordinate: .init(latitude: 0, longitude: 0),
-                tintName: "mint",
+                coordinate: .init(latitude: latitude ?? 0, longitude: longitude ?? 0),
+                tintName: tintName ?? "mint",
                 symbolName: symbolName ?? "house.fill"
             )
             return InterestedEventRow(id: id, source: .privateMap(mapItem))
         }
+    }
+
+    func toInterestedPrivatePlaydate() -> InterestedPlaydateMapDetail? {
+        guard kind == .privateMap,
+              visibility == .private,
+              let latitude,
+              let longitude else {
+            return nil
+        }
+
+        let event = PrivateEventMapItem(
+            id: id,
+            title: title,
+            subtitle: subtitle,
+            coordinate: .init(latitude: latitude, longitude: longitude),
+            tintName: tintName ?? "mint",
+            symbolName: symbolName ?? "house.fill"
+        )
+
+        return InterestedPlaydateMapDetail(
+            event: event,
+            scheduledAt: scheduledAt.flatMap(InterestedEventDTO.parseISO8601Date),
+            interestedPeople: (interestedPeople ?? []).map { $0.toInterestedPersonLocation() }
+        )
+    }
+
+    private static func parseISO8601Date(_ value: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        if let date = formatter.date(from: value) {
+            return date
+        }
+
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: value)
+    }
+}
+
+struct InterestedPersonLocationDTO: Decodable, Sendable {
+    let id: UUID
+    let name: String
+    let locationName: String
+    let latitude: Double
+    let longitude: Double
+
+    func toInterestedPersonLocation() -> InterestedPersonLocation {
+        InterestedPersonLocation(
+            id: id,
+            name: name,
+            locationName: locationName,
+            coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        )
     }
 }

@@ -10,15 +10,31 @@ protocol GroupsRepositoryProtocol: Sendable {
 
 struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
     private let shouldUseMockData: Bool
+    private let bundle: Bundle
+    private let decoder: JSONDecoder
 
-    nonisolated init(shouldUseMockData: Bool = true) {
+    nonisolated init(
+        shouldUseMockData: Bool = true,
+        bundle: Bundle = .main,
+        decoder: JSONDecoder = JSONDecoder()
+    ) {
         self.shouldUseMockData = shouldUseMockData
+        self.bundle = bundle
+        self.decoder = decoder
     }
 
     nonisolated func fetchGroups() async throws -> [MeetupGroup] {
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(300))
-            return MeetupGroup.mockGroups
+            return try loadMockGroups().map { detail in
+                MeetupGroup(
+                    id: detail.id,
+                    name: detail.name,
+                    location: detail.location,
+                    memberCount: detail.memberCount,
+                    summary: detail.summary
+                )
+            }
         }
 
         return []
@@ -28,7 +44,7 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(250))
 
-            guard let detail = GroupDetail.mockDetails.first(where: { $0.id == groupID }) else {
+            guard let detail = try loadMockGroupDetails().first(where: { $0.id == groupID }) else {
                 throw GroupsRepositoryError.groupNotFound
             }
 
@@ -102,6 +118,30 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
 
         throw GroupsRepositoryError.memberNotFound
     }
+
+    private func loadMockGroups() throws -> [GroupDetail] {
+        let response: MockGroupsResponse = try loadMockResponse(named: "mock_groups")
+        return response.items.map { $0.toGroupDetail() }
+    }
+
+    private func loadMockGroupDetails() throws -> [GroupDetail] {
+        let response: MockGroupsResponse = try loadMockResponse(named: "mock_group_details")
+        return response.items.map { $0.toGroupDetail() }
+    }
+
+    private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
+        guard let url = bundle.url(forResource: resourceName, withExtension: "json") else {
+            throw GroupsRepositoryError.missingMockResource(resourceName)
+        }
+
+        let data = try Data(contentsOf: url)
+
+        do {
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            throw GroupsRepositoryError.failedToDecodeMock(resourceName, underlying: error)
+        }
+    }
 }
 
 enum GroupsRepositoryError: LocalizedError {
@@ -109,6 +149,8 @@ enum GroupsRepositoryError: LocalizedError {
     case memberNotFound
     case invalidMemberName
     case memberAlreadyExists
+    case missingMockResource(String)
+    case failedToDecodeMock(String, underlying: Error)
 
     var errorDescription: String? {
         switch self {
@@ -120,6 +162,42 @@ enum GroupsRepositoryError: LocalizedError {
             return "Enter a valid member name."
         case .memberAlreadyExists:
             return "That profile is already in the group."
+        case .missingMockResource(let name):
+            return "Missing mock groups JSON resource: \(name).json"
+        case .failedToDecodeMock(let name, let underlying):
+            return "Failed to decode mock groups JSON resource \(name).json (\(underlying.localizedDescription))"
         }
+    }
+}
+
+private struct MockGroupsResponse: Decodable, Sendable {
+    let items: [MockGroupDetailDTO]
+}
+
+private struct MockGroupDetailDTO: Decodable, Sendable {
+    let id: Int
+    let name: String
+    let location: String?
+    let summary: String?
+    let members: [MockGroupMemberDTO]
+
+    func toGroupDetail() -> GroupDetail {
+        GroupDetail(
+            id: id,
+            name: name,
+            location: location,
+            summary: summary,
+            members: members.map { $0.toGroupMember() }
+        )
+    }
+}
+
+private struct MockGroupMemberDTO: Decodable, Sendable {
+    let id: Int
+    let name: String
+    let role: String
+
+    func toGroupMember() -> GroupMember {
+        GroupMember(id: id, name: name, role: role)
     }
 }

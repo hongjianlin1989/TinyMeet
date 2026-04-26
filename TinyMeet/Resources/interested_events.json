@@ -6,15 +6,106 @@
       "visibility": "public",
       "title": "Playground Picnic Crew",
       "subtitle": "Central Park Playground · Today · 4:00 PM",
-      "symbolName": "calendar"
+      "symbolName": "calendar",
+      "eventUrl": "https://tinymeet.app/events/mini-soccer-kickaround"
     },
     {
-      "id": "4D0D7EC9-3F8A-4F05-AF3C-9DDE7E61B61B",
+      "id": "6E5B1D2C-4D9D-4E28-A5CE-7E8B3E2A1E1A",
       "kind": "privateMap",
       "visibility": "private",
       "title": "Backyard Playdate",
       "subtitle": "Today · 4:30 PM",
-      "symbolName": "house.fill"
+      "symbolName": "house.fill",
+      "tintName": "pink",
+      "latitude": 40.3573,
+      "longitude": -74.6514,
+      "scheduledAt": "2026-04-26T16:30:00-04:00",
+      "interestedPeople": [
+        {
+          "id": "7E11B85D-60E7-4E72-BFA8-5D92E177D401",
+          "name": "Amy Chen",
+          "locationName": "Palmer Square",
+          "latitude": 40.3549,
+          "longitude": -74.6596
+        },
+        {
+          "id": "0C83C8E8-A773-4C55-B14E-8B3811231E95",
+          "name": "Brian Lee",
+          "locationName": "Nassau Street",
+          "latitude": 40.3517,
+          "longitude": -74.6583
+        },
+        {
+          "id": "E3B3FA32-95EF-4CF0-B66A-F9DA4C2809A0",
+          "name": "Mia Park",
+          "locationName": "Riverside Walk",
+          "latitude": 40.3595,
+          "longitude": -74.6488
+        }
+      ]
+    },
+    {
+      "id": "9C0F9D40-7A43-4B2E-A2D3-1F8A9E1D0E3B",
+      "kind": "privateMap",
+      "visibility": "private",
+      "title": "Private Story Time",
+      "subtitle": "Tomorrow · 10:00 AM",
+      "symbolName": "book.fill",
+      "tintName": "mint",
+      "latitude": 40.3497,
+      "longitude": -74.6593,
+      "scheduledAt": "2026-04-27T10:00:00-04:00",
+      "interestedPeople": [
+        {
+          "id": "5D47E764-D63A-48F8-A8FF-B58A093E3F71",
+          "name": "Olivia Brown",
+          "locationName": "Library Plaza",
+          "latitude": 40.3483,
+          "longitude": -74.6612
+        },
+        {
+          "id": "B7C2A46D-3DF9-4D64-8B46-C445D0DE60B2",
+          "name": "Lucas Kim",
+          "locationName": "Maple Avenue",
+          "latitude": 40.3524,
+          "longitude": -74.6558
+        }
+      ]
+    },
+    {
+      "id": "AC2B2F75-3C5D-4A67-B2E2-ED0D5AE3C1D5",
+      "kind": "privateMap",
+      "visibility": "private",
+      "title": "Family Picnic Circle",
+      "subtitle": "Saturday · 11:15 AM",
+      "symbolName": "basket.fill",
+      "tintName": "orange",
+      "latitude": 40.3548,
+      "longitude": -74.6637,
+      "scheduledAt": "2026-05-02T11:15:00-04:00",
+      "interestedPeople": [
+        {
+          "id": "7A53DDF5-8396-442B-8D50-19C48B6D7F65",
+          "name": "Sofia Wang",
+          "locationName": "Community Garden",
+          "latitude": 40.3562,
+          "longitude": -74.6653
+        },
+        {
+          "id": "A0165ACD-E183-4E56-B5CF-1D8EDB3E0CF8",
+          "name": "Ethan Nguyen",
+          "locationName": "Walnut Lane",
+          "latitude": 40.3522,
+          "longitude": -74.6668
+        },
+        {
+          "id": "41A6A6F2-45A1-49A4-9710-D8486D3FC9F9",
+          "name": "Chloe Garcia",
+          "locationName": "Elm Court",
+          "latitude": 40.3535,
+          "longitude": -74.6614
+        }
+      ]
     }
   ]
 }
