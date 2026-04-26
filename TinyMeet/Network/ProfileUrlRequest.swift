@@ -9,11 +9,14 @@ import Foundation
 
 enum ProfileUrlRequest {
     case getUserProfile
+    case addFriend(userID: Int)
 
     private var path: String {
         switch self {
         case .getUserProfile:
             return "/users/profile"
+        case .addFriend(let userID):
+            return "/users/\(userID)/friends"
         }
     }
 
@@ -21,6 +24,8 @@ enum ProfileUrlRequest {
         switch self {
         case .getUserProfile:
             return "GET"
+        case .addFriend:
+            return "POST"
         }
     }
 
@@ -30,6 +35,11 @@ enum ProfileUrlRequest {
         request.httpMethod = method
         request.timeoutInterval = ApiConfig.timeoutInterval
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if case .addFriend = self {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+
         return request
     }
 }

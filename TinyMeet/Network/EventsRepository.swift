@@ -91,6 +91,7 @@ struct EventDTO: Decodable, Sendable {
     let attendeeSummary: String
     let themeEmoji: String
     let summary: String
+    let eventUrl: String?
 
     func toNearbyEvent(visibility: NearbyEventVisibility) -> NearbyEvent {
         NearbyEvent(
@@ -104,6 +105,7 @@ struct EventDTO: Decodable, Sendable {
             attendeeSummary: attendeeSummary,
             themeEmoji: themeEmoji,
             summary: summary,
+            eventUrl: eventUrl,
             visibility: visibility
         )
     }

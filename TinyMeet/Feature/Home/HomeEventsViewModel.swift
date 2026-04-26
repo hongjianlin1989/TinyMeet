@@ -73,6 +73,7 @@ final class HomeEventsViewModel: ObservableObject {
             attendeeSummary: "8 families going",
             themeEmoji: "🛝",
             summary: "Meet other families for snacks, bubbles, and easy playground fun after nap time.",
+            eventUrl: "https://tinymeet.app/events/playground-picnic-crew",
             visibility: .public
         ),
         NearbyEvent(
@@ -85,6 +86,7 @@ final class HomeEventsViewModel: ObservableObject {
             attendeeSummary: "12 kids signed up",
             themeEmoji: "🎨",
             summary: "Finger painting, sticker crafts, and story time with plenty of room to wiggle.",
+            eventUrl: "https://tinymeet.app/events/little-artists-meet-up",
             visibility: .public
         ),
         NearbyEvent(
@@ -109,6 +111,7 @@ final class HomeEventsViewModel: ObservableObject {
             attendeeSummary: "6 teammates ready",
             themeEmoji: "⚽️",
             summary: "A playful beginner-friendly soccer morning for kids who want to run, pass, and laugh.",
+            eventUrl: "https://tinymeet.app/events/mini-soccer-kickaround",
             visibility: .public
         ),
         NearbyEvent(
@@ -121,6 +124,7 @@ final class HomeEventsViewModel: ObservableObject {
             attendeeSummary: "10 little dancers",
             themeEmoji: "🎵",
             summary: "Shake instruments, sing favorite songs, and enjoy a bright movement session for toddlers.",
+            eventUrl: "https://tinymeet.app/events/music-and-wiggles-circle",
             visibility: .public
         ),
         NearbyEvent(

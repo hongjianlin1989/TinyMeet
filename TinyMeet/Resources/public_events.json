@@ -10,7 +10,8 @@
       "hostName": "Hosted by Mia",
       "attendeeSummary": "8 families going",
       "themeEmoji": "🛝",
-      "summary": "Meet other families for snacks, bubbles, and easy playground fun after nap time."
+      "summary": "Meet other families for snacks, bubbles, and easy playground fun after nap time.",
+      "eventUrl": "https://tinymeet.app/events/playground-picnic-crew"
     },
     {
       "id": "3D5EDB99-6D2E-4A22-A3B6-885D2F5A2B14",
@@ -22,7 +23,8 @@
       "hostName": "Hosted by Noah",
       "attendeeSummary": "12 kids signed up",
       "themeEmoji": "🎨",
-      "summary": "Finger painting, sticker crafts, and story time with plenty of room to wiggle."
+      "summary": "Finger painting, sticker crafts, and story time with plenty of room to wiggle.",
+      "eventUrl": "https://tinymeet.app/events/little-artists-meet-up"
     },
     {
       "id": "9A8B7B1A-3F2D-4C39-9B8A-1599C3F3D7B0",
@@ -34,7 +36,8 @@
       "hostName": "Hosted by Ava",
       "attendeeSummary": "6 teammates ready",
       "themeEmoji": "⚽️",
-      "summary": "A playful beginner-friendly soccer morning for kids who want to run, pass, and laugh."
+      "summary": "A playful beginner-friendly soccer morning for kids who want to run, pass, and laugh.",
+      "eventUrl": "https://tinymeet.app/events/mini-soccer-kickaround"
     },
     {
       "id": "F0AA8C38-0C4B-4D71-BB86-7A2D7F2D9C91",
@@ -46,7 +49,8 @@
       "hostName": "Hosted by Ethan",
       "attendeeSummary": "10 little dancers",
       "themeEmoji": "🎵",
-      "summary": "Shake instruments, sing favorite songs, and enjoy a bright movement session for toddlers."
+      "summary": "Shake instruments, sing favorite songs, and enjoy a bright movement session for toddlers.",
+      "eventUrl": "https://tinymeet.app/events/music-and-wiggles-circle"
     }
   ]
 }

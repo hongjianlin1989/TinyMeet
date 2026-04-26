@@ -5,39 +5,27 @@ import Foundation
 final class DiscoverViewModel: ObservableObject {
     @Published var searchText = ""
     @Published private(set) var profiles: [UserProfile] = []
-    @Published private(set) var groups: [MeetupGroup] = []
+    @Published private(set) var addedFriendIDs: Set<Int> = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var successMessage: String?
 
     private let profileRespository: ProfileRespositoryProtocol
-    private let groupsRepository: GroupsRepositoryProtocol
 
-    init(
-        profileRespository: ProfileRespositoryProtocol,
-        groupsRepository: GroupsRepositoryProtocol
-    ) {
+    init(profileRespository: ProfileRespositoryProtocol) {
         self.profileRespository = profileRespository
-        self.groupsRepository = groupsRepository
     }
 
     static func makeDefault() -> DiscoverViewModel {
-        DiscoverViewModel(
-            profileRespository: ProfileRespository(),
-            groupsRepository: GroupsRepository()
-        )
+        DiscoverViewModel(profileRespository: ProfileRespository())
     }
 
     var hasActiveQuery: Bool {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    func loadGroups() async {
-        do {
-            groups = try await groupsRepository.fetchGroups()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+    func hasAddedFriend(_ profile: UserProfile) -> Bool {
+        addedFriendIDs.contains(profile.id)
     }
 
     func searchProfiles() async {
@@ -66,8 +54,9 @@ final class DiscoverViewModel: ObservableObject {
         }
     }
 
-    func addProfileToGroup(_ profile: UserProfile, groupID: Int) async {
+    func addFriend(_ profile: UserProfile) async {
         guard !isLoading else { return }
+        guard addedFriendIDs.contains(profile.id) == false else { return }
 
         isLoading = true
         errorMessage = nil
@@ -76,8 +65,9 @@ final class DiscoverViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let updatedGroup = try await groupsRepository.addUserProfile(profile, toGroupID: groupID)
-            successMessage = "Added @\(profile.username) to \(updatedGroup.name)."
+            try await profileRespository.addFriend(profile)
+            addedFriendIDs.insert(profile.id)
+            successMessage = "Added @\(profile.username) as a friend."
         } catch {
             errorMessage = error.localizedDescription
         }

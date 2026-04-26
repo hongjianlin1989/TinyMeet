@@ -83,6 +83,7 @@ struct ProfileView: View {
     private func profileContent(_ userProfile: UserProfile) -> some View {
         VStack(spacing: 20) {
             profileSummaryCard(userProfile)
+            friendsNavigationCard
             groupsNavigationCard
             interestedEventsNavigationCard
         }
@@ -133,6 +134,42 @@ struct ProfileView: View {
         .padding(24)
         .frame(maxWidth: .infinity)
         .tinyMeetCardStyle()
+    }
+
+    private var friendsNavigationCard: some View {
+        NavigationLink {
+            MyFriendsView(viewModel: MyFriendsViewModel.makeDefault())
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(TinyMeetTheme.heroGradient)
+                        .frame(width: 52, height: 52)
+
+                    Image(systemName: "person.2.fill")
+                        .foregroundStyle(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("profile.friends.title")
+                        .font(.headline)
+
+                    Text("profile.friends.message")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .tinyMeetCardStyle()
+        }
+        .buttonStyle(.plain)
     }
 
     private var groupsNavigationCard: some View {

@@ -19,7 +19,19 @@ final class HomeEventCardViewModel: ObservableObject {
     var attendeeSummary: String { event.attendeeSummary }
     var themeEmoji: String { event.themeEmoji }
     var summary: String { event.summary }
+    var eventUrlText: String? { event.eventUrl }
     var visibilityTitle: String { event.visibility.title }
+
+    var eventURL: URL? {
+        guard let eventUrlText,
+              let url = URL(string: eventUrlText),
+              let scheme = url.scheme,
+              scheme.isEmpty == false else {
+            return nil
+        }
+
+        return url
+    }
 
     var visibilitySymbolName: String {
         switch event.visibility {

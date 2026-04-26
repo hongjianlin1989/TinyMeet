@@ -2,7 +2,6 @@ import SwiftUI
 
 struct DiscoverView: View {
     @StateObject private var viewModel: DiscoverViewModel
-    @State private var selectedGroupIDs: [Int: Int] = [:]
 
     init(viewModel: DiscoverViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -11,10 +10,10 @@ struct DiscoverView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.isLoading && viewModel.profiles.isEmpty && !viewModel.hasActiveQuery {
-                    ProgressView("Preparing groups...")
+                if viewModel.isLoading && viewModel.profiles.isEmpty && viewModel.hasActiveQuery {
+                    ProgressView("Searching people...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let errorMessage = viewModel.errorMessage, viewModel.profiles.isEmpty && !viewModel.hasActiveQuery {
+                } else if let errorMessage = viewModel.errorMessage, viewModel.profiles.isEmpty {
                     ContentUnavailableView(
                         "Discover unavailable",
                         systemImage: "person.crop.circle.badge.plus",
@@ -24,7 +23,7 @@ struct DiscoverView: View {
                     ContentUnavailableView(
                         "Search people",
                         systemImage: "person.crop.circle.badge.plus",
-                        description: Text("Find user profiles and add them into one of your existing groups.")
+                        description: Text("Find user profiles and add them as friends.")
                     )
                 } else if viewModel.profiles.isEmpty {
                     ContentUnavailableView(
@@ -52,9 +51,6 @@ struct DiscoverView: View {
                     await viewModel.searchProfiles()
                 }
             }
-            .task {
-                await viewModel.loadGroups()
-            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     AuthToolbarButton()
@@ -71,13 +67,7 @@ struct DiscoverView: View {
     private func profileRow(_ profile: UserProfile) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             profileHeader(profile)
-
-            if viewModel.groups.isEmpty {
-                emptyGroupsMessage
-            } else {
-                groupPicker(for: profile)
-                addToGroupButton(for: profile)
-            }
+            addFriendButton(for: profile)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -115,51 +105,19 @@ struct DiscoverView: View {
         }
     }
 
-    private var emptyGroupsMessage: some View {
-        Text("No groups available yet. Create a group first to add members.")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-    }
-
-    private func groupPicker(for profile: UserProfile) -> some View {
-        Picker(
-            "Choose group",
-            selection: bindingForSelectedGroupID(profileID: profile.id)
-        ) {
-            Text("Select a group")
-                .tag(Optional<Int>.none)
-
-            ForEach(viewModel.groups) { group in
-                Text(group.name)
-                    .tag(Optional(group.id))
-            }
-        }
-        .pickerStyle(.menu)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(TinyMeetTheme.badge)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-    }
-
-    private func addToGroupButton(for profile: UserProfile) -> some View {
+    private func addFriendButton(for profile: UserProfile) -> some View {
         Button(action: {
             Task {
-                if let groupID = selectedGroupIDs[profile.id] {
-                    await viewModel.addProfileToGroup(profile, groupID: groupID)
-                }
+                await viewModel.addFriend(profile)
             }
         }, label: {
-            Label("Add to Group", systemImage: "person.badge.plus")
+            Label(
+                viewModel.hasAddedFriend(profile) ? "Friend Added" : "Add Friend",
+                systemImage: viewModel.hasAddedFriend(profile) ? "checkmark.circle.fill" : "person.badge.plus"
+            )
         })
         .buttonStyle(TinyMeetPrimaryButtonStyle())
-        .disabled(selectedGroupIDs[profile.id] == nil || viewModel.isLoading)
-    }
-
-    private func bindingForSelectedGroupID(profileID: Int) -> Binding<Int?> {
-        Binding(
-            get: { selectedGroupIDs[profileID] },
-            set: { selectedGroupIDs[profileID] = $0 }
-        )
+        .disabled(viewModel.hasAddedFriend(profile) || viewModel.isLoading)
     }
 
     @ViewBuilder

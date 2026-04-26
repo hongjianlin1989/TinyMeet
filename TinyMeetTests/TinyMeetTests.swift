@@ -43,14 +43,8 @@ struct TinyMeetTests {
     }
 
     @MainActor
-    @Test func discoverViewModelSearchesProfilesAndAddsToGroup() async throws {
-        let viewModel = DiscoverViewModel(
-            profileRespository: ProfileRespository(),
-            groupsRepository: GroupsRepository()
-        )
-
-        await viewModel.loadGroups()
-        #expect(viewModel.groups.isEmpty == false)
+    @Test func discoverViewModelSearchesProfilesAndAddsFriend() async throws {
+        let viewModel = DiscoverViewModel(profileRespository: ProfileRespository())
 
         viewModel.searchText = "bay area"
         await viewModel.searchProfiles()
@@ -59,9 +53,9 @@ struct TinyMeetTests {
         #expect(viewModel.profiles.contains(where: { $0.username == "chloegarcia" }))
 
         let selectedProfile = try #require(viewModel.profiles.first(where: { $0.username == "chloegarcia" }))
-        let selectedGroup = try #require(viewModel.groups.first)
 
-        await viewModel.addProfileToGroup(selectedProfile, groupID: selectedGroup.id)
+        await viewModel.addFriend(selectedProfile)
+        #expect(viewModel.hasAddedFriend(selectedProfile))
         #expect(viewModel.successMessage?.contains("@chloegarcia") == true)
         #expect(viewModel.errorMessage == nil)
     }

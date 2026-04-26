@@ -27,6 +27,7 @@ struct NearbyEvent: Identifiable, Equatable {
     let attendeeSummary: String
     let themeEmoji: String
     let summary: String
+    let eventUrl: String?
     let visibility: NearbyEventVisibility
 
     init(
@@ -40,6 +41,7 @@ struct NearbyEvent: Identifiable, Equatable {
         attendeeSummary: String,
         themeEmoji: String,
         summary: String,
+        eventUrl: String? = nil,
         visibility: NearbyEventVisibility
     ) {
         self.id = id
@@ -52,6 +54,7 @@ struct NearbyEvent: Identifiable, Equatable {
         self.attendeeSummary = attendeeSummary
         self.themeEmoji = themeEmoji
         self.summary = summary
+        self.eventUrl = eventUrl
         self.visibility = visibility
     }
 }

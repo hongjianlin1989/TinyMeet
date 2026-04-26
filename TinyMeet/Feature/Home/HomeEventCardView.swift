@@ -20,8 +20,6 @@ struct HomeEventCardView: View {
                     HStack(spacing: 8) {
                         Text(viewModel.title)
                             .font(.headline)
-
-                        visibilityBadge
                     }
 
                     Label(viewModel.locationName, systemImage: "mappin.and.ellipse")
@@ -46,6 +44,10 @@ struct HomeEventCardView: View {
             HStack(spacing: 10) {
                 detailPill(title: viewModel.timeDescription, color: TinyMeetTheme.sky)
                 detailPill(title: viewModel.ageRange, color: TinyMeetTheme.mint)
+
+                if let eventURL = viewModel.eventURL {
+                    linkPill(destination: eventURL)
+                }
             }
 
             HStack {
@@ -95,6 +97,16 @@ struct HomeEventCardView: View {
             .foregroundStyle(.primary)
             .clipShape(Capsule())
     }
+
+    private func linkPill(destination: URL) -> some View {
+        Link("Link", destination: destination)
+            .font(.caption.weight(.semibold))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(TinyMeetTheme.peach.opacity(0.22))
+            .foregroundStyle(TinyMeetTheme.accent)
+            .clipShape(Capsule())
+    }
 }
 
 #Preview {
@@ -110,6 +122,7 @@ struct HomeEventCardView: View {
                 attendeeSummary: "8 families going",
                 themeEmoji: "🛝",
                 summary: "Meet other families for snacks, bubbles, and easy playground fun after nap time.",
+                eventUrl: "https://tinymeet.app/events/playground-picnic-crew",
                 visibility: .public
             )
         )

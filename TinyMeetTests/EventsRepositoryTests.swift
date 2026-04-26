@@ -26,7 +26,8 @@ struct EventsRepositoryTests {
               "hostName": "Mia",
               "attendeeSummary": "8 families",
               "themeEmoji": "🛝",
-              "summary": "Fun"
+              "summary": "Fun",
+              "eventUrl": "https://tinymeet.app/events/public-event"
             }
           ]
         }
@@ -43,6 +44,7 @@ struct EventsRepositoryTests {
         #expect(event.id == id)
         #expect(event.visibility == .public)
         #expect(event.title == "Public Event")
+        #expect(event.eventUrl == "https://tinymeet.app/events/public-event")
     }
 
     @Test func fetchPrivateEventsDecodesAndAppliesPrivateVisibility() async throws {
@@ -77,5 +79,6 @@ struct EventsRepositoryTests {
         #expect(event.id == id)
         #expect(event.visibility == .private)
         #expect(event.title == "Private Event")
+        #expect(event.eventUrl == nil)
     }
 }
