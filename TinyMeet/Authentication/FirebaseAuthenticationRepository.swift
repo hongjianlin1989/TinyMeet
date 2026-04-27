@@ -6,12 +6,16 @@ import UIKit
 protocol AuthenticationRepositoryProtocol: Sendable {
     @MainActor
     func signInWithGoogle() async throws
+
+    func sendSignInLink(to email: String) async throws
 }
 
 enum AuthenticationError: LocalizedError {
     case missingGoogleClientID
     case missingPresentingViewController
     case missingGoogleIDToken
+    case invalidEmail
+    case missingEmailLinkURL
 
     var errorDescription: String? {
         switch self {
@@ -21,11 +25,17 @@ enum AuthenticationError: LocalizedError {
             return "Unable to present Google Sign-In right now. Please try again."
         case .missingGoogleIDToken:
             return "Google Sign-In completed without an ID token. Please try again."
+        case .invalidEmail:
+            return "Enter a valid email address to receive a sign-in link."
+        case .missingEmailLinkURL:
+            return "Email link sign-in is not configured yet. Please make sure Firebase has a valid project ID and authorized email link domain."
         }
     }
 }
 
 struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
+    private static let pendingEmailKey = "auth.pendingEmailLinkEmail"
+
     @MainActor
     func signInWithGoogle() async throws {
         guard let clientID = Self.googleClientID else {
@@ -50,6 +60,27 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
         _ = try await Auth.auth().signIn(with: credential)
     }
 
+    func sendSignInLink(to email: String) async throws {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard Self.isValidEmail(trimmedEmail) else {
+            throw AuthenticationError.invalidEmail
+        }
+
+        let actionCodeSettings = try Self.makeEmailActionCodeSettings()
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            Auth.auth().sendSignInLink(toEmail: trimmedEmail, actionCodeSettings: actionCodeSettings) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    UserDefaults.standard.set(trimmedEmail, forKey: Self.pendingEmailKey)
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+    }
+
     private static var googleClientID: String? {
         if let firebaseClientID = FirebaseApp.app()?.options.clientID, !firebaseClientID.isEmpty {
             return firebaseClientID
@@ -64,6 +95,61 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
         }
 
         return clientID
+    }
+
+    private static func makeEmailActionCodeSettings() throws -> ActionCodeSettings {
+        guard let url = emailLinkURL else {
+            throw AuthenticationError.missingEmailLinkURL
+        }
+
+        let settings = ActionCodeSettings()
+        settings.url = url
+        settings.handleCodeInApp = true
+
+        if let bundleIdentifier = Bundle.main.bundleIdentifier {
+            settings.setIOSBundleID(bundleIdentifier)
+        }
+
+        return settings
+    }
+
+    private static var emailLinkURL: URL? {
+        if let infoValue = Bundle.main.object(forInfoDictionaryKey: "FirebaseEmailLinkURL") as? String,
+           let configuredURL = URL(string: infoValue),
+           !infoValue.isEmpty {
+            return configuredURL
+        }
+
+        let projectID = FirebaseApp.app()?.options.projectID ?? googleServiceValue(for: "PROJECT_ID")
+
+        guard let projectID, !projectID.isEmpty else {
+            return nil
+        }
+
+        return URL(string: "https://\(projectID).firebaseapp.com/finishSignIn")
+    }
+
+    private static func googleServiceValue(for key: String) -> String? {
+        guard let url = Bundle.main.url(forResource: "GoogleService-Info", withExtension: "plist"),
+              let data = try? Data(contentsOf: url),
+              let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+              let value = plist[key] as? String,
+              !value.isEmpty else {
+            return nil
+        }
+
+        return value
+    }
+
+    private static func isValidEmail(_ value: String) -> Bool {
+        let parts = value.split(separator: "@")
+        guard parts.count == 2,
+              !parts[0].isEmpty,
+              parts[1].contains(".") else {
+            return false
+        }
+
+        return true
     }
 }
 
