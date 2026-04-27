@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AuthToolbarButton: View {
     @EnvironmentObject private var appSession: AppSession
-    @State private var isShowingLogin = false
+    @EnvironmentObject private var deepLinkHandler: DeepLinkHandler
     @State private var isShowingSettings = false
 
     var body: some View {
@@ -10,7 +10,7 @@ struct AuthToolbarButton: View {
             if appSession.isLoggedIn {
                 isShowingSettings = true
             } else {
-                isShowingLogin = true
+                deepLinkHandler.presentLogin()
             }
         } label: {
             Label(buttonTitle, systemImage: buttonSystemImage)
@@ -19,9 +19,6 @@ struct AuthToolbarButton: View {
         .buttonStyle(TinyMeetAuthToolbarButtonStyle())
         .navigationDestination(isPresented: $isShowingSettings) {
             SettingsView(viewModel: SettingsViewModel.makeDefault())
-        }
-        .sheet(isPresented: $isShowingLogin) {
-            LoginView()
         }
     }
 
@@ -67,5 +64,6 @@ struct TinyMeetAuthToolbarButtonStyle: ButtonStyle {
     NavigationStack {
         AuthToolbarButton()
             .environmentObject(AppSession())
+            .environmentObject(DeepLinkHandler())
     }
 }

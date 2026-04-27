@@ -12,7 +12,16 @@
 				<string>com.googleusercontent.apps.610708558013-hl3lph6nlsn5ekbf8emq5adm30f553t6</string>
 			</array>
 		</dict>
-		<dict/>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>tinymeet.app.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tinymeet</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>TinyMeet uses your location to show nearby events and keep your current location up to date.</string>

@@ -45,4 +45,6 @@ struct RootTabView: View {
 
 #Preview {
     RootTabView()
+        .environmentObject(AppSession())
+        .environmentObject(DeepLinkHandler())
 }

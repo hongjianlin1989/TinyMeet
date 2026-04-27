@@ -13,6 +13,7 @@ import SwiftUI
 struct TinyMeetApp: App {
     let persistenceController = PersistenceController.shared
     @StateObject private var appSession = AppSession()
+    @StateObject private var deepLinkHandler = DeepLinkHandler()
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
@@ -20,10 +21,26 @@ struct TinyMeetApp: App {
             RootTabView()
                 .tint(TinyMeetTheme.accent)
                 .environmentObject(appSession)
+                .environmentObject(deepLinkHandler)
                 .environment(\.locale, appSession.locale)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .onOpenURL { url in
-                    _ = GIDSignIn.sharedInstance.handle(url)
+                    if GIDSignIn.sharedInstance.handle(url) {
+                        return
+                    }
+
+                    _ = deepLinkHandler.handle(url)
+                }
+                .sheet(isPresented: Binding(
+                    get: { deepLinkHandler.isShowingLogin },
+                    set: { isPresented in
+                        if !isPresented {
+                            deepLinkHandler.dismissPresentedDestination()
+                        }
+                    }
+                )) {
+                    LoginView()
+                        .environmentObject(appSession)
                 }
         }
     }
