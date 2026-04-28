@@ -432,7 +432,7 @@
 		276128A52F74441300B1F9F0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				API_BASE_URL = "https://api.tinymeet.mock";
+				API_BASE_URL = "https://tinymeet-api.licongchen.org";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -468,7 +468,7 @@
 		276128A62F74441300B1F9F0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				API_BASE_URL = "https://api.tinymeet.mock";
+				API_BASE_URL = "https://tinymeet-api.licongchen.org";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -713,7 +713,7 @@
 		B4C5D6E32F00000100000001 /* Debug-Staging */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				API_BASE_URL = "https://staging-api.tinymeet.mock";
+				API_BASE_URL = "https://tinymeet-api.licongchen.org";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -749,7 +749,7 @@
 		B4C5D6E42F00000100000001 /* Release-Staging */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				API_BASE_URL = "https://staging-api.tinymeet.mock";
+				API_BASE_URL = "https://tinymeet-api.licongchen.org";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appSession: AppSession
     @StateObject private var viewModel: SettingsViewModel
 
@@ -38,6 +39,7 @@ struct SettingsView: View {
             Section {
                 Button("settings.logout", role: .destructive) {
                     appSession.logOut()
+                    dismiss()
                 }
             }
         }

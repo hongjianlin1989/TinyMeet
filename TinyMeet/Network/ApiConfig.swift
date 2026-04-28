@@ -8,7 +8,7 @@
 import Foundation
 
 enum ApiConfig {
-    private static let productionBaseURLString = "https://api.tinymeet.mock"
+    private static let productionBaseURLString = "https://tinymeet-api.licongchen.org"
 
     static let baseURL: URL = {
         let configuredBaseURL = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String

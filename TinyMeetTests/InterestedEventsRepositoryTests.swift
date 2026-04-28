@@ -99,16 +99,40 @@ struct InterestedEventsRepositoryTests {
         #expect(person.locationName == "Main Library")
     }
 
-    @Test func setInterestedAndUninterestedUseMutationRequests() async throws {
-        let payload = "{}"
+    @Test func setInterestedUsesMarkInterestedMutationRequest() async throws {
+        let payload = """
+        {
+          "id": "\(UUID().uuidString)",
+          "event_id": "\(UUID().uuidString)",
+          "event_type": "public",
+          "uid": "firebase-uid-123",
+          "location_name": "Central Park Playground",
+          "latitude": null,
+          "longitude": null,
+          "created_at": "2026-04-28T16:00:00Z"
+        }
+        """
         let eventID = UUID()
+        let event = NearbyEvent(
+            id: eventID,
+            title: "Playground Picnic Crew",
+            locationName: "Central Park Playground",
+            timeDescription: "Today · 4:00 PM",
+            ageRange: "Ages 3-5",
+            distanceDescription: "0.4 mi away",
+            hostName: "Hosted by Mia",
+            attendeeSummary: "8 families going",
+            themeEmoji: "🛝",
+            summary: "Meet other families for snacks.",
+            visibility: .public
+        )
 
         let repository = InterestedEventsRepository(
             networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
             shouldUseMockData: false
         )
 
-        try await repository.setInterested(true, eventID: eventID)
-        try await repository.setInterested(false, eventID: eventID)
+        try await repository.setInterested(true, event: event)
+        try await repository.setInterested(false, event: event)
     }
 }

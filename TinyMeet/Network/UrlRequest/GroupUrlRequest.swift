@@ -4,7 +4,7 @@ enum GroupUrlRequest {
     case list
     case detail(groupID: Int)
     case addMember(groupID: Int, name: String)
-    case addUserProfile(groupID: Int, userID: Int)
+    case addUserProfile(groupID: Int, userID: String)
     case deleteMember(groupID: Int, memberID: Int)
 
     private var path: String {
@@ -65,5 +65,5 @@ private struct AddMemberPayload: Encodable {
 }
 
 private struct AddUserProfilePayload: Encodable {
-    let userID: Int
+    let userID: String
 }

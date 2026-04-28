@@ -102,7 +102,7 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
 
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(150))
-            let nextID = max((groupDetail.members.map(\.id).max() ?? 0) + 1, userProfile.id + 100)
+            let nextID = (groupDetail.members.map(\.id).max() ?? 0) + 1
             let newMember = GroupMember(id: nextID, name: userProfile.username, role: "Member")
             return GroupDetail(
                 id: groupDetail.id,

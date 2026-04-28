@@ -15,19 +15,19 @@ struct EventsRepositoryTests {
         let id = UUID()
         let payload = """
         {
-          "items": [
+          "events": [
             {
               "id": "\(id.uuidString)",
               "title": "Public Event",
-              "locationName": "Central Park",
-              "timeDescription": "Today",
-              "ageRange": "3-5",
-              "distanceDescription": "0.5 mi",
-              "hostName": "Mia",
-              "attendeeSummary": "8 families",
-              "themeEmoji": "🛝",
+              "location_name": "Central Park",
+              "age_range": "3-5",
+              "theme_emoji": "🛝",
               "summary": "Fun",
-              "eventUrl": "https://tinymeet.app/events/public-event"
+              "event_url": "https://tinymeet.app/events/public-event",
+              "host_name": "Mia",
+              "attendee_count": 8,
+              "scheduled_at": "2026-04-28T16:00:00Z",
+              "created_at": "2026-04-27T16:00:00Z"
             }
           ]
         }
@@ -44,6 +44,9 @@ struct EventsRepositoryTests {
         #expect(event.id == id)
         #expect(event.visibility == .public)
         #expect(event.title == "Public Event")
+        #expect(event.locationName == "Central Park")
+        #expect(event.hostName == "Hosted by Mia")
+        #expect(event.attendeeSummary == "8 people attending")
         #expect(event.eventUrl == "https://tinymeet.app/events/public-event")
     }
 
@@ -51,18 +54,19 @@ struct EventsRepositoryTests {
         let id = UUID()
         let payload = """
         {
-          "items": [
+          "events": [
             {
               "id": "\(id.uuidString)",
               "title": "Private Event",
-              "locationName": "Backyard",
-              "timeDescription": "Tomorrow",
-              "ageRange": "2-4",
-              "distanceDescription": "1.0 mi",
-              "hostName": "Sofia",
-              "attendeeSummary": "3 families",
-              "themeEmoji": "📚",
-              "summary": "Invite-only"
+              "location_name": "Backyard",
+              "age_range": "2-4",
+              "theme_emoji": "📚",
+              "summary": "Invite-only",
+              "host_name": "Sofia",
+              "audience_type": "friends",
+              "attendee_count": 3,
+              "scheduled_at": "2026-04-29T16:00:00Z",
+              "created_at": "2026-04-27T16:00:00Z"
             }
           ]
         }
@@ -79,6 +83,8 @@ struct EventsRepositoryTests {
         #expect(event.id == id)
         #expect(event.visibility == .private)
         #expect(event.title == "Private Event")
+        #expect(event.distanceDescription == "Friends")
+        #expect(event.hostName == "Hosted by Sofia")
         #expect(event.eventUrl == nil)
     }
 

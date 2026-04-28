@@ -8,9 +8,9 @@ enum EventsUrlRequest {
     private var path: String {
         switch self {
         case .listPublic:
-            return "/events/public"
+            return "/api/v1/events/public"
         case .listPrivate:
-            return "/events/private"
+            return "/api/v1/events/private"
         case .create:
             return "/events"
         }

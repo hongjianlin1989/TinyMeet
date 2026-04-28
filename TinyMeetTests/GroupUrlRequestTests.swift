@@ -31,13 +31,13 @@ struct GroupUrlRequestTests {
     }
 
     @Test func addUserProfileRequestEncodesUserIDPayload() throws {
-        let request = try GroupUrlRequest.addUserProfile(groupID: 9, userID: 101).asURLRequest()
+        let request = try GroupUrlRequest.addUserProfile(groupID: 9, userID: "firebase-uid-101").asURLRequest()
         let body = try #require(request.httpBody)
-        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Int])
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
 
         #expect(request.httpMethod == "POST")
         #expect(request.url?.path == "/groups/9/members")
-        #expect(json["userID"] == 101)
+        #expect(json["userID"] == "firebase-uid-101")
     }
 
     @Test func deleteMemberRequestUsesDeleteMethod() throws {

@@ -5,7 +5,7 @@ import Foundation
 final class CreateGroupViewModel: ObservableObject {
     @Published var searchText = ""
     @Published private(set) var friends: [UserProfile] = []
-    @Published private(set) var selectedFriendIDs: Set<Int> = []
+    @Published private(set) var selectedFriendIDs: Set<String> = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
 

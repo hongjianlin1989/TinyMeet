@@ -8,6 +8,7 @@ enum RootTab: Hashable {
 }
 
 struct RootTabView: View {
+    @EnvironmentObject private var appSession: AppSession
     @State private var selectedTab: RootTab = .home
 
     var body: some View {
@@ -40,6 +41,11 @@ struct RootTabView: View {
                 }
         }
         .background(TinyMeetTheme.backgroundGradient.ignoresSafeArea())
+        .onChange(of: appSession.isLoggedIn) { _, isLoggedIn in
+            if !isLoggedIn {
+                selectedTab = .home
+            }
+        }
     }
 }
 

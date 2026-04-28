@@ -8,8 +8,10 @@ struct ProfileRespositoryTests {
 
         try await repository.addFriend(
             UserProfile(
-                id: 999,
+                id: "friend-999",
                 username: "friendcandidate",
+                displayName: "Friend Candidate",
+                email: nil,
                 bio: "Potential new friend",
                 age: 30,
                 avatarURL: nil
@@ -22,13 +24,50 @@ struct ProfileRespositoryTests {
 
         try await repository.removeFriend(
             UserProfile(
-                id: 999,
+                id: "friend-999",
                 username: "friendcandidate",
+                displayName: "Friend Candidate",
+                email: nil,
                 bio: "Potential former friend",
                 age: 30,
                 avatarURL: nil
             )
         )
+    }
+
+    @Test func fetchUserProfileDecodesLiveApiShape() async throws {
+        struct MockNetworkManager: NetworkManaging {
+            let data: Data
+
+            func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
+                try JSONDecoder().decode(T.self, from: data)
+            }
+        }
+
+        let payload = """
+        {
+          "id": "firebase-uid-123",
+          "username": "hongjianlin1989",
+          "display_name": "Hongjian Lin",
+          "email": "hongjianlin@example.com",
+          "bio": "Building TinyMeet.",
+          "age": 36,
+          "avatar_url": "https://example.com/avatar-hong.jpg",
+          "created_at": "2026-04-28T12:00:00Z"
+        }
+        """
+
+        let repository = ProfileRespository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
+            shouldUseMockData: false
+        )
+
+        let profile = try await repository.fetchUserProfile()
+        #expect(profile.id == "firebase-uid-123")
+        #expect(profile.username == "hongjianlin1989")
+        #expect(profile.displayName == "Hongjian Lin")
+        #expect(profile.email == "hongjianlin@example.com")
+        #expect(profile.bio == "Building TinyMeet.")
     }
 
     @Test func searchUserProfilesUsesMockJSONWhenAvailable() async throws {

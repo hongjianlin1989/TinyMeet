@@ -13,36 +13,30 @@ struct HomeEventsView: View {
                 if viewModel.isLoading && viewModel.events.isEmpty {
                     ProgressView("Finding nearby fun...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let errorMessage = viewModel.errorMessage, viewModel.events.isEmpty {
-                    ContentUnavailableView(
-                        "Nearby events unavailable",
-                        systemImage: "party.popper.fill",
-                        description: Text(errorMessage)
-                    )
-                } else if viewModel.filteredEvents.isEmpty {
-                    ContentUnavailableView(
-                        emptyStateTitle,
-                        systemImage: emptyStateSystemImage,
-                        description: Text(emptyStateDescription)
-                    )
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 18) {
                             heroSection
                             filterSection
 
-                            ForEach(viewModel.filteredEvents) { event in
-                                HomeEventCardView(
-                                    viewModel: HomeEventCardViewModel(
-                                        event: event,
-                                        isInterestUpdating: viewModel.isUpdatingInterest(for: event.id),
-                                        onInterestTapped: {
-                                            Task {
-                                                await viewModel.toggleInterest(for: event.id)
+                            if let errorMessage = viewModel.errorMessage, viewModel.events.isEmpty {
+                                unavailableState(errorMessage: errorMessage)
+                            } else if viewModel.filteredEvents.isEmpty {
+                                emptyState
+                            } else {
+                                ForEach(viewModel.filteredEvents) { event in
+                                    HomeEventCardView(
+                                        viewModel: HomeEventCardViewModel(
+                                            event: event,
+                                            isInterestUpdating: viewModel.isUpdatingInterest(for: event.id),
+                                            onInterestTapped: {
+                                                Task {
+                                                    await viewModel.toggleInterest(for: event.id)
+                                                }
                                             }
-                                        }
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                         .padding(16)
@@ -50,7 +44,7 @@ struct HomeEventsView: View {
                     }
                 }
             }
-            .padding(viewModel.events.isEmpty ? 16 : 0)
+            .padding(viewModel.isLoading && viewModel.events.isEmpty ? 16 : 0)
             .navigationTitle("Home")
             .task {
                 await viewModel.loadNearbyEvents()
@@ -119,6 +113,40 @@ struct HomeEventsView: View {
         case .private:
             return "person.2.badge.gearshape"
         }
+    }
+
+    private var emptyState: some View {
+        ContentUnavailableView {
+            Label(emptyStateTitle, systemImage: emptyStateSystemImage)
+        } description: {
+            Text(emptyStateDescription)
+        } actions: {
+            Button("Reload events") {
+                Task {
+                    await viewModel.refreshNearbyEvents()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 24)
+    }
+
+    private func unavailableState(errorMessage: String) -> some View {
+        ContentUnavailableView {
+            Label("Nearby events unavailable", systemImage: "party.popper.fill")
+        } description: {
+            Text(errorMessage)
+        } actions: {
+            Button("Reload events") {
+                Task {
+                    await viewModel.refreshNearbyEvents()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 24)
     }
 
     private func filterButton(_ filter: NearbyEventVisibility) -> some View {

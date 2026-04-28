@@ -4,7 +4,7 @@ import Foundation
 protocol InterestedEventsRepositoryProtocol: Sendable {
     func fetchInterestedEvents() async throws -> [InterestedEventRow]
     func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail]
-    func setInterested(_ isInterested: Bool, eventID: UUID) async throws
+    func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws
 }
 
 struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
@@ -20,7 +20,7 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.networkManager = networkManager ?? NetworkManager()
-        self.shouldUseMockData = shouldUseMockData
+        self.shouldUseMockData = false
         self.bundle = bundle
         self.decoder = decoder
     }
@@ -32,7 +32,7 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
             return response.items.map { $0.toInterestedEventRow() }
         }
 
-        let request = InterestedEventsUrlRequest.list.asURLRequest()
+        let request = try InterestedEventsUrlRequest.list.asURLRequest()
         let response: InterestedEventsResponse = try await networkManager.perform(request)
         return response.items.map { $0.toInterestedEventRow() }
     }
@@ -44,22 +44,23 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
             return response.items.compactMap { $0.toInterestedPrivatePlaydate() }
         }
 
-        let request = InterestedEventsUrlRequest.list.asURLRequest()
+        let request = try InterestedEventsUrlRequest.list.asURLRequest()
         let response: InterestedEventsResponse = try await networkManager.perform(request)
         return response.items.compactMap { $0.toInterestedPrivatePlaydate() }
     }
 
-    func setInterested(_ isInterested: Bool, eventID: UUID) async throws {
+    func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws {
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(150))
             return
         }
 
-        let request = isInterested
-            ? InterestedEventsUrlRequest.interested(eventID: eventID).asURLRequest()
-            : InterestedEventsUrlRequest.uninterested(eventID: eventID).asURLRequest()
+        guard isInterested else {
+            return
+        }
 
-        let _: InterestMutationResponse = try await networkManager.perform(request)
+        let request = try InterestedEventsUrlRequest.interested(event: event).asURLRequest()
+        let _: InterestedEventMutationResponse = try await networkManager.perform(request)
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
@@ -203,6 +204,14 @@ struct InterestedPersonLocationDTO: Decodable, Sendable {
     }
 }
 
-private struct InterestMutationResponse: Decodable, Sendable {
-    let success: Bool?
+private struct InterestedEventMutationResponse: Decodable, Sendable {
+    let id: UUID
+    let eventID: UUID
+    let eventType: String
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case eventID = "event_id"
+        case eventType = "event_type"
+    }
 }

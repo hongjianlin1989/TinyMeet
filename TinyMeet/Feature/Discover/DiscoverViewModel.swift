@@ -5,7 +5,7 @@ import Foundation
 final class DiscoverViewModel: ObservableObject {
     @Published var searchText = ""
     @Published private(set) var profiles: [UserProfile] = []
-    @Published private(set) var addedFriendIDs: Set<Int> = []
+    @Published private(set) var addedFriendIDs: Set<String> = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var successMessage: String?

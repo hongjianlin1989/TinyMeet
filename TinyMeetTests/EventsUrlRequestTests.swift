@@ -3,6 +3,22 @@ import Testing
 @testable import TinyMeet
 
 struct EventsUrlRequestTests {
+    @Test func listPublicRequestUsesApiV1PublicEventsEndpoint() throws {
+        let urlRequest = try EventsUrlRequest.listPublic.asURLRequest()
+
+        #expect(urlRequest.httpMethod == "GET")
+        #expect(urlRequest.url?.path == "/api/v1/events/public")
+        #expect(urlRequest.value(forHTTPHeaderField: "Accept") == "application/json")
+    }
+
+    @Test func listPrivateRequestUsesApiV1PrivateEventsEndpoint() throws {
+        let urlRequest = try EventsUrlRequest.listPrivate.asURLRequest()
+
+        #expect(urlRequest.httpMethod == "GET")
+        #expect(urlRequest.url?.path == "/api/v1/events/private")
+        #expect(urlRequest.value(forHTTPHeaderField: "Accept") == "application/json")
+    }
+
     @Test func createRequestUsesEventsEndpointAndEncodesBody() throws {
         let createRequest = CreateEventRequest(
             title: "Playground Party",

@@ -107,8 +107,12 @@ struct ProfileView: View {
             }
             .shadow(color: TinyMeetTheme.shadow, radius: 14, x: 0, y: 8)
 
-            Text(userProfile.username)
+            Text(userProfile.displayName)
                 .font(.title2.weight(.bold))
+
+            Text("@\(userProfile.username)")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
 
             if let age = userProfile.age {
                 Text("Age \(age)")
@@ -123,6 +127,12 @@ struct ProfileView: View {
                 Text(bio)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
+            }
+
+            if let email = userProfile.email, !email.isEmpty {
+                Label(email, systemImage: "envelope.fill")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(TinyMeetTheme.sky)
             }
 
             if let avatarURL = userProfile.avatarURL {

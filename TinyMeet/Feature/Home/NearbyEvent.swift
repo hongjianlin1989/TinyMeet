@@ -1,6 +1,6 @@
 import Foundation
 
-enum NearbyEventVisibility: String, CaseIterable, Identifiable {
+enum NearbyEventVisibility: String, CaseIterable, Identifiable, Sendable {
     case `public`
     case `private`
 
@@ -16,7 +16,7 @@ enum NearbyEventVisibility: String, CaseIterable, Identifiable {
     }
 }
 
-struct NearbyEvent: Identifiable, Equatable {
+struct NearbyEvent: Identifiable, Equatable, Sendable {
     let id: UUID
     let title: String
     let locationName: String

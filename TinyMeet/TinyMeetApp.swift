@@ -42,6 +42,9 @@ struct TinyMeetApp: App {
                     LoginView()
                         .environmentObject(appSession)
                 }
+                .task {
+                    await appSession.bootstrapAuthentication()
+                }
         }
     }
 }

@@ -14,12 +14,15 @@ final class HomeEventsViewModel: ObservableObject {
     private let interestedEventsRepository: InterestedEventsRepositoryProtocol
 
     static func makeDefault() -> HomeEventsViewModel {
-        HomeEventsViewModel()
+        let isRunningPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        return HomeEventsViewModel(
+            eventsRepository: EventsRepository(shouldUseMockData: isRunningPreview)
+        )
     }
 
     init(
         userDefaults: UserDefaults = .standard,
-        eventsRepository: EventsRepositoryProtocol = EventsRepository(),
+        eventsRepository: EventsRepositoryProtocol = EventsRepository(shouldUseMockData: false),
         interestedEventsRepository: InterestedEventsRepositoryProtocol = InterestedEventsRepository()
     ) {
         self.userDefaults = userDefaults
@@ -81,7 +84,10 @@ final class HomeEventsViewModel: ObservableObject {
         }
 
         let previousValue = events[index].isInterested
+        guard previousValue == false else { return }
+
         let newValue = !previousValue
+        let event = events[index]
 
         interestUpdateIDs.insert(eventID)
         events[index].isInterested = newValue
@@ -89,7 +95,7 @@ final class HomeEventsViewModel: ObservableObject {
         defer { interestUpdateIDs.remove(eventID) }
 
         do {
-            try await interestedEventsRepository.setInterested(newValue, eventID: eventID)
+            try await interestedEventsRepository.setInterested(newValue, event: event)
         } catch {
             events[index].isInterested = previousValue
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription

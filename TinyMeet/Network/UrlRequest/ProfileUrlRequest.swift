@@ -9,13 +9,13 @@ import Foundation
 
 enum ProfileUrlRequest {
     case getUserProfile
-    case addFriend(userID: Int)
-    case removeFriend(userID: Int)
+    case addFriend(userID: String)
+    case removeFriend(userID: String)
 
     private var path: String {
         switch self {
         case .getUserProfile:
-            return "/users/profile"
+            return "/api/v1/users/profile"
         case .addFriend(let userID), .removeFriend(let userID):
             return "/users/\(userID)/friends"
         }

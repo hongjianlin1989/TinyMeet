@@ -7,7 +7,7 @@ final class MyFriendsViewModel: ObservableObject {
     @Published private(set) var friends: [UserProfile] = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
-    @Published private(set) var removingFriendIDs: Set<Int> = []
+    @Published private(set) var removingFriendIDs: Set<String> = []
 
     private let profileRepository: ProfileRespositoryProtocol
 

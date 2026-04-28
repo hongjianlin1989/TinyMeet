@@ -27,7 +27,10 @@ final class ProfileViewModel: ObservableObject {
     }
 
     static func makeDefault() -> ProfileViewModel {
-        ProfileViewModel(profileRespository: ProfileRespository())
+        let isRunningPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        return ProfileViewModel(
+            profileRespository: ProfileRespository(shouldUseMockData: isRunningPreview)
+        )
     }
 
     func fetchUserProfile(isLoggedIn: Bool) async {
@@ -69,7 +72,7 @@ final class ProfileViewModel: ObservableObject {
     }
 
     private var inviteMessage: String {
-        let inviterName = userProfile?.username ?? "a friend"
+        let inviterName = userProfile?.displayName ?? userProfile?.username ?? "a friend"
         return "\(inviterName) invited you to join TinyMeet so you can plan playdates together. " +
             "Open your invite here: \(inviteDeepLinkURL.absoluteString)"
     }
@@ -81,7 +84,7 @@ final class ProfileViewModel: ObservableObject {
 
         if let inviterID = userProfile?.id {
             components.queryItems = [
-                URLQueryItem(name: "referrer", value: String(inviterID))
+                URLQueryItem(name: "referrer", value: inviterID)
             ]
         }
 

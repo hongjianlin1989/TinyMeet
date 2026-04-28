@@ -35,6 +35,11 @@ enum AuthenticationError: LocalizedError {
 
 struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
     private static let pendingEmailKey = "auth.pendingEmailLinkEmail"
+    private let networkManager: NetworkManaging
+
+    init(networkManager: NetworkManaging = NetworkManager()) {
+        self.networkManager = networkManager
+    }
 
     @MainActor
     func signInWithGoogle() async throws {
@@ -58,6 +63,7 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
         let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
 
         _ = try await Auth.auth().signIn(with: credential)
+        try await syncBackendUserProfile()
     }
 
     func sendSignInLink(to email: String) async throws {
@@ -150,6 +156,16 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
         }
 
         return true
+    }
+
+    private func syncBackendUserProfile() async throws {
+        let url = ApiConfig.baseURL.appending(path: "/api/v1/auth/login")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = ApiConfig.timeoutInterval
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let _: UserProfileResponse = try await networkManager.perform(request)
     }
 }
 

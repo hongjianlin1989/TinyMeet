@@ -18,11 +18,11 @@ struct HomeEventsViewModelTests {
 
     struct MockInterestedEventsRepository: InterestedEventsRepositoryProtocol {
         let interestedRows: [InterestedEventRow]
-        let onSetInterested: @Sendable (Bool, UUID) async throws -> Void
+        let onSetInterested: @Sendable (Bool, NearbyEvent) async throws -> Void
 
         init(
             interestedRows: [InterestedEventRow],
-            onSetInterested: @escaping @Sendable (Bool, UUID) async throws -> Void = { _, _ in }
+            onSetInterested: @escaping @Sendable (Bool, NearbyEvent) async throws -> Void = { _, _ in }
         ) {
             self.interestedRows = interestedRows
             self.onSetInterested = onSetInterested
@@ -36,16 +36,16 @@ struct HomeEventsViewModelTests {
             []
         }
 
-        func setInterested(_ isInterested: Bool, eventID: UUID) async throws {
-            try await onSetInterested(isInterested, eventID)
+        func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws {
+            try await onSetInterested(isInterested, event)
         }
     }
 
     actor InterestCallRecorder {
-        private(set) var calls: [(Bool, UUID)] = []
+        private(set) var calls: [(Bool, NearbyEvent)] = []
 
-        func record(isInterested: Bool, eventID: UUID) {
-            calls.append((isInterested, eventID))
+        func record(isInterested: Bool, event: NearbyEvent) {
+            calls.append((isInterested, event))
         }
     }
 
@@ -125,8 +125,8 @@ struct HomeEventsViewModelTests {
             eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [event]),
             interestedEventsRepository: MockInterestedEventsRepository(
                 interestedRows: [],
-                onSetInterested: { isInterested, eventID in
-                    await recorder.record(isInterested: isInterested, eventID: eventID)
+                onSetInterested: { isInterested, event in
+                    await recorder.record(isInterested: isInterested, event: event)
                 }
             )
         )
@@ -138,6 +138,7 @@ struct HomeEventsViewModelTests {
         let calls = await recorder.calls
         #expect(calls.count == 1)
         #expect(calls.first?.0 == true)
-        #expect(calls.first?.1 == eventID)
+        #expect(calls.first?.1.id == eventID)
+        #expect(calls.first?.1.visibility == .private)
     }
 }

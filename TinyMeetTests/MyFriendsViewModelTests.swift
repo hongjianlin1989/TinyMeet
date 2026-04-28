@@ -40,8 +40,24 @@ struct MyFriendsViewModelTests {
 
     @MainActor
     @Test func removeFriendRemovesFriendFromList() async throws {
-        let amy = UserProfile(id: 2, username: "amychen", bio: "Coffee meetup organizer", age: 27, avatarURL: nil)
-        let sofia = UserProfile(id: 7, username: "sofiawang", bio: "UX designer", age: 25, avatarURL: nil)
+        let amy = UserProfile(
+            id: "user-amychen",
+            username: "amychen",
+            displayName: "Amy Chen",
+            email: nil,
+            bio: "Coffee meetup organizer",
+            age: 27,
+            avatarURL: nil
+        )
+        let sofia = UserProfile(
+            id: "user-sofiawang",
+            username: "sofiawang",
+            displayName: "Sofia Wang",
+            email: nil,
+            bio: "UX designer",
+            age: 25,
+            avatarURL: nil
+        )
 
         let viewModel = MyFriendsViewModel(
             profileRepository: MockProfileRepository(fetchFriends: { [amy, sofia] })
