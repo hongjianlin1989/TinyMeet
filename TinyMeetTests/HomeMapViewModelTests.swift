@@ -7,13 +7,19 @@ struct HomeMapViewModelTests {
     struct MockInterestedEventsRepository: InterestedEventsRepositoryProtocol {
         let playdates: [InterestedPlaydateMapDetail]
 
-        func fetchInterestedEvents() async throws -> [InterestedEventRow] {
+        func fetchInterestedPublicEvents() async throws -> [InterestedEventRow] {
+            []
+        }
+
+        func fetchInterestedPrivateEvents() async throws -> [InterestedEventRow] {
             []
         }
 
         func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail] {
             playdates
         }
+
+        func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws {}
     }
 
     @MainActor
@@ -27,7 +33,7 @@ struct HomeMapViewModelTests {
                 tintName: "mint",
                 symbolName: "house.fill"
             ),
-            scheduledAt: try #require(iso8601Date("2026-04-26T16:30:00-07:00")),
+            scheduledAt: iso8601Date("2026-04-26T16:30:00-07:00"),
             interestedPeople: [
                 InterestedPersonLocation(
                     name: "Amy Chen",
@@ -46,7 +52,7 @@ struct HomeMapViewModelTests {
                 tintName: "orange",
                 symbolName: "basket.fill"
             ),
-            scheduledAt: try #require(iso8601Date("2026-05-02T11:15:00-07:00")),
+            scheduledAt: iso8601Date("2026-05-02T11:15:00-07:00"),
             interestedPeople: [
                 InterestedPersonLocation(
                     name: "Lucas Kim",

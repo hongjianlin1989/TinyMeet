@@ -12,7 +12,7 @@ struct InterestedEventsRepositoryTests {
         }
     }
 
-    @Test func fetchInterestedEventsDecodesResponse() async throws {
+    @Test func fetchInterestedPublicEventsDecodesResponse() async throws {
         let payload = """
         {
           "items": [
@@ -23,7 +23,25 @@ struct InterestedEventsRepositoryTests {
               "title": "Playground Picnic Crew",
               "subtitle": "Central Park Playground · Today · 4:00 PM",
               "symbolName": "calendar"
-            },
+            }
+          ]
+        }
+        """
+
+        let repository = InterestedEventsRepository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
+            shouldUseMockData: false
+        )
+
+        let rows = try await repository.fetchInterestedPublicEvents()
+        #expect(rows.count == 1)
+        #expect(rows.contains(where: { $0.title == "Playground Picnic Crew" && $0.visibility == .public }))
+    }
+
+    @Test func fetchInterestedPrivateEventsDecodesResponse() async throws {
+        let payload = """
+        {
+          "items": [
             {
               "id": "4D0D7EC9-3F8A-4F05-AF3C-9DDE7E61B61B",
               "kind": "privateMap",
@@ -41,9 +59,8 @@ struct InterestedEventsRepositoryTests {
             shouldUseMockData: false
         )
 
-        let rows = try await repository.fetchInterestedEvents()
-        #expect(rows.count == 2)
-        #expect(rows.contains(where: { $0.title == "Playground Picnic Crew" && $0.visibility == .public }))
+        let rows = try await repository.fetchInterestedPrivateEvents()
+        #expect(rows.count == 1)
         #expect(rows.contains(where: { $0.title == "Backyard Playdate" && $0.visibility == .private }))
     }
 
@@ -99,32 +116,21 @@ struct InterestedEventsRepositoryTests {
         #expect(person.locationName == "Main Library")
     }
 
-    @Test func setInterestedUsesMarkInterestedMutationRequest() async throws {
-        let payload = """
-        {
-          "id": "\(UUID().uuidString)",
-          "event_id": "\(UUID().uuidString)",
-          "event_type": "public",
-          "uid": "firebase-uid-123",
-          "location_name": "Central Park Playground",
-          "latitude": null,
-          "longitude": null,
-          "created_at": "2026-04-28T16:00:00Z"
-        }
-        """
+    @Test func setInterestedAndUninterestedUseMutationRequests() async throws {
+        let payload = "{}"
         let eventID = UUID()
         let event = NearbyEvent(
             id: eventID,
-            title: "Playground Picnic Crew",
-            locationName: "Central Park Playground",
-            timeDescription: "Today · 4:00 PM",
-            ageRange: "Ages 3-5",
-            distanceDescription: "0.4 mi away",
-            hostName: "Hosted by Mia",
-            attendeeSummary: "8 families going",
-            themeEmoji: "🛝",
-            summary: "Meet other families for snacks.",
-            visibility: .public
+            title: "Backyard Playdate",
+            locationName: "Oak Lane Backyard",
+            timeDescription: "Today · 4:30 PM",
+            ageRange: "Ages 2-5",
+            distanceDescription: "0.6 mi away",
+            hostName: "Hosted by Emma",
+            attendeeSummary: "Private group · 4 families",
+            themeEmoji: "🪣",
+            summary: "A cozy backyard sandbox playdate.",
+            visibility: .private
         )
 
         let repository = InterestedEventsRepository(

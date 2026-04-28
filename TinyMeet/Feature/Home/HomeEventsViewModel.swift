@@ -14,15 +14,12 @@ final class HomeEventsViewModel: ObservableObject {
     private let interestedEventsRepository: InterestedEventsRepositoryProtocol
 
     static func makeDefault() -> HomeEventsViewModel {
-        let isRunningPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-        return HomeEventsViewModel(
-            eventsRepository: EventsRepository(shouldUseMockData: isRunningPreview)
-        )
+        HomeEventsViewModel()
     }
 
     init(
         userDefaults: UserDefaults = .standard,
-        eventsRepository: EventsRepositoryProtocol = EventsRepository(shouldUseMockData: false),
+        eventsRepository: EventsRepositoryProtocol = EventsRepository(),
         interestedEventsRepository: InterestedEventsRepositoryProtocol = InterestedEventsRepository()
     ) {
         self.userDefaults = userDefaults
@@ -58,9 +55,16 @@ final class HomeEventsViewModel: ObservableObject {
         do {
             async let publicEvents = eventsRepository.fetchPublicEvents()
             async let privateEvents = eventsRepository.fetchPrivateEvents()
+            async let interestedPublicEvents = interestedEventsRepository.fetchInterestedPublicEvents()
+            async let interestedPrivateEvents = interestedEventsRepository.fetchInterestedPrivateEvents()
 
-            let (publicResults, privateResults) = try await (publicEvents, privateEvents)
-            let interestedEventIDs = (try? await interestedEventsRepository.fetchInterestedEvents().map(\.id)) ?? []
+            let (publicResults, privateResults, interestedPublicRows, interestedPrivateRows) = try await (
+                publicEvents,
+                privateEvents,
+                interestedPublicEvents,
+                interestedPrivateEvents
+            )
+            let interestedEventIDs = (interestedPublicRows + interestedPrivateRows).map(\.id)
             let interestedIDSet = Set(interestedEventIDs)
             events = (publicResults + privateResults).map { event in
                 var event = event
@@ -84,10 +88,7 @@ final class HomeEventsViewModel: ObservableObject {
         }
 
         let previousValue = events[index].isInterested
-        guard previousValue == false else { return }
-
         let newValue = !previousValue
-        let event = events[index]
 
         interestUpdateIDs.insert(eventID)
         events[index].isInterested = newValue
@@ -95,7 +96,7 @@ final class HomeEventsViewModel: ObservableObject {
         defer { interestUpdateIDs.remove(eventID) }
 
         do {
-            try await interestedEventsRepository.setInterested(newValue, event: event)
+            try await interestedEventsRepository.setInterested(newValue, event: events[index])
         } catch {
             events[index].isInterested = previousValue
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription

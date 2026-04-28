@@ -38,8 +38,18 @@ struct SettingsView: View {
 
             Section {
                 Button("settings.logout", role: .destructive) {
-                    appSession.logOut()
-                    dismiss()
+                    Task {
+                        let didLogOut = await appSession.logOut()
+                        if didLogOut {
+                            dismiss()
+                        }
+                    }
+                }
+
+                if let authErrorMessage = appSession.authErrorMessage {
+                    Text(authErrorMessage)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
             }
         }

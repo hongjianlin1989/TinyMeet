@@ -2,7 +2,8 @@ import CoreLocation
 import Foundation
 
 protocol InterestedEventsRepositoryProtocol: Sendable {
-    func fetchInterestedEvents() async throws -> [InterestedEventRow]
+    func fetchInterestedPublicEvents() async throws -> [InterestedEventRow]
+    func fetchInterestedPrivateEvents() async throws -> [InterestedEventRow]
     func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail]
     func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws
 }
@@ -20,32 +21,32 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.networkManager = networkManager ?? NetworkManager()
-        self.shouldUseMockData = false
+        self.shouldUseMockData = shouldUseMockData
         self.bundle = bundle
         self.decoder = decoder
     }
 
-    func fetchInterestedEvents() async throws -> [InterestedEventRow] {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(250))
-            let response: InterestedEventsResponse = try loadMockResponse(named: "interested_events")
-            return response.items.map { $0.toInterestedEventRow() }
-        }
+    func fetchInterestedPublicEvents() async throws -> [InterestedEventRow] {
+        let response = try await fetchInterestedResponse(
+            mockResourceName: "interested_public_events",
+            request: InterestedEventsUrlRequest.listPublic.asURLRequest()
+        )
+        return response.items.map { $0.toInterestedEventRow() }
+    }
 
-        let request = try InterestedEventsUrlRequest.list.asURLRequest()
-        let response: InterestedEventsResponse = try await networkManager.perform(request)
+    func fetchInterestedPrivateEvents() async throws -> [InterestedEventRow] {
+        let response = try await fetchInterestedResponse(
+            mockResourceName: "interested_private_events",
+            request: InterestedEventsUrlRequest.listPrivate.asURLRequest()
+        )
         return response.items.map { $0.toInterestedEventRow() }
     }
 
     func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail] {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(250))
-            let response: InterestedEventsResponse = try loadMockResponse(named: "interested_events")
-            return response.items.compactMap { $0.toInterestedPrivatePlaydate() }
-        }
-
-        let request = try InterestedEventsUrlRequest.list.asURLRequest()
-        let response: InterestedEventsResponse = try await networkManager.perform(request)
+        let response = try await fetchInterestedResponse(
+            mockResourceName: "interested_private_events",
+            request: InterestedEventsUrlRequest.listPrivate.asURLRequest()
+        )
         return response.items.compactMap { $0.toInterestedPrivatePlaydate() }
     }
 
@@ -55,12 +56,23 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
             return
         }
 
-        guard isInterested else {
-            return
+        let request = (isInterested
+            ? InterestedEventsUrlRequest.interested(eventID: event.id)
+            : InterestedEventsUrlRequest.uninterested(eventID: event.id)
+        ).asURLRequest()
+        let _: InterestedEventMutationResponse = try await networkManager.perform(request)
+    }
+
+    private func fetchInterestedResponse(
+        mockResourceName: String,
+        request: URLRequest
+    ) async throws -> InterestedEventsResponse {
+        if shouldUseMockData {
+            try await Task.sleep(for: .milliseconds(250))
+            return try loadMockResponse(named: mockResourceName)
         }
 
-        let request = try InterestedEventsUrlRequest.interested(event: event).asURLRequest()
-        let _: InterestedEventMutationResponse = try await networkManager.perform(request)
+        return try await networkManager.perform(request)
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
@@ -113,6 +125,7 @@ struct InterestedEventDTO: Decodable, Sendable {
     let title: String
     let subtitle: String
     let symbolName: String?
+    let eventUrl: String?
     let tintName: String?
     let latitude: Double?
     let longitude: Double?
@@ -133,6 +146,7 @@ struct InterestedEventDTO: Decodable, Sendable {
                 attendeeSummary: "",
                 themeEmoji: "",
                 summary: "",
+                eventUrl: eventUrl,
                 visibility: visibility == .private ? .private : .public
             )
             return InterestedEventRow(id: id, source: .nearby(event))

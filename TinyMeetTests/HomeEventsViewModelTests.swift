@@ -17,19 +17,26 @@ struct HomeEventsViewModelTests {
     }
 
     struct MockInterestedEventsRepository: InterestedEventsRepositoryProtocol {
-        let interestedRows: [InterestedEventRow]
+        let interestedPublicRows: [InterestedEventRow]
+        let interestedPrivateRows: [InterestedEventRow]
         let onSetInterested: @Sendable (Bool, NearbyEvent) async throws -> Void
 
         init(
-            interestedRows: [InterestedEventRow],
+            interestedPublicRows: [InterestedEventRow],
+            interestedPrivateRows: [InterestedEventRow] = [],
             onSetInterested: @escaping @Sendable (Bool, NearbyEvent) async throws -> Void = { _, _ in }
         ) {
-            self.interestedRows = interestedRows
+            self.interestedPublicRows = interestedPublicRows
+            self.interestedPrivateRows = interestedPrivateRows
             self.onSetInterested = onSetInterested
         }
 
-        func fetchInterestedEvents() async throws -> [InterestedEventRow] {
-            interestedRows
+        func fetchInterestedPublicEvents() async throws -> [InterestedEventRow] {
+            interestedPublicRows
+        }
+
+        func fetchInterestedPrivateEvents() async throws -> [InterestedEventRow] {
+            interestedPrivateRows
         }
 
         func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail] {
@@ -42,10 +49,10 @@ struct HomeEventsViewModelTests {
     }
 
     actor InterestCallRecorder {
-        private(set) var calls: [(Bool, NearbyEvent)] = []
+        private(set) var calls: [(Bool, UUID)] = []
 
         func record(isInterested: Bool, event: NearbyEvent) {
-            calls.append((isInterested, event))
+            calls.append((isInterested, event.id))
         }
     }
 
@@ -92,7 +99,7 @@ struct HomeEventsViewModelTests {
         let viewModel = HomeEventsViewModel(
             userDefaults: UserDefaults(suiteName: #function)!,
             eventsRepository: MockEventsRepository(publicEvents: [publicEvent], privateEvents: [privateEvent]),
-            interestedEventsRepository: MockInterestedEventsRepository(interestedRows: interestedRows)
+            interestedEventsRepository: MockInterestedEventsRepository(interestedPublicRows: interestedRows)
         )
 
         await viewModel.refreshNearbyEvents()
@@ -124,7 +131,7 @@ struct HomeEventsViewModelTests {
             userDefaults: UserDefaults(suiteName: #function)!,
             eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [event]),
             interestedEventsRepository: MockInterestedEventsRepository(
-                interestedRows: [],
+                interestedPublicRows: [],
                 onSetInterested: { isInterested, event in
                     await recorder.record(isInterested: isInterested, event: event)
                 }
@@ -138,7 +145,6 @@ struct HomeEventsViewModelTests {
         let calls = await recorder.calls
         #expect(calls.count == 1)
         #expect(calls.first?.0 == true)
-        #expect(calls.first?.1.id == eventID)
-        #expect(calls.first?.1.visibility == .private)
+        #expect(calls.first?.1 == eventID)
     }
 }

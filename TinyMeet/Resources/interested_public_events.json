@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1",
+      "kind": "nearby",
+      "visibility": "public",
+      "title": "Playground Picnic Crew",
+      "subtitle": "Central Park Playground · Today · 4:00 PM",
+      "symbolName": "calendar",
+      "eventUrl": "https://tinymeet.app/events/playground-picnic-crew"
+    },
+    {
+      "id": "D0F1D0A1-94D1-4A7C-AF2A-5F2A33A8B102",
+      "kind": "nearby",
+      "visibility": "public",
+      "title": "Mini Soccer Kickaround",
+      "subtitle": "Maple Field · Saturday · 9:00 AM",
+      "symbolName": "figure.soccer",
+      "eventUrl": "https://tinymeet.app/events/mini-soccer-kickaround"
+    }
+  ]
+}

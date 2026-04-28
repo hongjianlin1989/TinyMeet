@@ -3,38 +3,39 @@ import Testing
 @testable import TinyMeet
 
 struct InterestedEventsUrlRequestTests {
-    @Test func listRequestUsesInterestedEventsEndpoint() throws {
-        let request = try InterestedEventsUrlRequest.list.asURLRequest()
+    @Test func publicListRequestUsesInterestedPublicEventsEndpoint() {
+        let request = InterestedEventsUrlRequest.listPublic.asURLRequest()
 
         #expect(request.httpMethod == "GET")
-        #expect(request.url?.path == "/users/interested-events")
+        #expect(request.url?.path == "/users/interested-events/public")
         #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
         #expect(request.timeoutInterval == ApiConfig.timeoutInterval)
     }
 
-    @Test func interestedRequestUsesMarkInterestedEndpointAndEncodesPayload() throws {
+    @Test func privateListRequestUsesInterestedPrivateEventsEndpoint() {
+        let request = InterestedEventsUrlRequest.listPrivate.asURLRequest()
+
+        #expect(request.httpMethod == "GET")
+        #expect(request.url?.path == "/users/interested-events/private")
+        #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
+        #expect(request.timeoutInterval == ApiConfig.timeoutInterval)
+    }
+
+    @Test func interestedRequestUsesPostEndpoint() {
         let eventID = UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1")!
-        let event = NearbyEvent(
-            id: eventID,
-            title: "Playground Picnic Crew",
-            locationName: "Central Park Playground",
-            timeDescription: "Today · 4:00 PM",
-            ageRange: "Ages 3-5",
-            distanceDescription: "0.4 mi away",
-            hostName: "Hosted by Mia",
-            attendeeSummary: "8 families going",
-            themeEmoji: "🛝",
-            summary: "Meet other families for snacks.",
-            visibility: .public
-        )
-        let request = try InterestedEventsUrlRequest.interested(event: event).asURLRequest()
-        let body = try #require(request.httpBody)
-        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
+        let request = InterestedEventsUrlRequest.interested(eventID: eventID).asURLRequest()
 
         #expect(request.httpMethod == "POST")
-        #expect(request.url?.path == "/api/v1/events/\(eventID.uuidString)/interested")
+        #expect(request.url?.path == "/users/interested-events/\(eventID.uuidString)")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
-        #expect(json["event_type"] == "public")
-        #expect(json["location_name"] == "Central Park Playground")
+    }
+
+    @Test func uninterestedRequestUsesDeleteEndpoint() {
+        let eventID = UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1")!
+        let request = InterestedEventsUrlRequest.uninterested(eventID: eventID).asURLRequest()
+
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/users/interested-events/\(eventID.uuidString)")
+        #expect(request.httpBody == nil)
     }
 }

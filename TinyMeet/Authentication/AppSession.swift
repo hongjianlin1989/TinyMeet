@@ -9,6 +9,7 @@ final class AppSession: ObservableObject {
 
     @Published var isLoggedIn: Bool
     @Published var selectedLanguageCode: String
+    @Published var authErrorMessage: String?
 
     init(
         isLoggedIn: Bool = false,
@@ -16,6 +17,7 @@ final class AppSession: ObservableObject {
     ) {
         self.isLoggedIn = isLoggedIn
         self.selectedLanguageCode = Self.normalizedLanguageCode(from: selectedLanguageCode)
+        self.authErrorMessage = nil
     }
 
     var locale: Locale {
@@ -23,6 +25,7 @@ final class AppSession: ObservableObject {
     }
 
     func bootstrapAuthentication() async {
+        authErrorMessage = nil
         refreshAuthenticationState()
 
         guard Auth.auth().currentUser == nil else {
@@ -39,18 +42,26 @@ final class AppSession: ObservableObject {
     }
 
     func logIn() {
+        authErrorMessage = nil
         refreshAuthenticationState()
     }
 
-    func logOut() {
+    func logOut() async -> Bool {
+        authErrorMessage = nil
         GIDSignIn.sharedInstance.signOut()
-        try? Auth.auth().signOut()
-        UserDefaults.standard.removeObject(forKey: Self.pendingEmailKey)
-        isLoggedIn = false
 
-        Task { @MainActor in
-            await bootstrapAuthentication()
+        do {
+            try Auth.auth().signOut()
+        } catch {
+            authErrorMessage = "We couldn't fully sign you out. Please try again. \(error.localizedDescription)"
+            refreshAuthenticationState()
+            return false
         }
+
+        UserDefaults.standard.removeObject(forKey: Self.pendingEmailKey)
+        refreshAuthenticationState()
+        await bootstrapAuthentication()
+        return true
     }
 
     func updateLanguageCode(_ code: String) {

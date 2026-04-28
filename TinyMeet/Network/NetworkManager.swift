@@ -62,15 +62,39 @@ struct NetworkManager: NetworkManaging {
     }
 
     private func requestWithAuthorizationIfAvailable(from request: URLRequest) async throws -> URLRequest {
-        guard request.value(forHTTPHeaderField: "Authorization") == nil,
-              let currentUser = Auth.auth().currentUser else {
+        guard request.value(forHTTPHeaderField: "Authorization") == nil else {
             return request
         }
 
+        let currentUser = try await Auth.auth().tinyMeetCurrentOrAnonymousUser()
         let idToken = try await currentUser.tinyMeetIDToken()
         var authorizedRequest = request
         authorizedRequest.setValue("Bearer \(idToken)", forHTTPHeaderField: "Authorization")
         return authorizedRequest
+    }
+}
+
+private extension Auth {
+    func tinyMeetCurrentOrAnonymousUser() async throws -> User {
+        if let currentUser {
+            return currentUser
+        }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            signInAnonymously { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard let user = result?.user else {
+                    continuation.resume(throwing: NetworkError.missingAuthorizationToken)
+                    return
+                }
+
+                continuation.resume(returning: user)
+            }
+        }
     }
 }
 
