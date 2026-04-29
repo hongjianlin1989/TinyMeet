@@ -23,7 +23,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
 
     nonisolated init(
         networkManager: NetworkManaging? = nil,
-        shouldUseMockData: Bool = true,
+        shouldUseMockData: Bool = false,
         bundle: Bundle = .main,
         decoder: JSONDecoder = JSONDecoder()
     ) {
@@ -34,7 +34,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
     }
 
     func fetchUserProfile() async throws -> UserProfile {
-        let request = try ProfileUrlRequest.getUserProfile.asURLRequest()
+        let request = ProfileUrlRequest.getUserProfile.asURLRequest()
 
         if shouldUseMockData {
             try await Task.sleep(for: .milliseconds(300))
@@ -65,7 +65,9 @@ struct ProfileRespository: ProfileRespositoryProtocol {
             return searchProfiles(try mockProfiles(), matching: trimmedQuery)
         }
 
-        return []
+        let request = ProfileUrlRequest.searchProfiles(query: trimmedQuery).asURLRequest()
+        let response: UserProfileListResponse = try await networkManager.perform(request)
+        return response.items.map { $0.toUserProfile() }
     }
 
     func addFriend(_ profile: UserProfile) async throws {
@@ -74,7 +76,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
             return
         }
 
-        let request = try ProfileUrlRequest.addFriend(userID: profile.id).asURLRequest()
+        let request = ProfileUrlRequest.addFriend(userID: profile.id).asURLRequest()
         let _: AddFriendResponse = try await networkManager.perform(request)
     }
 
@@ -84,7 +86,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
             return
         }
 
-        let request = try ProfileUrlRequest.removeFriend(userID: profile.id).asURLRequest()
+        let request = ProfileUrlRequest.removeFriend(userID: profile.id).asURLRequest()
         let _: RemoveFriendResponse = try await networkManager.perform(request)
     }
 

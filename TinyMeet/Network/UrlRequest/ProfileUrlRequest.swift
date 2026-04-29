@@ -9,6 +9,7 @@ import Foundation
 
 enum ProfileUrlRequest {
     case getUserProfile
+    case searchProfiles(query: String)
     case addFriend(userID: String)
     case removeFriend(userID: String)
 
@@ -16,6 +17,8 @@ enum ProfileUrlRequest {
         switch self {
         case .getUserProfile:
             return "/api/v1/users/profile"
+        case .searchProfiles:
+            return "/api/v1/users/search"
         case .addFriend(let userID), .removeFriend(let userID):
             return "/users/\(userID)/friends"
         }
@@ -23,7 +26,7 @@ enum ProfileUrlRequest {
 
     private var method: String {
         switch self {
-        case .getUserProfile:
+        case .getUserProfile, .searchProfiles:
             return "GET"
         case .addFriend:
             return "POST"
@@ -33,7 +36,7 @@ enum ProfileUrlRequest {
     }
 
     func asURLRequest() -> URLRequest {
-        let url = ApiConfig.baseURL.appending(path: path)
+        let url = resolvedURL()
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = ApiConfig.timeoutInterval
@@ -44,5 +47,20 @@ enum ProfileUrlRequest {
         }
 
         return request
+    }
+
+    private func resolvedURL() -> URL {
+        let url = ApiConfig.baseURL.appending(path: path)
+
+        guard case .searchProfiles(let query) = self,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+
+        components.queryItems = [
+            URLQueryItem(name: "query", value: query)
+        ]
+
+        return components.url ?? url
     }
 }

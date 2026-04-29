@@ -1,70 +1,70 @@
 {
   "items": [
     {
-      "id": 1,
+      "id": "1",
       "username": "hongjianlin1989",
       "bio": "iOS developer who likes clean SwiftUI architecture and local tech meetups.",
       "age": 28,
       "avatar_url": "https://example.com/avatar-hong.jpg"
     },
     {
-      "id": 2,
+      "id": "2",
       "username": "amychen",
       "bio": "Coffee meetup organizer and product designer who loves small group conversations.",
       "age": 27,
       "avatar_url": "https://example.com/avatar-amy.jpg"
     },
     {
-      "id": 3,
+      "id": "3",
       "username": "brianlee",
       "bio": "Weekend hiker always looking for a new trail and outdoor community.",
       "age": 30,
       "avatar_url": "https://example.com/avatar-brian.jpg"
     },
     {
-      "id": 4,
+      "id": "4",
       "username": "miapark",
       "bio": "SwiftUI builder and indie iOS maker shipping side projects.",
       "age": 26,
       "avatar_url": "https://example.com/avatar-mia.jpg"
     },
     {
-      "id": 5,
+      "id": "5",
       "username": "oliviabrown",
       "bio": "Community host who enjoys planning local events and helping new members connect.",
       "age": 29,
       "avatar_url": "https://example.com/avatar-olivia.jpg"
     },
     {
-      "id": 6,
+      "id": "6",
       "username": "lucaskim",
       "bio": "Backend engineer who joins startup meetups and coffee chats on weekdays.",
       "age": 31,
       "avatar_url": "https://example.com/avatar-lucas.jpg"
     },
     {
-      "id": 7,
+      "id": "7",
       "username": "sofiawang",
       "bio": "UX designer who loves creative communities, coffee chats, and design critique groups.",
       "age": 25,
       "avatar_url": "https://example.com/avatar-sofia.jpg"
     },
     {
-      "id": 8,
+      "id": "8",
       "username": "ethannguyen",
       "bio": "Outdoor lover, runner, and regular at Bay Area hiking groups.",
       "age": 32,
       "avatar_url": "https://example.com/avatar-ethan.jpg"
     },
     {
-      "id": 9,
+      "id": "9",
       "username": "chloegarcia",
       "bio": "Social planner building welcoming local communities across the Bay Area.",
       "age": 26,
       "avatar_url": "https://example.com/avatar-chloe.jpg"
     },
     {
-      "id": 10,
+      "id": "10",
       "username": "noahpatel",
       "bio": "Mobile engineer interested in SwiftUI, maps, and meeting other builders.",
       "age": 29,

@@ -75,14 +75,14 @@ struct ProfileRespositoryTests {
         {
           "items": [
             {
-              "id": 101,
+              "id": "101",
               "username": "jsononlyuser",
               "bio": "Climber meetup regular who loves weekend bouldering sessions.",
               "age": 34,
               "avatar_url": "https://example.com/jsononlyuser.jpg"
             },
             {
-              "id": 102,
+              "id": "102",
               "username": "quietreader",
               "bio": null,
               "age": 29,
@@ -105,7 +105,7 @@ struct ProfileRespositoryTests {
         {
           "items": [
             {
-              "id": 201,
+              "id": "201",
               "username": "someone",
               "bio": "Has content but should not be searched for blank queries.",
               "age": 24,
@@ -120,6 +120,63 @@ struct ProfileRespositoryTests {
 
         let results = try await repository.searchUserProfiles(query: "   ")
         #expect(results.isEmpty)
+    }
+
+    @Test func searchUserProfilesUsesLiveSearchAPIWhenMockDataDisabled() async throws {
+        actor RequestRecorder {
+            private(set) var lastRequest: URLRequest?
+
+            func record(_ request: URLRequest) {
+                lastRequest = request
+            }
+        }
+
+        struct MockNetworkManager: NetworkManaging {
+            let data: Data
+            let recorder: RequestRecorder
+
+            func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
+                await recorder.record(request)
+                return try JSONDecoder().decode(T.self, from: data)
+            }
+        }
+
+        let payload = """
+        {
+          "items": [
+            {
+              "id": "user-amychen",
+              "username": "amychen",
+              "display_name": "Amy Chen",
+              "email": "amy@example.com",
+              "bio": "Coffee meetup organizer.",
+              "age": 27,
+              "avatar_url": "https://example.com/amy.jpg"
+            }
+          ]
+        }
+        """
+
+        let recorder = RequestRecorder()
+        let repository = ProfileRespository(
+            networkManager: MockNetworkManager(
+                data: try #require(payload.data(using: .utf8)),
+                recorder: recorder
+            ),
+            shouldUseMockData: false
+        )
+
+        let results = try await repository.searchUserProfiles(query: "  amy chen  ")
+        let request = await recorder.lastRequest
+
+        #expect(results.count == 1)
+        #expect(results.first?.username == "amychen")
+        #expect(request?.httpMethod == "GET")
+        #expect(request?.url?.path == "/api/v1/users/search")
+        let queryItem = URLComponents(url: try #require(request?.url), resolvingAgainstBaseURL: false)?
+            .queryItems?
+            .first(where: { $0.name == "query" })
+        #expect(queryItem?.value == "amy chen")
     }
 
     private func makeMockBundle(json: String) throws -> TemporaryBundleFixture {
