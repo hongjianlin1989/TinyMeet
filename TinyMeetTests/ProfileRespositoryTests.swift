@@ -70,27 +70,91 @@ struct ProfileRespositoryTests {
         #expect(profile.bio == "Building TinyMeet.")
     }
 
-    @Test func searchUserProfilesUsesMockJSONWhenAvailable() async throws {
-        let bundleFixture = try makeMockBundle(json: """
+    @Test func fetchFriendRequestsUsesMockJSONWhenAvailable() async throws {
+        let bundleFixture = try makeMockBundle(
+            resourceName: "mock_friend_requests",
+            json: """
+            {
+              "items": [
+                {
+                  "id": "request-amychen",
+                  "username": "amychen",
+                  "display_name": "Amy Chen",
+                  "bio": "Coffee meetup organizer.",
+                  "age": 27,
+                  "avatar_url": "https://example.com/amy.jpg"
+                }
+              ]
+            }
+            """
+        )
+        defer { bundleFixture.cleanup() }
+
+        let repository = ProfileRespository(shouldUseMockData: true, bundle: bundleFixture.bundle)
+
+        let requests = try await repository.fetchFriendRequests()
+        #expect(requests.count == 1)
+        #expect(requests.first?.username == "amychen")
+    }
+
+    @Test func fetchFriendRequestsUsesLiveAPIWhenMockDataDisabled() async throws {
+        let payload = """
         {
           "items": [
             {
-              "id": "101",
-              "username": "jsononlyuser",
-              "bio": "Climber meetup regular who loves weekend bouldering sessions.",
-              "age": 34,
-              "avatar_url": "https://example.com/jsononlyuser.jpg"
-            },
-            {
-              "id": "102",
-              "username": "quietreader",
-              "bio": null,
+              "id": "request-noahpatel",
+              "username": "noahpatel",
+              "display_name": "Noah Patel",
+              "bio": "Mobile engineer interested in SwiftUI.",
               "age": 29,
-              "avatar_url": null
+              "avatar_url": "https://example.com/noah.jpg"
             }
           ]
         }
-        """)
+        """
+
+        let recorder = RequestRecorder()
+        let repository = ProfileRespository(
+            networkManager: RecordingNetworkManager(
+                data: try #require(payload.data(using: .utf8)),
+                recorder: recorder
+            ),
+            shouldUseMockData: false
+        )
+
+        let requests = try await repository.fetchFriendRequests()
+        let request = await recorder.lastRequest
+
+        #expect(requests.count == 1)
+        #expect(requests.first?.username == "noahpatel")
+        #expect(request?.httpMethod == "GET")
+        #expect(request?.url?.path == "/api/v1/friends/requests")
+    }
+
+    @Test func searchUserProfilesUsesMockJSONWhenAvailable() async throws {
+        let bundleFixture = try makeMockBundle(
+            resourceName: "mock_search_profiles",
+            json: """
+            {
+              "items": [
+                {
+                  "id": "101",
+                  "username": "jsononlyuser",
+                  "bio": "Climber meetup regular who loves weekend bouldering sessions.",
+                  "age": 34,
+                  "avatar_url": "https://example.com/jsononlyuser.jpg"
+                },
+                {
+                  "id": "102",
+                  "username": "quietreader",
+                  "bio": null,
+                  "age": 29,
+                  "avatar_url": null
+                }
+              ]
+            }
+            """
+        )
         defer { bundleFixture.cleanup() }
 
         let repository = ProfileRespository(shouldUseMockData: true, bundle: bundleFixture.bundle)
@@ -101,19 +165,22 @@ struct ProfileRespositoryTests {
     }
 
     @Test func searchUserProfilesReturnsEmptyForWhitespaceQuery() async throws {
-        let bundleFixture = try makeMockBundle(json: """
-        {
-          "items": [
+        let bundleFixture = try makeMockBundle(
+            resourceName: "mock_search_profiles",
+            json: """
             {
-              "id": "201",
-              "username": "someone",
-              "bio": "Has content but should not be searched for blank queries.",
-              "age": 24,
-              "avatar_url": null
+              "items": [
+                {
+                  "id": "201",
+                  "username": "someone",
+                  "bio": "Has content but should not be searched for blank queries.",
+                  "age": 24,
+                  "avatar_url": null
+                }
+              ]
             }
-          ]
-        }
-        """)
+            """
+        )
         defer { bundleFixture.cleanup() }
 
         let repository = ProfileRespository(shouldUseMockData: true, bundle: bundleFixture.bundle)
@@ -123,24 +190,6 @@ struct ProfileRespositoryTests {
     }
 
     @Test func searchUserProfilesUsesLiveSearchAPIWhenMockDataDisabled() async throws {
-        actor RequestRecorder {
-            private(set) var lastRequest: URLRequest?
-
-            func record(_ request: URLRequest) {
-                lastRequest = request
-            }
-        }
-
-        struct MockNetworkManager: NetworkManaging {
-            let data: Data
-            let recorder: RequestRecorder
-
-            func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
-                await recorder.record(request)
-                return try JSONDecoder().decode(T.self, from: data)
-            }
-        }
-
         let payload = """
         {
           "items": [
@@ -159,7 +208,7 @@ struct ProfileRespositoryTests {
 
         let recorder = RequestRecorder()
         let repository = ProfileRespository(
-            networkManager: MockNetworkManager(
+            networkManager: RecordingNetworkManager(
                 data: try #require(payload.data(using: .utf8)),
                 recorder: recorder
             ),
@@ -179,7 +228,67 @@ struct ProfileRespositoryTests {
         #expect(queryItem?.value == "amy chen")
     }
 
-    private func makeMockBundle(json: String) throws -> TemporaryBundleFixture {
+    @Test func acceptFriendRequestUsesRespondAPIWhenMockDataDisabled() async throws {
+        let recorder = RequestRecorder()
+        let repository = ProfileRespository(
+            networkManager: RecordingNetworkManager(
+                data: try #require("{\"success\":true}".data(using: .utf8)),
+                recorder: recorder
+            ),
+            shouldUseMockData: false
+        )
+
+        let requestProfile = UserProfile(
+            id: "request-42",
+            username: "amychen",
+            displayName: "Amy Chen",
+            email: nil,
+            bio: nil,
+            age: nil,
+            avatarURL: nil
+        )
+
+        try await repository.acceptFriendRequest(requestProfile)
+        let request = await recorder.lastRequest
+
+        #expect(request?.httpMethod == "POST")
+        #expect(request?.url?.path == "/api/v1/friends/requests/request-42/respond")
+        let body = try #require(request?.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
+        #expect(json["response"] == "accept")
+    }
+
+    @Test func rejectFriendRequestUsesRespondAPIWhenMockDataDisabled() async throws {
+        let recorder = RequestRecorder()
+        let repository = ProfileRespository(
+            networkManager: RecordingNetworkManager(
+                data: try #require("{\"success\":true}".data(using: .utf8)),
+                recorder: recorder
+            ),
+            shouldUseMockData: false
+        )
+
+        let requestProfile = UserProfile(
+            id: "request-99",
+            username: "noahpatel",
+            displayName: "Noah Patel",
+            email: nil,
+            bio: nil,
+            age: nil,
+            avatarURL: nil
+        )
+
+        try await repository.rejectFriendRequest(requestProfile)
+        let request = await recorder.lastRequest
+
+        #expect(request?.httpMethod == "POST")
+        #expect(request?.url?.path == "/api/v1/friends/requests/request-99/respond")
+        let body = try #require(request?.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
+        #expect(json["response"] == "reject")
+    }
+
+    private func makeMockBundle(resourceName: String, json: String) throws -> TemporaryBundleFixture {
         let fileManager = FileManager.default
         let bundleURL = fileManager.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
@@ -202,10 +311,28 @@ struct ProfileRespositoryTests {
         )
 
         try plistData.write(to: bundleURL.appendingPathComponent("Info.plist"))
-        try Data(json.utf8).write(to: bundleURL.appendingPathComponent("mock_search_profiles.json"))
+        try Data(json.utf8).write(to: bundleURL.appendingPathComponent("\(resourceName).json"))
 
         let bundle = try #require(Bundle(url: bundleURL))
         return TemporaryBundleFixture(url: bundleURL, bundle: bundle)
+    }
+}
+
+private actor RequestRecorder {
+    private(set) var lastRequest: URLRequest?
+
+    func record(_ request: URLRequest) {
+        lastRequest = request
+    }
+}
+
+private struct RecordingNetworkManager: NetworkManaging {
+    let data: Data
+    let recorder: RequestRecorder
+
+    func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
+        await recorder.record(request)
+        return try JSONDecoder().decode(T.self, from: data)
     }
 }
 

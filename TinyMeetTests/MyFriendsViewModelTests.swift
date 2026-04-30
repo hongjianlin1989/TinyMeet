@@ -16,7 +16,10 @@ struct MyFriendsViewModelTests {
 
         func fetchUserProfile() async throws -> UserProfile { UserProfile.mock }
         func fetchFriendProfiles() async throws -> [UserProfile] { try await fetchFriends() }
+        func fetchFriendRequests() async throws -> [UserProfile] { [] }
         func searchUserProfiles(query: String) async throws -> [UserProfile] { [] }
+        func acceptFriendRequest(_ request: UserProfile) async throws {}
+        func rejectFriendRequest(_ request: UserProfile) async throws {}
         func addFriend(_ profile: UserProfile) async throws {}
         func removeFriend(_ profile: UserProfile) async throws { try await removeFriendHandler(profile) }
     }

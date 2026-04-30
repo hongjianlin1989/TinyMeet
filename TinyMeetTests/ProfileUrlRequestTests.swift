@@ -11,6 +11,28 @@ struct ProfileUrlRequestTests {
         #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
     }
 
+    @Test func friendRequestsRequestUsesApiV1FriendRequestsEndpoint() {
+        let request = ProfileUrlRequest.friendRequests.asURLRequest()
+
+        #expect(request.httpMethod == "GET")
+        #expect(request.url?.path == "/api/v1/friends/requests")
+        #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
+    }
+
+    @Test func respondToFriendRequestUsesRespondEndpointAndBody() throws {
+        let request = ProfileUrlRequest
+            .respondToFriendRequest(requestID: "request-42", action: .accept)
+            .asURLRequest()
+
+        #expect(request.httpMethod == "POST")
+        #expect(request.url?.path == "/api/v1/friends/requests/request-42/respond")
+        #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
+        #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+        let body = try #require(request.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
+        #expect(json["response"] == "accept")
+    }
+
     @Test func searchProfilesRequestUsesSearchEndpointAndEncodedQuery() {
         let request = ProfileUrlRequest.searchProfiles(query: "amy chen").asURLRequest()
 

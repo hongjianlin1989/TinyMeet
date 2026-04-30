@@ -7,8 +7,15 @@
 
 import Foundation
 
+enum FriendRequestResponseAction: String, Sendable {
+    case accept
+    case reject
+}
+
 enum ProfileUrlRequest {
     case getUserProfile
+    case friendRequests
+    case respondToFriendRequest(requestID: String, action: FriendRequestResponseAction)
     case searchProfiles(query: String)
     case addFriend(userID: String)
     case removeFriend(userID: String)
@@ -17,6 +24,10 @@ enum ProfileUrlRequest {
         switch self {
         case .getUserProfile:
             return "/api/v1/users/profile"
+        case .friendRequests:
+            return "/api/v1/friends/requests"
+        case .respondToFriendRequest(let requestID, _):
+            return "/api/v1/friends/requests/\(requestID)/respond"
         case .searchProfiles:
             return "/api/v1/users/search"
         case .addFriend(let userID), .removeFriend(let userID):
@@ -26,9 +37,9 @@ enum ProfileUrlRequest {
 
     private var method: String {
         switch self {
-        case .getUserProfile, .searchProfiles:
+        case .getUserProfile, .friendRequests, .searchProfiles:
             return "GET"
-        case .addFriend:
+        case .addFriend, .respondToFriendRequest:
             return "POST"
         case .removeFriend:
             return "DELETE"
@@ -44,6 +55,9 @@ enum ProfileUrlRequest {
 
         if case .addFriend = self {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        } else if case .respondToFriendRequest(_, _) = self {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = responseBody
         }
 
         return request
@@ -62,5 +76,13 @@ enum ProfileUrlRequest {
         ]
 
         return components.url ?? url
+    }
+
+    private var responseBody: Data? {
+        guard case .respondToFriendRequest(_, let action) = self else {
+            return nil
+        }
+
+        return Data(#"{"response":"\#(action.rawValue)"}"#.utf8)
     }
 }

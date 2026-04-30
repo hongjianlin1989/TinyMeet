@@ -10,7 +10,10 @@ import Foundation
 protocol ProfileRespositoryProtocol: Sendable {
     func fetchUserProfile() async throws -> UserProfile
     func fetchFriendProfiles() async throws -> [UserProfile]
+    func fetchFriendRequests() async throws -> [UserProfile]
     func searchUserProfiles(query: String) async throws -> [UserProfile]
+    func acceptFriendRequest(_ request: UserProfile) async throws
+    func rejectFriendRequest(_ request: UserProfile) async throws
     func addFriend(_ profile: UserProfile) async throws
     func removeFriend(_ profile: UserProfile) async throws
 }
@@ -23,7 +26,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
 
     nonisolated init(
         networkManager: NetworkManaging? = nil,
-        shouldUseMockData: Bool = false,
+        shouldUseMockData: Bool = true,
         bundle: Bundle = .main,
         decoder: JSONDecoder = JSONDecoder()
     ) {
@@ -54,6 +57,17 @@ struct ProfileRespository: ProfileRespositoryProtocol {
         return []
     }
 
+    func fetchFriendRequests() async throws -> [UserProfile] {
+        if shouldUseMockData {
+            try await Task.sleep(for: .milliseconds(200))
+            return try mockFriendRequests()
+        }
+
+        let request = ProfileUrlRequest.friendRequests.asURLRequest()
+        let response: UserProfileListResponse = try await networkManager.perform(request)
+        return response.items.map { $0.toUserProfile() }
+    }
+
     func searchUserProfiles(query: String) async throws -> [UserProfile] {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else {
@@ -68,6 +82,14 @@ struct ProfileRespository: ProfileRespositoryProtocol {
         let request = ProfileUrlRequest.searchProfiles(query: trimmedQuery).asURLRequest()
         let response: UserProfileListResponse = try await networkManager.perform(request)
         return response.items.map { $0.toUserProfile() }
+    }
+
+    func acceptFriendRequest(_ request: UserProfile) async throws {
+        try await respondToFriendRequest(request, action: .accept)
+    }
+
+    func rejectFriendRequest(_ request: UserProfile) async throws {
+        try await respondToFriendRequest(request, action: .reject)
     }
 
     func addFriend(_ profile: UserProfile) async throws {
@@ -98,6 +120,25 @@ struct ProfileRespository: ProfileRespositoryProtocol {
             return UserProfile.mockProfiles
         }
     }
+
+    private func mockFriendRequests() throws -> [UserProfile] {
+        do {
+            let response: UserProfileListResponse = try loadMockResponse(named: "mock_friend_requests")
+            return response.items.map { $0.toUserProfile() }
+        } catch ProfileRespositoryError.missingMockResource {
+            return []
+        }
+    }
+
+            private func respondToFriendRequest(_ request: UserProfile, action: FriendRequestResponseAction) async throws {
+                if shouldUseMockData {
+                    try await Task.sleep(for: .milliseconds(150))
+                    return
+                }
+
+                let apiRequest = ProfileUrlRequest.respondToFriendRequest(requestID: request.id, action: action).asURLRequest()
+                let _: FriendRequestResponse = try await networkManager.perform(apiRequest)
+            }
 
     private func searchProfiles(_ profiles: [UserProfile], matching query: String) -> [UserProfile] {
         let normalizedQuery = query.localizedLowercase
@@ -146,5 +187,9 @@ private struct AddFriendResponse: Decodable, Sendable {
 }
 
 private struct RemoveFriendResponse: Decodable, Sendable {
+    let success: Bool?
+}
+
+private struct FriendRequestResponse: Decodable, Sendable {
     let success: Bool?
 }

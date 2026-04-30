@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "id": "request-amychen",
+      "username": "amychen",
+      "display_name": "Amy Chen",
+      "email": "amychen@example.com",
+      "bio": "Coffee meetup organizer and product designer who loves small group conversations.",
+      "age": 27,
+      "avatar_url": "https://example.com/avatar-amy.jpg"
+    },
+    {
+      "id": "request-sofiawang",
+      "username": "sofiawang",
+      "display_name": "Sofia Wang",
+      "email": "sofiawang@example.com",
+      "bio": "UX designer who loves creative communities, coffee chats, and design critique groups.",
+      "age": 25,
+      "avatar_url": "https://example.com/avatar-sofia.jpg"
+    },
+    {
+      "id": "request-noahpatel",
+      "username": "noahpatel",
+      "display_name": "Noah Patel",
+      "email": "noahpatel@example.com",
+      "bio": "Mobile engineer interested in SwiftUI, maps, and meeting other builders.",
+      "age": 29,
+      "avatar_url": "https://example.com/avatar-noah.jpg"
+    }
+  ]
+}
