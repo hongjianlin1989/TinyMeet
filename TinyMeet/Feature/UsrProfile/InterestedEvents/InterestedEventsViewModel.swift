@@ -109,11 +109,7 @@ final class InterestedEventsViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            async let publicRows = repository.fetchInterestedPublicEvents()
-            async let privateRows = repository.fetchInterestedPrivateEvents()
-
-            let (publicResults, privateResults) = try await (publicRows, privateRows)
-            let rows = publicResults + privateResults
+            let rows = try await repository.fetchInterestedEvents()
             events = rows.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
         } catch {
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription

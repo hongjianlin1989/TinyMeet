@@ -8,28 +8,20 @@ protocol EventsRepositoryProtocol: Sendable {
 
 struct EventsRepository: EventsRepositoryProtocol {
     private let networkManager: NetworkManaging
-    private let shouldUseMockData: Bool
     private let bundle: Bundle
     private let decoder: JSONDecoder
 
     nonisolated init(
         networkManager: NetworkManaging? = nil,
-        shouldUseMockData: Bool = true,
         bundle: Bundle = .main,
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.networkManager = networkManager ?? NetworkManager()
-        self.shouldUseMockData = shouldUseMockData
         self.bundle = bundle
         self.decoder = decoder
     }
 
     func fetchPublicEvents() async throws -> [NearbyEvent] {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(250))
-            let response: EventsListResponse = try loadMockResponse(named: "public_events")
-            return response.items.map { $0.toNearbyEvent(visibility: .public) }
-        }
 
         let request = try EventsUrlRequest.listPublic.asURLRequest()
         let response: PublicEventsResponse = try await networkManager.perform(request)
@@ -37,23 +29,12 @@ struct EventsRepository: EventsRepositoryProtocol {
     }
 
     func fetchPrivateEvents() async throws -> [NearbyEvent] {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(250))
-            let response: EventsListResponse = try loadMockResponse(named: "private_events")
-            return response.items.map { $0.toNearbyEvent(visibility: .private) }
-        }
-
         let request = try EventsUrlRequest.listPrivate.asURLRequest()
         let response: PrivateEventsResponse = try await networkManager.perform(request)
         return response.events.map { $0.toNearbyEvent() }
     }
 
     func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(200))
-            return request.toNearbyEvent()
-        }
-
         let urlRequest = try EventsUrlRequest.create(request).asURLRequest()
         let response: EventDTO = try await networkManager.perform(urlRequest)
         return response.toNearbyEvent(visibility: request.nearbyEventVisibility)

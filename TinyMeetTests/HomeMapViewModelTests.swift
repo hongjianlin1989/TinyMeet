@@ -7,11 +7,7 @@ struct HomeMapViewModelTests {
     struct MockInterestedEventsRepository: InterestedEventsRepositoryProtocol {
         let playdates: [InterestedPlaydateMapDetail]
 
-        func fetchInterestedPublicEvents() async throws -> [InterestedEventRow] {
-            []
-        }
-
-        func fetchInterestedPrivateEvents() async throws -> [InterestedEventRow] {
+        func fetchInterestedEvents() async throws -> [InterestedEventRow] {
             []
         }
 

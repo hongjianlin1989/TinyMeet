@@ -55,16 +55,14 @@ final class HomeEventsViewModel: ObservableObject {
         do {
             async let publicEvents = eventsRepository.fetchPublicEvents()
             async let privateEvents = eventsRepository.fetchPrivateEvents()
-            async let interestedPublicEvents = interestedEventsRepository.fetchInterestedPublicEvents()
-            async let interestedPrivateEvents = interestedEventsRepository.fetchInterestedPrivateEvents()
+            async let interestedEvents = interestedEventsRepository.fetchInterestedEvents()
 
-            let (publicResults, privateResults, interestedPublicRows, interestedPrivateRows) = try await (
+            let (publicResults, privateResults, interestedRows) = try await (
                 publicEvents,
                 privateEvents,
-                interestedPublicEvents,
-                interestedPrivateEvents
+                interestedEvents
             )
-            let interestedEventIDs = (interestedPublicRows + interestedPrivateRows).map(\.id)
+            let interestedEventIDs = interestedRows.map(\.id)
             let interestedIDSet = Set(interestedEventIDs)
             events = (publicResults + privateResults).map { event in
                 var event = event

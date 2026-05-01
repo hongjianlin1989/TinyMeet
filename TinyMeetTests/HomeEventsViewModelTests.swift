@@ -17,26 +17,19 @@ struct HomeEventsViewModelTests {
     }
 
     struct MockInterestedEventsRepository: InterestedEventsRepositoryProtocol {
-        let interestedPublicRows: [InterestedEventRow]
-        let interestedPrivateRows: [InterestedEventRow]
+        let interestedRows: [InterestedEventRow]
         let onSetInterested: @Sendable (Bool, NearbyEvent) async throws -> Void
 
         init(
-            interestedPublicRows: [InterestedEventRow],
-            interestedPrivateRows: [InterestedEventRow] = [],
+            interestedRows: [InterestedEventRow],
             onSetInterested: @escaping @Sendable (Bool, NearbyEvent) async throws -> Void = { _, _ in }
         ) {
-            self.interestedPublicRows = interestedPublicRows
-            self.interestedPrivateRows = interestedPrivateRows
+            self.interestedRows = interestedRows
             self.onSetInterested = onSetInterested
         }
 
-        func fetchInterestedPublicEvents() async throws -> [InterestedEventRow] {
-            interestedPublicRows
-        }
-
-        func fetchInterestedPrivateEvents() async throws -> [InterestedEventRow] {
-            interestedPrivateRows
+        func fetchInterestedEvents() async throws -> [InterestedEventRow] {
+            interestedRows
         }
 
         func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail] {
@@ -99,7 +92,7 @@ struct HomeEventsViewModelTests {
         let viewModel = HomeEventsViewModel(
             userDefaults: UserDefaults(suiteName: #function)!,
             eventsRepository: MockEventsRepository(publicEvents: [publicEvent], privateEvents: [privateEvent]),
-            interestedEventsRepository: MockInterestedEventsRepository(interestedPublicRows: interestedRows)
+            interestedEventsRepository: MockInterestedEventsRepository(interestedRows: interestedRows)
         )
 
         await viewModel.refreshNearbyEvents()
@@ -131,7 +124,7 @@ struct HomeEventsViewModelTests {
             userDefaults: UserDefaults(suiteName: #function)!,
             eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [event]),
             interestedEventsRepository: MockInterestedEventsRepository(
-                interestedPublicRows: [],
+                interestedRows: [],
                 onSetInterested: { isInterested, event in
                     await recorder.record(isInterested: isInterested, event: event)
                 }

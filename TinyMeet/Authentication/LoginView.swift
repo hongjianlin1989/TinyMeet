@@ -11,16 +11,16 @@ struct LoginView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     headerSection
-                    Button("login.submit") {
-                        viewModel.loginTapped()
-                        appSession.logIn()
-                        dismiss()
-                    }
-                    .buttonStyle(TinyMeetPrimaryButtonStyle())
+//                    Button("login.submit") {
+//                        viewModel.loginTapped()
+//                        appSession.logIn()
+//                        dismiss()
+//                    }
+//                    .buttonStyle(TinyMeetPrimaryButtonStyle())
                   //  passwordLoginCard
                  //   dividerLabel
-                    signInLinkCard
                     googleButton
+                    signInLinkCard
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 24)

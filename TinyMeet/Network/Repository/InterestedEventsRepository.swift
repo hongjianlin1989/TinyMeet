@@ -2,77 +2,148 @@ import CoreLocation
 import Foundation
 
 protocol InterestedEventsRepositoryProtocol: Sendable {
-    func fetchInterestedPublicEvents() async throws -> [InterestedEventRow]
-    func fetchInterestedPrivateEvents() async throws -> [InterestedEventRow]
+    func fetchInterestedEvents() async throws -> [InterestedEventRow]
     func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail]
     func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws
 }
 
 struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
     private let networkManager: NetworkManaging
+    private let eventsRepository: EventsRepositoryProtocol
     private let shouldUseMockData: Bool
     private let bundle: Bundle
     private let decoder: JSONDecoder
 
     nonisolated init(
         networkManager: NetworkManaging? = nil,
+        eventsRepository: EventsRepositoryProtocol? = nil,
         shouldUseMockData: Bool = true,
         bundle: Bundle = .main,
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.networkManager = networkManager ?? NetworkManager()
+        self.eventsRepository = eventsRepository ?? EventsRepository(
+            bundle: bundle,
+            decoder: decoder
+        )
         self.shouldUseMockData = shouldUseMockData
         self.bundle = bundle
         self.decoder = decoder
     }
 
-    func fetchInterestedPublicEvents() async throws -> [InterestedEventRow] {
-        let response = try await fetchInterestedResponse(
-            mockResourceName: "interested_public_events",
-            request: InterestedEventsUrlRequest.listPublic.asURLRequest()
+    func fetchInterestedEvents() async throws -> [InterestedEventRow] {
+        async let recordsResponse = fetchInterestedResponse(
+            mockResourceName: "interested_events",
+            request: try InterestedEventsUrlRequest.list.asURLRequest()
         )
-        return response.items.map { $0.toInterestedEventRow() }
-    }
+        async let publicEvents = eventsRepository.fetchPublicEvents()
+        async let privateEvents = eventsRepository.fetchPrivateEvents()
 
-    func fetchInterestedPrivateEvents() async throws -> [InterestedEventRow] {
-        let response = try await fetchInterestedResponse(
-            mockResourceName: "interested_private_events",
-            request: InterestedEventsUrlRequest.listPrivate.asURLRequest()
+        let (response, publicResults, privateResults) = try await (recordsResponse, publicEvents, privateEvents)
+        return buildInterestedRows(
+            from: response.events,
+            publicEvents: [],
+            privateEvents: []
         )
-        return response.items.map { $0.toInterestedEventRow() }
     }
 
     func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail] {
-        let response = try await fetchInterestedResponse(
-            mockResourceName: "interested_private_events",
-            request: InterestedEventsUrlRequest.listPrivate.asURLRequest()
+        async let recordsResponse = fetchInterestedResponse(
+            mockResourceName: "interested_events",
+            request: try InterestedEventsUrlRequest.list.asURLRequest()
         )
-        return response.items.compactMap { $0.toInterestedPrivatePlaydate() }
+        async let privateEvents = eventsRepository.fetchPrivateEvents()
+
+        let (response, privateResults) = try await (recordsResponse, privateEvents)
+        return buildInterestedPrivatePlaydates(
+            from: response.events,
+            privateEvents: privateResults
+        )
     }
 
     func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(150))
-            return
-        }
-
         let request = (isInterested
-            ? InterestedEventsUrlRequest.interested(eventID: event.id)
-            : InterestedEventsUrlRequest.uninterested(eventID: event.id)
-        ).asURLRequest()
+            ? try InterestedEventsUrlRequest.interested(
+                eventID: event.id,
+                eventType: event.visibility,
+                locationName: event.locationName
+            ).asURLRequest()
+            : try InterestedEventsUrlRequest.uninterested(eventID: event.id).asURLRequest()
+        )
         let _: InterestedEventMutationResponse = try await networkManager.perform(request)
     }
 
     private func fetchInterestedResponse(
         mockResourceName: String,
         request: URLRequest
-    ) async throws -> InterestedEventsResponse {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(250))
-            return try loadMockResponse(named: mockResourceName)
-        }
+    ) async throws -> InterestedEventListResponse {
+//        if shouldUseMockData {
+//            try await Task.sleep(for: .milliseconds(250))
+//            return try loadMockResponse(named: mockResourceName)
+//        }
 
         return try await networkManager.perform(request)
+    }
+
+    private func buildInterestedRows(
+        from records: [InterestedEventRecordDTO],
+        publicEvents: [NearbyEvent],
+        privateEvents: [NearbyEvent]
+    ) -> [InterestedEventRow] {
+        let publicEventsByID = Dictionary(uniqueKeysWithValues: publicEvents.map { ($0.id, $0) })
+        let privateEventsByID = Dictionary(uniqueKeysWithValues: privateEvents.map { ($0.id, $0) })
+
+        return records.compactMap { record in
+            switch record.eventType {
+            case .public:
+                guard var event = publicEventsByID[record.eventID] else {
+                    return nil
+                }
+                event.isInterested = true
+                return InterestedEventRow(id: event.id, source: .nearby(event))
+
+            case .private:
+                guard var event = privateEventsByID[record.eventID] else {
+                    return nil
+                }
+                event.isInterested = true
+                return InterestedEventRow(id: event.id, source: .nearby(event))
+            }
+        }
+    }
+
+    private func buildInterestedPrivatePlaydates(
+        from records: [InterestedEventRecordDTO],
+        privateEvents: [NearbyEvent]
+    ) -> [InterestedPlaydateMapDetail] {
+        let privateEventsByID = Dictionary(uniqueKeysWithValues: privateEvents.map { ($0.id, $0) })
+
+        return records.compactMap { record in
+            guard record.eventType == .private,
+                  let event = privateEventsByID[record.eventID],
+                  let latitude = record.latitude,
+                  let longitude = record.longitude else {
+                return nil
+            }
+
+            let subtitleParts = [event.locationName, event.timeDescription].filter { $0.isEmpty == false }
+            let subtitle = subtitleParts.joined(separator: " · ")
+
+            let mapItem = PrivateEventMapItem(
+                id: event.id,
+                title: event.title,
+                subtitle: subtitle.isEmpty ? event.timeDescription : subtitle,
+                coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+                tintName: record.tintName ?? "mint",
+                symbolName: record.symbolName ?? "house.fill"
+            )
+
+            return InterestedPlaydateMapDetail(
+                event: mapItem,
+                scheduledAt: InterestedEventRecordDTO.parseISO8601Date(record.createdAt),
+                interestedPeople: (record.interestedPeople ?? []).map { $0.toInterestedPersonLocation() }
+            )
+        }
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
@@ -104,91 +175,43 @@ enum InterestedEventsRepositoryError: LocalizedError {
     }
 }
 
-struct InterestedEventsResponse: Decodable, Sendable {
-    let items: [InterestedEventDTO]
+struct InterestedEventListResponse: Decodable, Sendable {
+    let events: [InterestedEventRecordDTO]
 }
 
-struct InterestedEventDTO: Decodable, Sendable {
-    enum Visibility: String, Decodable, Sendable {
+struct InterestedEventRecordDTO: Decodable, Sendable {
+    enum EventType: String, Decodable, Sendable {
         case `public`
         case `private`
     }
 
-    enum Kind: String, Decodable, Sendable {
-        case nearby
-        case privateMap
-    }
-
     let id: UUID
-    let kind: Kind
-    let visibility: Visibility
-    let title: String
-    let subtitle: String
-    let symbolName: String?
-    let eventUrl: String?
-    let tintName: String?
+    let eventID: UUID
+    let eventType: EventType
+    let uid: String
+    let locationName: String?
     let latitude: Double?
     let longitude: Double?
-    let scheduledAt: String?
+    let createdAt: String
+    let symbolName: String?
+    let tintName: String?
     let interestedPeople: [InterestedPersonLocationDTO]?
 
-    func toInterestedEventRow() -> InterestedEventRow {
-        switch kind {
-        case .nearby:
-            let event = NearbyEvent(
-                id: id,
-                title: title,
-                locationName: "",
-                timeDescription: subtitle,
-                ageRange: "",
-                distanceDescription: "",
-                hostName: "",
-                attendeeSummary: "",
-                themeEmoji: "",
-                summary: "",
-                eventUrl: eventUrl,
-                visibility: visibility == .private ? .private : .public
-            )
-            return InterestedEventRow(id: id, source: .nearby(event))
-
-        case .privateMap:
-            let mapItem = PrivateEventMapItem(
-                id: id,
-                title: title,
-                subtitle: subtitle,
-                coordinate: .init(latitude: latitude ?? 0, longitude: longitude ?? 0),
-                tintName: tintName ?? "mint",
-                symbolName: symbolName ?? "house.fill"
-            )
-            return InterestedEventRow(id: id, source: .privateMap(mapItem))
-        }
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case eventID = "event_id"
+        case eventType = "event_type"
+        case uid
+        case locationName = "location_name"
+        case latitude
+        case longitude
+        case createdAt = "created_at"
+        case symbolName = "symbol_name"
+        case tintName = "tint_name"
+        case interestedPeople = "interested_people"
     }
 
-    func toInterestedPrivatePlaydate() -> InterestedPlaydateMapDetail? {
-        guard kind == .privateMap,
-              visibility == .private,
-              let latitude,
-              let longitude else {
-            return nil
-        }
-
-        let event = PrivateEventMapItem(
-            id: id,
-            title: title,
-            subtitle: subtitle,
-            coordinate: .init(latitude: latitude, longitude: longitude),
-            tintName: tintName ?? "mint",
-            symbolName: symbolName ?? "house.fill"
-        )
-
-        return InterestedPlaydateMapDetail(
-            event: event,
-            scheduledAt: scheduledAt.flatMap(InterestedEventDTO.parseISO8601Date),
-            interestedPeople: (interestedPeople ?? []).map { $0.toInterestedPersonLocation() }
-        )
-    }
-
-    private static func parseISO8601Date(_ value: String) -> Date? {
+    static func parseISO8601Date(_ value: String) -> Date? {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
