@@ -8,6 +8,10 @@
 import FirebaseAuth
 import Foundation
 
+enum TinyMeetNetworkHeader {
+    static let skipAuthorization = "X-TinyMeet-Skip-Authorization"
+}
+
 protocol NetworkManaging: Sendable {
     func perform<T: Decodable>(_ request: URLRequest) async throws -> T
 }
@@ -62,8 +66,20 @@ struct NetworkManager: NetworkManaging {
     }
 
     private func requestWithAuthorizationIfAvailable(from request: URLRequest) async throws -> URLRequest {
+        if request.value(forHTTPHeaderField: TinyMeetNetworkHeader.skipAuthorization) != nil {
+            var unauthenticatedRequest = request
+            unauthenticatedRequest.setValue(nil, forHTTPHeaderField: TinyMeetNetworkHeader.skipAuthorization)
+            return unauthenticatedRequest
+        }
+
         guard request.value(forHTTPHeaderField: "Authorization") == nil else {
             return request
+        }
+
+        if let developmentSession = DevelopmentAuthenticationSessionStorage.load() {
+            var authorizedRequest = request
+            authorizedRequest.setValue(developmentSession.authorizationHeaderValue, forHTTPHeaderField: "Authorization")
+            return authorizedRequest
         }
 
         let currentUser = try await Auth.auth().tinyMeetCurrentOrAnonymousUser()

@@ -121,9 +121,13 @@ struct CreateGroupView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("@\(friend.username)")
+                    Text(friend.displayName)
                         .font(.headline)
                         .foregroundStyle(.primary)
+
+                    Text("@\(friend.username)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
 
                     if let age = friend.age {
                         Text("Age \(age)")

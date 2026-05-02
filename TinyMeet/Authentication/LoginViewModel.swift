@@ -5,7 +5,9 @@ import SwiftUI
 final class LoginViewModel: ObservableObject {
     @Published var identifier = ""
     @Published var password = ""
+    @Published var developmentEmail = ""
     @Published var emailLinkEmail = ""
+    @Published private(set) var isDevelopmentSigningIn = false
     @Published private(set) var isGoogleSigningIn = false
     @Published private(set) var isSendingSignInLink = false
     @Published private(set) var errorMessage: String?
@@ -24,11 +26,12 @@ final class LoginViewModel: ObservableObject {
 
     var canSendSignInLink: Bool {
         let trimmedEmail = emailLinkEmail.trimmingCharacters(in: .whitespacesAndNewlines)
-        let components = trimmedEmail.split(separator: "@")
+        return isValidEmail(trimmedEmail)
+    }
 
-        return components.count == 2 &&
-            !components[0].isEmpty &&
-            components[1].contains(".")
+    var canSignInWithDevelopmentEmail: Bool {
+        let trimmedEmail = developmentEmail.trimmingCharacters(in: .whitespacesAndNewlines)
+        return isValidEmail(trimmedEmail)
     }
 
     func loginTapped() {
@@ -68,6 +71,32 @@ final class LoginViewModel: ObservableObject {
         }
     }
 
+    func signInWithDevelopmentEmailTapped() async -> Bool {
+        guard !isDevelopmentSigningIn else { return false }
+        guard canSignInWithDevelopmentEmail else {
+            errorMessage = AuthenticationError.invalidEmail.localizedDescription
+            signInLinkMessage = nil
+            return false
+        }
+
+        isDevelopmentSigningIn = true
+        errorMessage = nil
+        signInLinkMessage = nil
+
+        defer {
+            isDevelopmentSigningIn = false
+        }
+
+        do {
+            let trimmedEmail = developmentEmail.trimmingCharacters(in: .whitespacesAndNewlines)
+            _ = try await authenticationRepository.signInWithDevelopmentEmail(trimmedEmail)
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
     func signInWithGoogleTapped() async -> Bool {
         guard !isGoogleSigningIn else { return false }
 
@@ -86,5 +115,13 @@ final class LoginViewModel: ObservableObject {
             errorMessage = error.localizedDescription
             return false
         }
+    }
+
+    private func isValidEmail(_ value: String) -> Bool {
+        let components = value.split(separator: "@")
+
+        return components.count == 2 &&
+            !components[0].isEmpty &&
+            components[1].contains(".")
     }
 }

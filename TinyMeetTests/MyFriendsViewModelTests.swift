@@ -26,16 +26,40 @@ struct MyFriendsViewModelTests {
 
     @MainActor
     @Test func loadFriendsAndFilterResults() async throws {
-        let viewModel = MyFriendsViewModel(profileRepository: ProfileRespository())
+        let amy = UserProfile(
+            id: "friend-amychen",
+            username: "friend-amychen",
+            displayName: "Amy Chen",
+            email: nil,
+            bio: "Coffee meetup organizer",
+            age: 27,
+            avatarURL: nil
+        )
+        let sofia = UserProfile(
+            id: "friend-sofiawang",
+            username: "friend-sofiawang",
+            displayName: "Sofia Wang",
+            email: nil,
+            bio: "UX designer who loves coffee chats",
+            age: 25,
+            avatarURL: nil
+        )
+        let viewModel = MyFriendsViewModel(
+            profileRepository: MockProfileRepository(fetchFriends: { [amy, sofia] })
+        )
 
         await viewModel.loadFriends()
 
         #expect(viewModel.friends.isEmpty == false)
-        #expect(viewModel.friends.contains(where: { $0.username == "amychen" }))
+        #expect(viewModel.friends.contains(where: { $0.displayName == "Amy Chen" }))
 
         viewModel.searchText = "coffee"
-        #expect(viewModel.filteredFriends.contains(where: { $0.username == "amychen" }))
-        #expect(viewModel.filteredFriends.contains(where: { $0.username == "sofiawang" }))
+        #expect(viewModel.filteredFriends.contains(where: { $0.displayName == "Amy Chen" }))
+        #expect(viewModel.filteredFriends.contains(where: { $0.displayName == "Sofia Wang" }))
+
+        viewModel.searchText = "amy chen"
+        #expect(viewModel.filteredFriends.count == 1)
+        #expect(viewModel.filteredFriends.first?.displayName == "Amy Chen")
 
         viewModel.searchText = "no-such-friend"
         #expect(viewModel.filteredFriends.isEmpty)

@@ -11,14 +11,7 @@ struct LoginView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     headerSection
-//                    Button("login.submit") {
-//                        viewModel.loginTapped()
-//                        appSession.logIn()
-//                        dismiss()
-//                    }
-//                    .buttonStyle(TinyMeetPrimaryButtonStyle())
-                  //  passwordLoginCard
-                 //   dividerLabel
+                    developmentLoginCard
                     googleButton
                     signInLinkCard
                 }
@@ -123,6 +116,68 @@ struct LoginView: View {
         .padding(.horizontal, 6)
     }
 
+    private var developmentLoginCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Development sign in")
+                .font(.headline.weight(.bold))
+
+            HStack(spacing: 12) {
+                Image(systemName: "envelope.badge")
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(TinyMeetTheme.accent)
+
+                TextField("dev@example.com", text: $viewModel.developmentEmail)
+                    .keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .textContentType(.emailAddress)
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(TinyMeetTheme.sky)
+
+                Button {
+                    Task {
+                        let didSignIn = await viewModel.signInWithDevelopmentEmailTapped()
+                        if didSignIn {
+                            appSession.logIn()
+                            dismiss()
+                        }
+                    }
+                } label: {
+                    Group {
+                        if viewModel.isDevelopmentSigningIn {
+                            ProgressView()
+                                .controlSize(.small)
+                                .tint(.white)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Login")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .frame(minWidth: 74)
+                }
+                .buttonStyle(TinyMeetPrimaryButtonStyle())
+                .disabled(!viewModel.canSignInWithDevelopmentEmail || viewModel.isDevelopmentSigningIn || viewModel.isGoogleSigningIn || viewModel.isSendingSignInLink)
+                .opacity(viewModel.canSignInWithDevelopmentEmail && !viewModel.isDevelopmentSigningIn ? 1 : 0.42)
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 18)
+            .background(Color.white.opacity(0.86), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(Color.white.opacity(0.8), lineWidth: 1.2)
+            }
+
+            if let errorMessage = viewModel.errorMessage,
+               viewModel.isSendingSignInLink == false,
+               viewModel.developmentEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
+                feedbackCard(message: errorMessage, color: TinyMeetTheme.accent)
+            }
+        }
+        .padding(22)
+        .tinyMeetCardStyle()
+    }
+
     private var signInLinkCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Quick sign in")
@@ -169,14 +224,15 @@ struct LoginView: View {
                 }
                 .buttonStyle(TinyMeetPrimaryButtonStyle())
                 .opacity(viewModel.canSendSignInLink && !viewModel.isSendingSignInLink ? 1 : 0.42)
-                .disabled(!viewModel.canSendSignInLink || viewModel.isSendingSignInLink)
+                .disabled(!viewModel.canSendSignInLink || viewModel.isSendingSignInLink || viewModel.isDevelopmentSigningIn)
             }
 
             if let signInLinkMessage = viewModel.signInLinkMessage {
                 feedbackCard(message: signInLinkMessage, color: TinyMeetTheme.mint)
             }
 
-            if let errorMessage = viewModel.errorMessage {
+            if let errorMessage = viewModel.errorMessage,
+               viewModel.emailLinkEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
                 feedbackCard(message: errorMessage, color: TinyMeetTheme.accent)
             }
         }
@@ -216,7 +272,7 @@ struct LoginView: View {
             }
         }
         .buttonStyle(TinyMeetPrimaryButtonStyle())
-        .disabled(viewModel.isGoogleSigningIn || viewModel.isSendingSignInLink)
+        .disabled(viewModel.isGoogleSigningIn || viewModel.isSendingSignInLink || viewModel.isDevelopmentSigningIn)
     }
 
     private func field<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
