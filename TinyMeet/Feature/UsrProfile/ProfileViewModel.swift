@@ -27,9 +27,8 @@ final class ProfileViewModel: ObservableObject {
     }
 
     static func makeDefault() -> ProfileViewModel {
-        let isRunningPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
         return ProfileViewModel(
-            profileRespository: ProfileRespository(shouldUseMockData: isRunningPreview)
+            profileRespository: ProfileRespository()
         )
     }
 

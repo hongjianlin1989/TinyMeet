@@ -19,29 +19,21 @@ protocol ProfileRespositoryProtocol: Sendable {
 
 struct ProfileRespository: ProfileRespositoryProtocol {
     private let networkManager: NetworkManaging
-    private let shouldUseMockData: Bool
     private let bundle: Bundle
     private let decoder: JSONDecoder
 
     nonisolated init(
         networkManager: NetworkManaging? = nil,
-        shouldUseMockData: Bool = true,
         bundle: Bundle = .main,
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.networkManager = networkManager ?? NetworkManager()
-        self.shouldUseMockData = shouldUseMockData
         self.bundle = bundle
         self.decoder = decoder
     }
 
     func fetchUserProfile() async throws -> UserProfile {
         let request = ProfileUrlRequest.getUserProfile.asURLRequest()
-
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(300))
-            return UserProfile.mock
-        }
 
         let response: UserProfileResponse = try await networkManager.perform(request)
         return response.toUserProfile()
@@ -59,11 +51,6 @@ struct ProfileRespository: ProfileRespositoryProtocol {
             return []
         }
 
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(250))
-            return searchProfiles(try mockProfiles(), matching: trimmedQuery)
-        }
-
         let request = ProfileUrlRequest.searchProfiles(query: trimmedQuery).asURLRequest()
         let response: UserProfileListResponse = try await networkManager.perform(request)
         return response.items.map { $0.toUserProfile() }
@@ -78,52 +65,20 @@ struct ProfileRespository: ProfileRespositoryProtocol {
     }
 
     func addFriend(_ profile: UserProfile) async throws {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(150))
-            return
-        }
-
         let request = ProfileUrlRequest.addFriend(userID: profile.id).asURLRequest()
         let _: AddFriendResponse = try await networkManager.perform(request)
     }
 
     func removeFriend(_ profile: UserProfile) async throws {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(150))
-            return
-        }
-
+    
         let request = ProfileUrlRequest.removeFriend(userID: profile.id).asURLRequest()
         let _: RemoveFriendResponse = try await networkManager.perform(request)
     }
 
-    private func mockProfiles() throws -> [UserProfile] {
-        do {
-            let response: UserProfileListResponse = try loadMockResponse(named: "mock_search_profiles")
-            return response.items.map { $0.toUserProfile() }
-        } catch ProfileRespositoryError.missingMockResource {
-            return UserProfile.mockProfiles
-        }
+    private func respondToFriendRequest(_ request: UserProfile, action: FriendRequestResponseAction) async throws {
+            let apiRequest = ProfileUrlRequest.respondToFriendRequest(requestID: request.id, action: action).asURLRequest()
+            let _: FriendRequestResponse = try await networkManager.perform(apiRequest)
     }
-
-    private func mockFriendRequests() throws -> [UserProfile] {
-        do {
-            let response: UserProfileListResponse = try loadMockResponse(named: "mock_friend_requests")
-            return response.items.map { $0.toUserProfile() }
-        } catch ProfileRespositoryError.missingMockResource {
-            return []
-        }
-    }
-
-            private func respondToFriendRequest(_ request: UserProfile, action: FriendRequestResponseAction) async throws {
-                if shouldUseMockData {
-                    try await Task.sleep(for: .milliseconds(150))
-                    return
-                }
-
-                let apiRequest = ProfileUrlRequest.respondToFriendRequest(requestID: request.id, action: action).asURLRequest()
-                let _: FriendRequestResponse = try await networkManager.perform(apiRequest)
-            }
 
     private func searchProfiles(_ profiles: [UserProfile], matching query: String) -> [UserProfile] {
         let normalizedQuery = query.localizedLowercase
@@ -131,34 +86,6 @@ struct ProfileRespository: ProfileRespositoryProtocol {
         return profiles.filter { profile in
             profile.username.localizedLowercase.contains(normalizedQuery)
                 || (profile.bio?.localizedLowercase.contains(normalizedQuery) ?? false)
-        }
-    }
-
-    private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
-        guard let url = bundle.url(forResource: resourceName, withExtension: "json") else {
-            throw ProfileRespositoryError.missingMockResource(resourceName)
-        }
-
-        let data = try Data(contentsOf: url)
-
-        do {
-            return try decoder.decode(T.self, from: data)
-        } catch {
-            throw ProfileRespositoryError.failedToDecodeMock(resourceName, underlying: error)
-        }
-    }
-}
-
-enum ProfileRespositoryError: LocalizedError {
-    case missingMockResource(String)
-    case failedToDecodeMock(String, underlying: Error)
-
-    var errorDescription: String? {
-        switch self {
-        case .missingMockResource(let name):
-            return "Missing mock profiles JSON resource: \(name).json"
-        case .failedToDecodeMock(let name, let underlying):
-            return "Failed to decode mock profiles JSON resource \(name).json (\(underlying.localizedDescription))"
         }
     }
 }

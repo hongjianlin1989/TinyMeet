@@ -32,7 +32,6 @@ final class HomeMapViewModel: ObservableObject {
     ) {
         let locationManager = locationManager ?? LocationManager()
         self.locationManager = locationManager
-        let isRunningPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
         self.interestedEventsRepository = interestedEventsRepository ?? InterestedEventsRepository()
         self.authorizationStatus = locationManager.authorizationStatus
         self.interestedPlaydates = []
