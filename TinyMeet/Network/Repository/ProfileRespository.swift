@@ -9,7 +9,6 @@ import Foundation
 
 protocol ProfileRespositoryProtocol: Sendable {
     func fetchUserProfile() async throws -> UserProfile
-    func fetchFriendProfiles() async throws -> [UserProfile]
     func fetchFriendRequests() async throws -> [UserProfile]
     func searchUserProfiles(query: String) async throws -> [UserProfile]
     func acceptFriendRequest(_ request: UserProfile) async throws
@@ -48,21 +47,7 @@ struct ProfileRespository: ProfileRespositoryProtocol {
         return response.toUserProfile()
     }
 
-    func fetchFriendProfiles() async throws -> [UserProfile] {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(250))
-            return Array(try mockProfiles().dropFirst())
-        }
-
-        return []
-    }
-
     func fetchFriendRequests() async throws -> [UserProfile] {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(200))
-            return try mockFriendRequests()
-        }
-
         let request = ProfileUrlRequest.friendRequests.asURLRequest()
         let response: UserProfileListResponse = try await networkManager.perform(request)
         return response.items.map { $0.toUserProfile() }

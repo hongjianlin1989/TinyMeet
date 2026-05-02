@@ -50,7 +50,7 @@ final class CreateGroupViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            friends = try await profileRepository.fetchFriendProfiles()
+            friends = try await profileRepository.fetchFriendRequests()
         } catch {
             friends = []
             errorMessage = error.localizedDescription

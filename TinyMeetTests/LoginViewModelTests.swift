@@ -1,5 +1,6 @@
 import Testing
 @testable import TinyMeet
+import Foundation
 
 struct LoginViewModelTests {
     struct MockAuthenticationRepository: AuthenticationRepositoryProtocol {

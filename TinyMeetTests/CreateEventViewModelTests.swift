@@ -49,7 +49,6 @@ struct CreateEventViewModelTests {
         )
 
         let didCreate = await viewModel.createEvent()
-+
         #expect(didCreate)
         #expect(viewModel.createdEvent == created)
         #expect(viewModel.errorMessage == nil)
@@ -57,6 +56,19 @@ struct CreateEventViewModelTests {
 
     @MainActor
     @Test func createEventReturnsFalseWhenFormIsInvalid() async throws {
+        let unexpectedEvent = NearbyEvent(
+            title: "Invalid",
+            locationName: "Invalid",
+            timeDescription: "Invalid",
+            ageRange: "Invalid",
+            distanceDescription: "Invalid",
+            hostName: "Invalid",
+            attendeeSummary: "Invalid",
+            themeEmoji: "🎉",
+            summary: "Invalid",
+            visibility: .private
+        )
+
         let viewModel = CreateEventViewModel(
             title: "   ",
             location: "Central Park",
@@ -64,18 +76,7 @@ struct CreateEventViewModelTests {
             kidsAge: "3 - 5",
             eventsRepository: MockEventsRepository(createHandler: { _ in
                 Issue.record("Repository should not be called for invalid form")
-                return NearbyEvent(
-                    title: "Invalid",
-                    locationName: "Invalid",
-                    timeDescription: "Invalid",
-                    ageRange: "Invalid",
-                    distanceDescription: "Invalid",
-                    hostName: "Invalid",
-                    attendeeSummary: "Invalid",
-                    themeEmoji: "🎉",
-                    summary: "Invalid",
-                    visibility: .private
-                )
+                return unexpectedEvent
             })
         )
 

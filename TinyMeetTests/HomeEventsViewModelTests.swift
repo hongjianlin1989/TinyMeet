@@ -14,6 +14,10 @@ struct HomeEventsViewModelTests {
         func fetchPrivateEvents() async throws -> [NearbyEvent] {
             privateEvents
         }
+
+        func createEvent(_ request: TinyMeet.CreateEventRequest) async throws -> TinyMeet.NearbyEvent {
+            request.toNearbyEvent()
+        }
     }
 
     struct MockInterestedEventsRepository: InterestedEventsRepositoryProtocol {
@@ -44,8 +48,8 @@ struct HomeEventsViewModelTests {
     actor InterestCallRecorder {
         private(set) var calls: [(Bool, UUID)] = []
 
-        func record(isInterested: Bool, event: NearbyEvent) {
-            calls.append((isInterested, event.id))
+        func record(isInterested: Bool, eventID: UUID) {
+            calls.append((isInterested, eventID))
         }
     }
 
@@ -126,7 +130,7 @@ struct HomeEventsViewModelTests {
             interestedEventsRepository: MockInterestedEventsRepository(
                 interestedRows: [],
                 onSetInterested: { isInterested, event in
-                    await recorder.record(isInterested: isInterested, event: event)
+                    await recorder.record(isInterested: isInterested, eventID: event.id)
                 }
             )
         )

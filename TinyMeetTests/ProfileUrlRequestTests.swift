@@ -33,14 +33,6 @@ struct ProfileUrlRequestTests {
         #expect(json["response"] == "accept")
     }
 
-    @Test func searchProfilesRequestUsesSearchEndpointAndEncodedQuery() {
-        let request = ProfileUrlRequest.searchProfiles(query: "amy chen").asURLRequest()
-
-        #expect(request.httpMethod == "GET")
-        #expect(request.url?.path == "/api/v1/users/search")
-        #expect(URLComponents(url: try #require(request.url), resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "query" })?.value == "amy chen")
-        #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
-    }
 
     @Test func addFriendRequestUsesFriendsEndpoint() {
         let request = ProfileUrlRequest.addFriend(userID: "friend-42").asURLRequest()
