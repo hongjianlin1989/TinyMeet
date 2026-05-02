@@ -10,14 +10,12 @@ protocol InterestedEventsRepositoryProtocol: Sendable {
 struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
     private let networkManager: NetworkManaging
     private let eventsRepository: EventsRepositoryProtocol
-    private let shouldUseMockData: Bool
     private let bundle: Bundle
     private let decoder: JSONDecoder
 
     nonisolated init(
         networkManager: NetworkManaging? = nil,
         eventsRepository: EventsRepositoryProtocol? = nil,
-        shouldUseMockData: Bool = true,
         bundle: Bundle = .main,
         decoder: JSONDecoder = JSONDecoder()
     ) {
@@ -26,7 +24,6 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
             bundle: bundle,
             decoder: decoder
         )
-        self.shouldUseMockData = shouldUseMockData
         self.bundle = bundle
         self.decoder = decoder
     }
@@ -36,14 +33,18 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
             mockResourceName: "interested_events",
             request: try InterestedEventsUrlRequest.list.asURLRequest()
         )
-        async let publicEvents = eventsRepository.fetchPublicEvents()
-        async let privateEvents = eventsRepository.fetchPrivateEvents()
+        async let publicEvents = fetchEvents(for: .public)
+        async let privateEvents = fetchEvents(for: .private)
 
-        let (response, publicResults, privateResults) = try await (recordsResponse, publicEvents, privateEvents)
+        let (response, publicResults, privateResults) = try await (
+            recordsResponse,
+            publicEvents,
+            privateEvents
+        )
         return buildInterestedRows(
             from: response.events,
-            publicEvents: [],
-            privateEvents: []
+            publicEvents: publicResults,
+            privateEvents: privateResults
         )
     }
 
@@ -52,7 +53,7 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
             mockResourceName: "interested_events",
             request: try InterestedEventsUrlRequest.list.asURLRequest()
         )
-        async let privateEvents = eventsRepository.fetchPrivateEvents()
+        async let privateEvents = fetchEvents(for: .private)
 
         let (response, privateResults) = try await (recordsResponse, privateEvents)
         return buildInterestedPrivatePlaydates(
@@ -77,12 +78,16 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
         mockResourceName: String,
         request: URLRequest
     ) async throws -> InterestedEventListResponse {
-//        if shouldUseMockData {
-//            try await Task.sleep(for: .milliseconds(250))
-//            return try loadMockResponse(named: mockResourceName)
-//        }
-
         return try await networkManager.perform(request)
+    }
+
+    private func fetchEvents(for visibility: NearbyEventVisibility) async throws -> [NearbyEvent] {
+        switch visibility {
+        case .public:
+            return try await eventsRepository.fetchPublicEvents()
+        case .private:
+            return try await eventsRepository.fetchPrivateEvents()
+        }
     }
 
     private func buildInterestedRows(
@@ -94,21 +99,23 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
         let privateEventsByID = Dictionary(uniqueKeysWithValues: privateEvents.map { ($0.id, $0) })
 
         return records.compactMap { record in
+            let event: NearbyEvent?
+
             switch record.eventType {
             case .public:
-                guard var event = publicEventsByID[record.eventID] else {
-                    return nil
-                }
-                event.isInterested = true
-                return InterestedEventRow(id: event.id, source: .nearby(event))
-
+                event = publicEventsByID[record.eventID]
             case .private:
-                guard var event = privateEventsByID[record.eventID] else {
-                    return nil
-                }
-                event.isInterested = true
-                return InterestedEventRow(id: event.id, source: .nearby(event))
+                event = privateEventsByID[record.eventID]
             }
+
+            guard let event else {
+                return nil
+            }
+
+            return InterestedEventRow(
+                id: record.eventID,
+                source: .nearby(event)
+            )
         }
     }
 
