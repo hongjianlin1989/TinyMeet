@@ -4,7 +4,7 @@ import Testing
 
 struct ProfileRespositoryTests {
     @Test func addFriendSucceedsWithMockData() async throws {
-        let repository = ProfileRespository(shouldUseMockData: true)
+        let repository = ProfileRespository()
 
         try await repository.addFriend(
             UserProfile(
@@ -20,7 +20,7 @@ struct ProfileRespositoryTests {
     }
 
     @Test func removeFriendSucceedsWithMockData() async throws {
-        let repository = ProfileRespository(shouldUseMockData: true)
+        let repository = ProfileRespository()
 
         try await repository.removeFriend(
             UserProfile(
@@ -58,8 +58,7 @@ struct ProfileRespositoryTests {
         """
 
         let repository = ProfileRespository(
-            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
-            shouldUseMockData: false
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8)))
         )
 
         let profile = try await repository.fetchUserProfile()
@@ -68,6 +67,42 @@ struct ProfileRespositoryTests {
         #expect(profile.displayName == "Hongjian Lin")
         #expect(profile.email == "hongjianlin@example.com")
         #expect(profile.bio == "Building TinyMeet.")
+    }
+
+    @Test func fetchFriendProfilesDecodesFriendsArray() async throws {
+        struct MockNetworkManager: NetworkManaging {
+            let data: Data
+
+            func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
+                try JSONDecoder().decode(T.self, from: data)
+            }
+        }
+
+        let payload = """
+        {
+          "friends": [
+            {
+              "uid": "owner-123",
+              "friend_uid": "friend-456",
+              "display_name": "Amy Chen",
+              "avatar_url": "https://example.com/amy.jpg",
+              "created_at": "2026-05-02T15:13:08.220Z"
+            }
+          ]
+        }
+        """
+
+        let repository = ProfileRespository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8)))
+        )
+
+        let friends = try await repository.fetchFriendProfiles()
+
+        #expect(friends.count == 1)
+        #expect(friends.first?.id == "friend-456")
+        #expect(friends.first?.username == "friend-456")
+        #expect(friends.first?.displayName == "Amy Chen")
+        #expect(friends.first?.avatarURL?.absoluteString == "https://example.com/amy.jpg")
     }
 
     @Test func fetchFriendRequestsUsesMockJSONWhenAvailable() async throws {
@@ -90,7 +125,7 @@ struct ProfileRespositoryTests {
         )
         defer { bundleFixture.cleanup() }
 
-        let repository = ProfileRespository(shouldUseMockData: true, bundle: bundleFixture.bundle)
+        let repository = ProfileRespository(bundle: bundleFixture.bundle)
 
         let requests = try await repository.fetchFriendRequests()
         #expect(requests.count == 1)
@@ -118,8 +153,7 @@ struct ProfileRespositoryTests {
             networkManager: RecordingNetworkManager(
                 data: try #require(payload.data(using: .utf8)),
                 recorder: recorder
-            ),
-            shouldUseMockData: false
+            )
         )
 
         let requests = try await repository.fetchFriendRequests()
@@ -157,7 +191,7 @@ struct ProfileRespositoryTests {
         )
         defer { bundleFixture.cleanup() }
 
-        let repository = ProfileRespository(shouldUseMockData: true, bundle: bundleFixture.bundle)
+        let repository = ProfileRespository(bundle: bundleFixture.bundle)
 
         let results = try await repository.searchUserProfiles(query: "  climber ")
         #expect(results.count == 1)
@@ -183,7 +217,7 @@ struct ProfileRespositoryTests {
         )
         defer { bundleFixture.cleanup() }
 
-        let repository = ProfileRespository(shouldUseMockData: true, bundle: bundleFixture.bundle)
+        let repository = ProfileRespository(bundle: bundleFixture.bundle)
 
         let results = try await repository.searchUserProfiles(query: "   ")
         #expect(results.isEmpty)
@@ -211,8 +245,7 @@ struct ProfileRespositoryTests {
             networkManager: RecordingNetworkManager(
                 data: try #require(payload.data(using: .utf8)),
                 recorder: recorder
-            ),
-            shouldUseMockData: false
+            )
         )
 
         let results = try await repository.searchUserProfiles(query: "  amy chen  ")
@@ -234,8 +267,7 @@ struct ProfileRespositoryTests {
             networkManager: RecordingNetworkManager(
                 data: try #require("{\"success\":true}".data(using: .utf8)),
                 recorder: recorder
-            ),
-            shouldUseMockData: false
+            )
         )
 
         let requestProfile = UserProfile(
@@ -254,8 +286,8 @@ struct ProfileRespositoryTests {
         #expect(request?.httpMethod == "POST")
         #expect(request?.url?.path == "/api/v1/friends/requests/request-42/respond")
         let body = try #require(request?.httpBody)
-        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
-        #expect(json["response"] == "accept")
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Bool])
+        #expect(json["accept"] == true)
     }
 
     @Test func rejectFriendRequestUsesRespondAPIWhenMockDataDisabled() async throws {
@@ -264,8 +296,7 @@ struct ProfileRespositoryTests {
             networkManager: RecordingNetworkManager(
                 data: try #require("{\"success\":true}".data(using: .utf8)),
                 recorder: recorder
-            ),
-            shouldUseMockData: false
+            )
         )
 
         let requestProfile = UserProfile(
@@ -284,8 +315,8 @@ struct ProfileRespositoryTests {
         #expect(request?.httpMethod == "POST")
         #expect(request?.url?.path == "/api/v1/friends/requests/request-99/respond")
         let body = try #require(request?.httpBody)
-        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
-        #expect(json["response"] == "reject")
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Bool])
+        #expect(json["accept"] == false)
     }
 
     private func makeMockBundle(resourceName: String, json: String) throws -> TemporaryBundleFixture {

@@ -10,10 +10,20 @@ import Foundation
 enum FriendRequestResponseAction: String, Sendable {
     case accept
     case reject
+
+    var acceptValue: Bool {
+        switch self {
+        case .accept:
+            return true
+        case .reject:
+            return false
+        }
+    }
 }
 
 enum ProfileUrlRequest {
     case getUserProfile
+    case friends
     case friendRequests
     case respondToFriendRequest(requestID: String, action: FriendRequestResponseAction)
     case searchProfiles(query: String)
@@ -24,6 +34,8 @@ enum ProfileUrlRequest {
         switch self {
         case .getUserProfile:
             return "/api/v1/users/profile"
+        case .friends:
+            return "/api/v1/friends"
         case .friendRequests:
             return "/api/v1/friends/requests"
         case .respondToFriendRequest(let requestID, _):
@@ -39,7 +51,7 @@ enum ProfileUrlRequest {
 
     private var method: String {
         switch self {
-        case .getUserProfile, .friendRequests, .searchProfiles:
+        case .getUserProfile, .friends, .friendRequests, .searchProfiles:
             return "GET"
         case .addFriend, .respondToFriendRequest:
             return "POST"
@@ -81,7 +93,7 @@ enum ProfileUrlRequest {
     private var requestBody: Data? {
         switch self {
         case .respondToFriendRequest(_, let action):
-            return Data(#"{"response":"\#(action.rawValue)"}"#.utf8)
+            return Data(#"{"accept":\#(action.acceptValue)}"#.utf8)
         case .addFriend(let userID):
             return Data(#"{"receiver_uid":"\#(userID)"}"#.utf8)
         default:

@@ -8,6 +8,7 @@ protocol AuthenticationRepositoryProtocol: Sendable {
     func signInWithGoogle() async throws
 
     func sendSignInLink(to email: String) async throws
+    func signInWithDevelopmentEmail(_ email: String) async throws -> DevelopmentAuthenticationSession
 }
 
 enum AuthenticationError: LocalizedError {
@@ -26,7 +27,7 @@ enum AuthenticationError: LocalizedError {
         case .missingGoogleIDToken:
             return "Google Sign-In completed without an ID token. Please try again."
         case .invalidEmail:
-            return "Enter a valid email address to receive a sign-in link."
+            return "Enter a valid email address."
         case .missingEmailLinkURL:
             return "Email link sign-in is not configured yet. Please make sure Firebase has a valid project ID and authorized email link domain."
         }
@@ -63,6 +64,7 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
         let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
 
         _ = try await Auth.auth().signIn(with: credential)
+        DevelopmentAuthenticationSessionStorage.clear()
         try await syncBackendUserProfile()
     }
 
@@ -85,6 +87,19 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
                 }
             }
         }
+    }
+
+    func signInWithDevelopmentEmail(_ email: String) async throws -> DevelopmentAuthenticationSession {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard Self.isValidEmail(trimmedEmail) else {
+            throw AuthenticationError.invalidEmail
+        }
+
+        let request = try DevelopmentAuthenticationUrlRequest.token(email: trimmedEmail).asURLRequest()
+        let session: DevelopmentAuthenticationSession = try await networkManager.perform(request)
+        DevelopmentAuthenticationSessionStorage.save(session)
+        return session
     }
 
     private static var googleClientID: String? {

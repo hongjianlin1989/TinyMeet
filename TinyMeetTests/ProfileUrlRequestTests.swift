@@ -19,6 +19,14 @@ struct ProfileUrlRequestTests {
         #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
     }
 
+    @Test func friendsRequestUsesApiV1FriendsEndpoint() {
+        let request = ProfileUrlRequest.friends.asURLRequest()
+
+        #expect(request.httpMethod == "GET")
+        #expect(request.url?.path == "/api/v1/friends")
+        #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
+    }
+
     @Test func respondToFriendRequestUsesRespondEndpointAndBody() throws {
         let request = ProfileUrlRequest
             .respondToFriendRequest(requestID: "request-42", action: .accept)
@@ -29,8 +37,8 @@ struct ProfileUrlRequestTests {
         #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
         let body = try #require(request.httpBody)
-        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
-        #expect(json["response"] == "accept")
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Bool])
+        #expect(json["accept"] == true)
     }
 
 

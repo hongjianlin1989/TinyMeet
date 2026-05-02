@@ -6,6 +6,7 @@ import GoogleSignIn
 @MainActor
 final class AppSession: ObservableObject {
     private static let pendingEmailKey = "auth.pendingEmailLinkEmail"
+    private let userDefaults: UserDefaults
 
     @Published var isLoggedIn: Bool
     @Published var selectedLanguageCode: String
@@ -13,8 +14,10 @@ final class AppSession: ObservableObject {
 
     init(
         isLoggedIn: Bool = false,
-        selectedLanguageCode: String = Locale.preferredLanguages.first ?? "en"
+        selectedLanguageCode: String = Locale.preferredLanguages.first ?? "en",
+        userDefaults: UserDefaults = .standard
     ) {
+        self.userDefaults = userDefaults
         self.isLoggedIn = isLoggedIn
         self.selectedLanguageCode = Self.normalizedLanguageCode(from: selectedLanguageCode)
         self.authErrorMessage = nil
@@ -58,7 +61,8 @@ final class AppSession: ObservableObject {
             return false
         }
 
-        UserDefaults.standard.removeObject(forKey: Self.pendingEmailKey)
+        userDefaults.removeObject(forKey: Self.pendingEmailKey)
+        DevelopmentAuthenticationSessionStorage.clear(from: userDefaults)
         refreshAuthenticationState()
         await bootstrapAuthentication()
         return true
@@ -69,8 +73,12 @@ final class AppSession: ObservableObject {
     }
 
     private func refreshAuthenticationState() {
+        let hasDevelopmentSession = DevelopmentAuthenticationSessionStorage.load(from: userDefaults) != nil
+
         if let currentUser = Auth.auth().currentUser {
-            isLoggedIn = currentUser.isAnonymous == false
+            isLoggedIn = currentUser.isAnonymous == false || hasDevelopmentSession
+        } else if hasDevelopmentSession {
+            isLoggedIn = true
         } else {
             isLoggedIn = false
         }

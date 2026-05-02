@@ -27,7 +27,8 @@ final class CreateGroupViewModel: ObservableObject {
 
         let normalizedQuery = trimmedQuery.localizedLowercase
         return friends.filter { friend in
-            friend.username.localizedLowercase.contains(normalizedQuery)
+            friend.displayName.localizedLowercase.contains(normalizedQuery)
+                || friend.username.localizedLowercase.contains(normalizedQuery)
                 || (friend.bio?.localizedLowercase.contains(normalizedQuery) ?? false)
         }
     }
@@ -50,7 +51,7 @@ final class CreateGroupViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            friends = try await profileRepository.fetchFriendRequests()
+            friends = try await profileRepository.fetchFriendProfiles()
         } catch {
             friends = []
             errorMessage = error.localizedDescription
