@@ -34,13 +34,16 @@ struct ProfileUrlRequestTests {
     }
 
 
-    @Test func addFriendRequestUsesFriendsEndpoint() {
+    @Test func addFriendRequestUsesFriendRequestsEndpointAndBody() throws {
         let request = ProfileUrlRequest.addFriend(userID: "friend-42").asURLRequest()
 
         #expect(request.httpMethod == "POST")
-        #expect(request.url?.path == "/users/friend-42/friends")
+        #expect(request.url?.path == "/api/v1/friends/requests")
         #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+        let body = try #require(request.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
+        #expect(json["receiver_uid"] == "friend-42")
     }
 
     @Test func removeFriendRequestUsesDeleteFriendsEndpoint() {

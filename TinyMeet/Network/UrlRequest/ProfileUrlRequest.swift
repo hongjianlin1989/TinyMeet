@@ -30,8 +30,10 @@ enum ProfileUrlRequest {
             return "/api/v1/friends/requests/\(requestID)/respond"
         case .searchProfiles:
             return "/api/v1/users/search"
-        case .addFriend(let userID), .removeFriend(let userID):
-            return "/users/\(userID)/friends"
+        case .addFriend:
+            return "/api/v1/friends/requests"
+        case .removeFriend(let userID):
+            return "/api/v1/friends/\(userID)"
         }
     }
 
@@ -53,11 +55,9 @@ enum ProfileUrlRequest {
         request.timeoutInterval = ApiConfig.timeoutInterval
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        if case .addFriend = self {
+        if let requestBody {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        } else if case .respondToFriendRequest(_, _) = self {
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = responseBody
+            request.httpBody = requestBody
         }
 
         return request
@@ -78,11 +78,14 @@ enum ProfileUrlRequest {
         return components.url ?? url
     }
 
-    private var responseBody: Data? {
-        guard case .respondToFriendRequest(_, let action) = self else {
+    private var requestBody: Data? {
+        switch self {
+        case .respondToFriendRequest(_, let action):
+            return Data(#"{"response":"\#(action.rawValue)"}"#.utf8)
+        case .addFriend(let userID):
+            return Data(#"{"receiver_uid":"\#(userID)"}"#.utf8)
+        default:
             return nil
         }
-
-        return Data(#"{"response":"\#(action.rawValue)"}"#.utf8)
     }
 }
