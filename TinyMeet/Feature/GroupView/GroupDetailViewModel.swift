@@ -8,15 +8,15 @@ final class GroupDetailViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published var newMemberName = ""
 
-    private let groupID: Int
+    private let groupID: String
     private let groupsRepository: GroupsRepositoryProtocol
 
-    init(groupID: Int, groupsRepository: GroupsRepositoryProtocol) {
+    init(groupID: String, groupsRepository: GroupsRepositoryProtocol) {
         self.groupID = groupID
         self.groupsRepository = groupsRepository
     }
 
-    static func makeDefault(groupID: Int) -> GroupDetailViewModel {
+    static func makeDefault(groupID: String) -> GroupDetailViewModel {
         GroupDetailViewModel(groupID: groupID, groupsRepository: GroupsRepository())
     }
 
@@ -51,7 +51,7 @@ final class GroupDetailViewModel: ObservableObject {
         }
     }
 
-    func deleteMember(memberID: Int) async {
+    func deleteMember(memberID: String) async {
         guard !isLoading, let groupDetail else { return }
 
         isLoading = true

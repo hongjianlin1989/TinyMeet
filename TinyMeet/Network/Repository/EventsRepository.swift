@@ -36,8 +36,8 @@ struct EventsRepository: EventsRepositoryProtocol {
 
     func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent {
         let urlRequest = try EventsUrlRequest.create(request).asURLRequest()
-        let response: EventDTO = try await networkManager.perform(urlRequest)
-        return response.toNearbyEvent(visibility: request.nearbyEventVisibility)
+        let _: CreateEventResponse = try await networkManager.perform(urlRequest)
+        return request.toNearbyEvent()
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
@@ -171,25 +171,41 @@ struct PrivateEventDTO: Decodable, Sendable {
     let id: UUID
     let title: String
     let locationName: String?
+    let latitude: Double?
+    let longitude: Double?
     let ageRange: String?
     let themeEmoji: String?
+    let symbolName: String?
+    let tintName: String?
     let summary: String?
+    let hostUID: String?
     let hostName: String?
     let audienceType: String
+    let groupID: UUID?
     let attendeeCount: Int
+    let isInterested: Bool
     let scheduledAt: String
+    let createdAt: String
 
     private enum CodingKeys: String, CodingKey {
         case id
         case title
         case locationName = "location_name"
+        case latitude
+        case longitude
         case ageRange = "age_range"
         case themeEmoji = "theme_emoji"
+        case symbolName = "symbol_name"
+        case tintName = "tint_name"
         case summary
+        case hostUID = "host_uid"
         case hostName = "host_name"
         case audienceType = "audience_type"
+        case groupID = "group_id"
         case attendeeCount = "attendee_count"
+        case isInterested = "is_interested"
         case scheduledAt = "scheduled_at"
+        case createdAt = "created_at"
     }
 
     func toNearbyEvent() -> NearbyEvent {
@@ -205,6 +221,7 @@ struct PrivateEventDTO: Decodable, Sendable {
             themeEmoji: themeEmoji ?? "🏡",
             summary: summary ?? "A private meetup shared with your TinyMeet circle.",
             eventUrl: nil,
+            isInterested: isInterested,
             visibility: .private
         )
     }
@@ -270,14 +287,64 @@ private enum EventDisplayFormatter {
 }
 
 struct CreateEventRequest: Encodable, Sendable {
+    let visibility: NearbyEventVisibility
     let title: String
     let locationName: String
-    let timeDescription: String
+    let latitude: Double
+    let longitude: Double
     let ageRange: String
-    let joinVisibility: String
+    let themeEmoji: String
+    let summary: String
+    let symbolName: String?
+    let tintName: String?
+    let audienceType: String?
+    let groupID: String?
+    let invitedUIDs: [String]?
+    let eventURL: String?
+    let scheduledAt: String
+
+    private enum CodingKeys: String, CodingKey {
+        case title
+        case locationName = "location_name"
+        case latitude
+        case longitude
+        case ageRange = "age_range"
+        case themeEmoji = "theme_emoji"
+        case symbolName = "symbol_name"
+        case tintName = "tint_name"
+        case summary
+        case audienceType = "audience_type"
+        case groupID = "group_id"
+        case invitedUIDs = "invited_uids"
+        case eventURL = "event_url"
+        case scheduledAt = "scheduled_at"
+    }
 
     var nearbyEventVisibility: NearbyEventVisibility {
-        joinVisibility == "public" ? .public : .private
+        visibility
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(title, forKey: .title)
+        try container.encode(locationName, forKey: .locationName)
+        try container.encode(latitude, forKey: .latitude)
+        try container.encode(longitude, forKey: .longitude)
+        try container.encode(ageRange, forKey: .ageRange)
+        try container.encode(themeEmoji, forKey: .themeEmoji)
+        try container.encode(summary, forKey: .summary)
+        try container.encode(scheduledAt, forKey: .scheduledAt)
+
+        switch visibility {
+        case .public:
+            try container.encodeIfPresent(eventURL, forKey: .eventURL)
+        case .private:
+            try container.encodeIfPresent(symbolName, forKey: .symbolName)
+            try container.encodeIfPresent(tintName, forKey: .tintName)
+            try container.encodeIfPresent(audienceType, forKey: .audienceType)
+            try container.encodeIfPresent(groupID, forKey: .groupID)
+            try container.encodeIfPresent(invitedUIDs, forKey: .invitedUIDs)
+        }
     }
 
     func toNearbyEvent(id: UUID = UUID()) -> NearbyEvent {
@@ -285,15 +352,25 @@ struct CreateEventRequest: Encodable, Sendable {
             id: id,
             title: title,
             locationName: locationName,
-            timeDescription: timeDescription,
+            timeDescription: EventDisplayFormatter.timeDescription(from: scheduledAt),
             ageRange: ageRange,
-            distanceDescription: "Just created",
+            distanceDescription: visibility == .public ? "Community" : "Just created",
             hostName: "Hosted by You",
-            attendeeSummary: joinVisibility == "public" ? "New public event" : "Private invite event",
-            themeEmoji: "🎉",
-            summary: "A newly created playdate for your TinyMeet community.",
-            eventUrl: nil,
+            attendeeSummary: attendeeSummary,
+            themeEmoji: themeEmoji,
+            summary: summary,
+            eventUrl: visibility == .public ? eventURL : nil,
             visibility: nearbyEventVisibility
         )
     }
+
+    private var attendeeSummary: String {
+        guard visibility == .private else {
+            return "New public event"
+        }
+
+        return audienceType == "group" ? "Private group event" : "Private friends event"
+    }
 }
+
+private struct CreateEventResponse: Decodable, Sendable {}

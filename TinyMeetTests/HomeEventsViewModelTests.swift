@@ -144,4 +144,35 @@ struct HomeEventsViewModelTests {
         #expect(calls.first?.0 == true)
         #expect(calls.first?.1 == eventID)
     }
+
+    @MainActor
+    @Test func refreshNearbyEventsPreservesServerInterestStateForPrivateEvents() async throws {
+        let eventID = UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F")!
+        let privateEvent = NearbyEvent(
+            id: eventID,
+            title: "Neighborhood Sandbox Circle",
+            locationName: "Oak Lane Backyard",
+            timeDescription: "Saturday · 2:00 PM",
+            ageRange: "Ages 2-5",
+            distanceDescription: "Friends",
+            hostName: "Hosted by Emma",
+            attendeeSummary: "Private group · 4 families",
+            themeEmoji: "🪣",
+            summary: "A cozy backyard sandbox playdate.",
+            isInterested: true,
+            visibility: .private
+        )
+
+        let viewModel = HomeEventsViewModel(
+            userDefaults: UserDefaults(suiteName: #function)!,
+            eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [privateEvent]),
+            interestedEventsRepository: MockInterestedEventsRepository(interestedRows: [])
+        )
+
+        await viewModel.refreshNearbyEvents()
+
+        #expect(viewModel.events.count == 1)
+        #expect(viewModel.events.first?.id == eventID)
+        #expect(viewModel.events.first?.isInterested == true)
+    }
 }

@@ -12,7 +12,7 @@ struct TinyMeetTests {
 
     @Test func groupsRepositoryAddsAndDeletesMember() async throws {
         let repository = GroupsRepository()
-        let originalDetail = try await repository.fetchGroupDetail(groupID: 1)
+        let originalDetail = try await repository.fetchGroupDetail(groupID: "1")
 
         #expect(!originalDetail.members.isEmpty)
 
@@ -28,7 +28,7 @@ struct TinyMeetTests {
     }
 
     @Test func profileRepositoryMockSearchReturnsExpectedUsers() async throws {
-        let repository = await ProfileRespository()
+        let repository = ProfileRespository()
 
         let swiftUIResults = try await repository.searchUserProfiles(query: "swiftui")
         #expect(swiftUIResults.contains(where: { $0.username == "miapark" }))

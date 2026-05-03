@@ -3,18 +3,129 @@ import Testing
 @testable import TinyMeet
 
 struct GroupsRepositoryMockJSONTests {
-    @Test func mockJSONDecodesGroupsAndDedicatedDetailsWithMembers() async throws {
-        let repository = GroupsRepository(shouldUseMockData: true, bundle: .main)
+    struct MockNetworkManager: NetworkManaging {
+        let data: Data
+
+        func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
+            try JSONDecoder().decode(T.self, from: data)
+        }
+    }
+
+    actor RequestRecorder {
+        private(set) var lastRequest: URLRequest?
+
+        func record(_ request: URLRequest) {
+            lastRequest = request
+        }
+    }
+
+    struct RecordingNetworkManager: NetworkManaging {
+        let data: Data
+        let recorder: RequestRecorder
+
+        func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
+            await recorder.record(request)
+            return try JSONDecoder().decode(T.self, from: data)
+        }
+    }
+
+    @Test func fetchGroupsDecodesLiveGroupsEnvelope() async throws {
+        let payload = """
+        {
+          "groups": [
+            {
+              "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "name": "South Bay Builders",
+              "location": "Sunnyvale",
+              "summary": "Weekend maker meetups.",
+              "owner_uid": "owner-123",
+              "created_at": "2026-05-03T13:23:57.123Z"
+            }
+          ],
+          "next_cursor": "cursor-1"
+        }
+        """
+
+        let repository = GroupsRepository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8)))
+        )
 
         let groups = try await repository.fetchGroups()
-        #expect(groups.isEmpty == false)
-        #expect(groups.allSatisfy { $0.memberCount > 0 })
 
-        let firstGroup = try #require(groups.first)
-        let detail = try await repository.fetchGroupDetail(groupID: firstGroup.id)
-        #expect(detail.id == firstGroup.id)
-        #expect(detail.members.isEmpty == false)
-        #expect(detail.memberCount == detail.members.count)
-        #expect(detail.members.allSatisfy { $0.name.isEmpty == false && $0.role.isEmpty == false })
+        #expect(groups.count == 1)
+        #expect(groups.first?.id == "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+        #expect(groups.first?.name == "South Bay Builders")
+        #expect(groups.first?.location == "Sunnyvale")
+        #expect(groups.first?.summary == "Weekend maker meetups.")
+        #expect(groups.first?.memberCount == 0)
+    }
+
+    @Test func fetchGroupDetailDecodesLiveGroupDetailResponse() async throws {
+        let payload = """
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "South Bay Builders",
+          "location": "Sunnyvale",
+          "summary": "Weekend maker meetups.",
+          "owner_uid": "owner-123",
+          "created_at": "2026-05-03T13:31:30.463Z",
+          "members": [
+            {
+              "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "uid": "member-456",
+              "role": "member",
+              "joined_at": "2026-05-03T13:31:30.463Z"
+            }
+          ]
+        }
+        """
+
+        let repository = GroupsRepository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8)))
+        )
+
+        let detail = try await repository.fetchGroupDetail(groupID: "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+
+        #expect(detail.id == "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+        #expect(detail.name == "South Bay Builders")
+        #expect(detail.ownerUID == "owner-123")
+        #expect(detail.createdAt == "2026-05-03T13:31:30.463Z")
+        #expect(detail.members.count == 1)
+        let firstMember = try #require(detail.members.first)
+        #expect(firstMember.id == "member-456")
+        #expect(firstMember.name == "member-456")
+        #expect(firstMember.role == "member")
+        #expect(firstMember.joinedAt == "2026-05-03T13:31:30.463Z")
+    }
+
+    @Test func createGroupUsesPostGroupsAPI() async throws {
+        let recorder = RequestRecorder()
+        let repository = GroupsRepository(
+            networkManager: RecordingNetworkManager(
+                data: try #require("{}".data(using: .utf8)),
+                recorder: recorder
+            )
+        )
+
+        try await repository.createGroup(
+            CreateGroupRequest(
+                name: "Weekend Hikers",
+                location: "Palo Alto",
+                summary: "Easy weekend hikes.",
+                friendUIDs: ["friend-1", "friend-2"]
+            )
+        )
+
+        let request = await recorder.lastRequest
+        let body = try #require(request?.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let friendUIDs = try #require(json["friend_uids"] as? [String])
+
+        #expect(request?.httpMethod == "POST")
+        #expect(request?.url?.path == "/api/v1/groups")
+        #expect(json["name"] as? String == "Weekend Hikers")
+        #expect(json["location"] as? String == "Palo Alto")
+        #expect(json["summary"] as? String == "Easy weekend hikes.")
+        #expect(friendUIDs == ["friend-1", "friend-2"])
     }
 }

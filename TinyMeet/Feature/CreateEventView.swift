@@ -13,8 +13,11 @@ struct CreateEventView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     headerSection
+                    modeSection
                     inputSection
-                    visibilitySection
+                    if viewModel.isPrivateEvent {
+                        audienceSection
+                    }
                     if let errorMessage = viewModel.errorMessage {
                         errorCard(message: errorMessage)
                     }
@@ -25,6 +28,9 @@ struct CreateEventView: View {
             }
             .navigationTitle("Create Playdate")
             .navigationBarTitleDisplayMode(.inline)
+            .task {
+                await viewModel.loadAudienceOptions()
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") {
@@ -42,7 +48,7 @@ struct CreateEventView: View {
             Text("Create Playdate")
                 .font(.title2.weight(.bold))
 
-            Text("Set up a cheerful meet-up and decide who gets to join the fun.")
+            Text("Create either a private playdate for friends/groups or a public event for the community.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -53,18 +59,80 @@ struct CreateEventView: View {
         .shadow(color: TinyMeetTheme.shadow, radius: 14, x: 0, y: 8)
     }
 
-    private var inputSection: some View {
-        VStack(spacing: 16) {
-            formField(title: "Title", text: $viewModel.title, prompt: "Playground")
-            formField(title: "Location", text: $viewModel.location, prompt: "Central Park")
-            formField(title: "Time", text: $viewModel.time, prompt: "Tomorrow 3pm")
-            formField(title: "Kids Age", text: $viewModel.kidsAge, prompt: "3 - 5")
+    private var modeSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Event Type")
+                .font(.headline)
+
+            Picker("Event Type", selection: $viewModel.eventMode) {
+                ForEach(CreateEventViewModel.EventMode.allCases) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
         }
         .padding(18)
         .tinyMeetCardStyle()
     }
 
-    private var visibilitySection: some View {
+    private var inputSection: some View {
+        VStack(spacing: 16) {
+            formField(title: "Title", text: $viewModel.title, prompt: "Playground")
+            formField(title: "Location", text: $viewModel.location, prompt: "Central Park")
+            formField(title: "Kids Age", text: $viewModel.kidsAge, prompt: "3 - 5")
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Scheduled At")
+                    .font(.headline)
+
+                DatePicker(
+                    "Scheduled At",
+                    selection: $viewModel.scheduledAt,
+                    in: Date()...,
+                    displayedComponents: [.date, .hourAndMinute]
+                )
+                .labelsHidden()
+                .datePickerStyle(.graphical)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 8)
+                .background(TinyMeetTheme.badge)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Summary")
+                    .font(.headline)
+
+                TextField("A fun private playdate for local families.", text: $viewModel.summary, axis: .vertical)
+                    .lineLimit(3...5)
+                    .textInputAutocapitalization(.sentences)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(TinyMeetTheme.badge)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+
+            if viewModel.isPublicEvent {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Event URL")
+                        .font(.headline)
+
+                    TextField("https://tinymeet.app/events/spring-picnic", text: $viewModel.eventURL)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                        .autocorrectionDisabled()
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(TinyMeetTheme.badge)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+            }
+        }
+        .padding(18)
+        .tinyMeetCardStyle()
+    }
+
+    private var audienceSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Who can join")
                 .font(.headline)
@@ -93,6 +161,39 @@ struct CreateEventView: View {
                     .buttonStyle(.plain)
                 }
             }
+
+            if viewModel.shouldShowGroupPicker {
+                if viewModel.isLoadingOptions && viewModel.availableGroups.isEmpty {
+                    ProgressView("Loading groups...")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if viewModel.availableGroups.isEmpty {
+                    Text("No groups available yet.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Choose Group")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+
+                        Picker("Choose Group", selection: $viewModel.selectedGroupID) {
+                            ForEach(viewModel.availableGroups) { group in
+                                Text(group.name).tag(Optional(group.id))
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(TinyMeetTheme.badge)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
+                }
+            }
+
+            Text(viewModel.automaticInviteSummary)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
         .padding(18)
         .tinyMeetCardStyle()
@@ -112,11 +213,11 @@ struct CreateEventView: View {
                     .controlSize(.small)
                     .frame(maxWidth: .infinity)
             } else {
-                Text("Create")
+                Text(viewModel.isPublicEvent ? "Create Public Event" : "Create Private Playdate")
             }
         }
         .buttonStyle(TinyMeetPrimaryButtonStyle())
-        .disabled(!viewModel.isFormValid || viewModel.isSubmitting)
+        .disabled(!viewModel.isFormValid || viewModel.isSubmitting || (viewModel.isPrivateEvent && viewModel.isLoadingOptions))
     }
 
     private func errorCard(message: String) -> some View {

@@ -11,8 +11,8 @@ enum EventsUrlRequest {
             return "/api/v1/events/public"
         case .listPrivate:
             return "/api/v1/events/private"
-        case .create:
-            return "/events"
+        case .create(let request):
+            return request.visibility == .public ? "/api/v1/events/public" : "/api/v1/events/private"
         }
     }
 

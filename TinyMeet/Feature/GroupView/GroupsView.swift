@@ -69,7 +69,12 @@ struct GroupsView: View {
         }
         .tinyMeetPageBackground()
         .sheet(isPresented: $isShowingCreateGroup) {
-            CreateGroupView(viewModel: CreateGroupViewModel.makeDefault())
+            CreateGroupView(
+                viewModel: CreateGroupViewModel.makeDefault(),
+                onGroupCreated: {
+                    await viewModel.fetchGroups()
+                }
+            )
         }
     }
 
@@ -95,12 +100,14 @@ struct GroupsView: View {
 
                 Spacer(minLength: 12)
 
-                Text("\(group.memberCount) members")
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(TinyMeetTheme.badge)
-                    .clipShape(Capsule())
+                if group.memberCount > 0 {
+                    Text("\(group.memberCount) members")
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(TinyMeetTheme.badge)
+                        .clipShape(Capsule())
+                }
             }
 
             if let summary = group.summary, !summary.isEmpty {

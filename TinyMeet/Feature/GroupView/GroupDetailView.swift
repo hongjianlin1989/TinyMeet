@@ -135,7 +135,7 @@ struct GroupDetailView: View {
                             Text(member.name)
                                 .font(.body.weight(.semibold))
 
-                            Text(member.role)
+                            Text(member.role.capitalized)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -169,6 +169,6 @@ struct GroupDetailView: View {
 
 #Preview {
     NavigationStack {
-        GroupDetailView(viewModel: GroupDetailViewModel.makeDefault(groupID: 1))
+        GroupDetailView(viewModel: GroupDetailViewModel.makeDefault(groupID: "1"))
     }
 }

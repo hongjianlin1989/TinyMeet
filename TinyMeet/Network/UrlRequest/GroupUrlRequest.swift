@@ -2,21 +2,22 @@ import Foundation
 
 enum GroupUrlRequest {
     case list
-    case detail(groupID: Int)
-    case addMember(groupID: Int, name: String)
-    case addUserProfile(groupID: Int, userID: String)
-    case deleteMember(groupID: Int, memberID: Int)
+    case create(CreateGroupRequest)
+    case detail(groupID: String)
+    case addMember(groupID: String, name: String)
+    case addUserProfile(groupID: String, userID: String)
+    case deleteMember(groupID: String, memberID: String)
 
     private var path: String {
         switch self {
-        case .list:
-            return "/groups"
+        case .list, .create:
+            return "/api/v1/groups"
         case .detail(let groupID):
-            return "/groups/\(groupID)"
+            return "/api/v1/groups/\(groupID)"
         case .addMember(let groupID, _), .addUserProfile(let groupID, _):
-            return "/groups/\(groupID)/members"
+            return "/api/v1/groups/\(groupID)/members"
         case .deleteMember(let groupID, let memberID):
-            return "/groups/\(groupID)/members/\(memberID)"
+            return "/api/v1/groups/\(groupID)/members/\(memberID)"
         }
     }
 
@@ -24,7 +25,7 @@ enum GroupUrlRequest {
         switch self {
         case .list, .detail:
             return "GET"
-        case .addMember, .addUserProfile:
+        case .create, .addMember, .addUserProfile:
             return "POST"
         case .deleteMember:
             return "DELETE"
@@ -52,6 +53,8 @@ enum GroupUrlRequest {
         switch self {
         case .list, .detail, .deleteMember:
             return nil
+        case .create(let request):
+            return try encoder.encode(request)
         case .addMember(_, let name):
             return try encoder.encode(AddMemberPayload(name: name))
         case .addUserProfile(_, let userID):

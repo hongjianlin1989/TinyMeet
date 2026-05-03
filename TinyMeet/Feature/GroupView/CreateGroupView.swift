@@ -3,9 +3,14 @@ import SwiftUI
 struct CreateGroupView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: CreateGroupViewModel
+    private let onGroupCreated: @Sendable () async -> Void
 
-    init(viewModel: CreateGroupViewModel) {
+    init(
+        viewModel: CreateGroupViewModel,
+        onGroupCreated: @escaping @Sendable () async -> Void = {}
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.onGroupCreated = onGroupCreated
     }
 
     var body: some View {
@@ -14,30 +19,42 @@ struct CreateGroupView: View {
                 if viewModel.isLoading && viewModel.friends.isEmpty {
                     ProgressView("Loading friends...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let errorMessage = viewModel.errorMessage, viewModel.friends.isEmpty {
-                    ContentUnavailableView(
-                        "Friends unavailable",
-                        systemImage: "person.2.slash",
-                        description: Text(errorMessage)
-                    )
-                } else if viewModel.filteredFriends.isEmpty {
-                    ContentUnavailableView(
-                        viewModel.friends.isEmpty ? "No friends yet" : "No matching friends",
-                        systemImage: viewModel.friends.isEmpty ? "person.2" : "magnifyingglass",
-                        description: Text(
-                            viewModel.friends.isEmpty
-                                ? "Add friends first, then come back to start a new group."
-                                : "Try a different name or keyword."
-                        )
-                    )
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
                             headerCard
+                            groupDetailsCard
 
-                            LazyVStack(spacing: 14) {
-                                ForEach(viewModel.filteredFriends) { friend in
-                                    friendRow(friend)
+                            if let errorMessage = viewModel.errorMessage {
+                                errorBanner(errorMessage)
+                            }
+
+                            VStack(alignment: .leading, spacing: 14) {
+                                Text("Invite friends")
+                                    .font(.headline)
+
+                                if let errorMessage = viewModel.errorMessage, viewModel.friends.isEmpty {
+                                    ContentUnavailableView(
+                                        "Friends unavailable",
+                                        systemImage: "person.2.slash",
+                                        description: Text(errorMessage)
+                                    )
+                                } else if viewModel.filteredFriends.isEmpty {
+                                    ContentUnavailableView(
+                                        viewModel.friends.isEmpty ? "No friends yet" : "No matching friends",
+                                        systemImage: viewModel.friends.isEmpty ? "person.2" : "magnifyingglass",
+                                        description: Text(
+                                            viewModel.friends.isEmpty
+                                                ? "Add friends first, then come back to start a new group."
+                                                : "Try a different name or keyword."
+                                        )
+                                    )
+                                } else {
+                                    LazyVStack(spacing: 14) {
+                                        ForEach(viewModel.filteredFriends) { friend in
+                                            friendRow(friend)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -74,10 +91,14 @@ struct CreateGroupView: View {
                     }
 
                     Button {
-                        viewModel.createGroup()
-                        dismiss()
+                        Task {
+                            if await viewModel.createGroup() {
+                                await onGroupCreated()
+                                dismiss()
+                            }
+                        }
                     } label: {
-                        Text("Create Group")
+                        Text(viewModel.isSubmitting ? "Creating Group..." : "Create Group")
                     }
                     .buttonStyle(TinyMeetPrimaryButtonStyle())
                     .disabled(!viewModel.canCreateGroup)
@@ -91,10 +112,10 @@ struct CreateGroupView: View {
 
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Pick friends for your next group")
+            Text("Create your next group")
                 .font(.title3.weight(.bold))
 
-            Text("Browse your friend list and tap people you want to group together.")
+            Text("Add a name, location, summary, and choose the friends you want to invite.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -103,6 +124,60 @@ struct CreateGroupView: View {
         .background(TinyMeetTheme.heroGradient)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .shadow(color: TinyMeetTheme.shadow, radius: 14, x: 0, y: 8)
+    }
+
+    private var groupDetailsCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Group details")
+                .font(.headline)
+
+            formField(title: "Name", prompt: "Weekend Hikers", text: $viewModel.groupName)
+            formField(title: "Location", prompt: "Palo Alto", text: $viewModel.groupLocation)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Summary")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                TextField(
+                    "Tell people what this group is about",
+                    text: $viewModel.groupSummary,
+                    axis: .vertical
+                )
+                .lineLimit(3...5)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(TinyMeetTheme.badge)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+        }
+        .padding(20)
+        .tinyMeetCardStyle()
+    }
+
+    private func errorBanner(_ message: String) -> some View {
+        Text(message)
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(TinyMeetTheme.accent)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func formField(title: String, prompt: String, text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            TextField(prompt, text: text)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(TinyMeetTheme.badge)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
     }
 
     private func friendRow(_ friend: UserProfile) -> some View {

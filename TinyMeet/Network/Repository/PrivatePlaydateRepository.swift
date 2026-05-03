@@ -7,29 +7,20 @@ protocol PrivatePlaydateRepositoryProtocol: Sendable {
 
 struct PrivatePlaydateRepository: PrivatePlaydateRepositoryProtocol {
     private let networkManager: NetworkManaging
-    private let shouldUseMockData: Bool
     private let bundle: Bundle
     private let decoder: JSONDecoder
 
     init(
         networkManager: NetworkManaging? = nil,
-        shouldUseMockData: Bool = true,
         bundle: Bundle = .main,
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.networkManager = networkManager ?? NetworkManager()
-        self.shouldUseMockData = shouldUseMockData
         self.bundle = bundle
         self.decoder = decoder
     }
 
     func fetchPrivatePlaydates() async throws -> [PrivateEventMapItem] {
-        if shouldUseMockData {
-            try await Task.sleep(for: .milliseconds(250))
-            let response: PrivatePlaydateListResponse = try loadMockResponse(named: "private_playdates")
-            return response.items.map { $0.toMapItem() }
-        }
-
         let request = PrivatePlaydateUrlRequest.list.asURLRequest()
         let response: PrivatePlaydateListResponse = try await networkManager.perform(request)
         return response.items.map { $0.toMapItem() }

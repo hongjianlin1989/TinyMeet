@@ -3,20 +3,32 @@ import Foundation
 
 @MainActor
 final class CreateGroupViewModel: ObservableObject {
+    @Published var groupName = ""
+    @Published var groupLocation = ""
+    @Published var groupSummary = ""
     @Published var searchText = ""
     @Published private(set) var friends: [UserProfile] = []
     @Published private(set) var selectedFriendIDs: Set<String> = []
     @Published private(set) var isLoading = false
+    @Published private(set) var isSubmitting = false
     @Published private(set) var errorMessage: String?
 
     private let profileRepository: ProfileRespositoryProtocol
+    private let groupsRepository: GroupsRepositoryProtocol
 
-    init(profileRepository: ProfileRespositoryProtocol) {
+    init(
+        profileRepository: ProfileRespositoryProtocol,
+        groupsRepository: GroupsRepositoryProtocol
+    ) {
         self.profileRepository = profileRepository
+        self.groupsRepository = groupsRepository
     }
 
     static func makeDefault() -> CreateGroupViewModel {
-        CreateGroupViewModel(profileRepository: ProfileRespository())
+        CreateGroupViewModel(
+            profileRepository: ProfileRespository(),
+            groupsRepository: GroupsRepository()
+        )
     }
 
     var filteredFriends: [UserProfile] {
@@ -39,7 +51,9 @@ final class CreateGroupViewModel: ObservableObject {
     }
 
     var canCreateGroup: Bool {
-        !selectedFriendIDs.isEmpty
+        !isSubmitting
+            && !groupName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !selectedFriendIDs.isEmpty
     }
 
     func loadFriends() async {
@@ -70,8 +84,27 @@ final class CreateGroupViewModel: ObservableObject {
         selectedFriendIDs.contains(friend.id)
     }
 
-    func createGroup() {
-        guard canCreateGroup else { return }
-        // Group creation flow will be implemented here.
+    func createGroup() async -> Bool {
+        guard canCreateGroup else { return false }
+
+        isSubmitting = true
+        errorMessage = nil
+
+        defer { isSubmitting = false }
+
+        do {
+            try await groupsRepository.createGroup(
+                CreateGroupRequest(
+                    name: groupName.trimmingCharacters(in: .whitespacesAndNewlines),
+                    location: groupLocation.trimmingCharacters(in: .whitespacesAndNewlines),
+                    summary: groupSummary.trimmingCharacters(in: .whitespacesAndNewlines),
+                    friendUIDs: selectedFriendIDs.sorted()
+                )
+            )
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
     }
 }

@@ -66,7 +66,7 @@ final class HomeEventsViewModel: ObservableObject {
             let interestedIDSet = Set(interestedEventIDs)
             events = (publicResults + privateResults).map { event in
                 var event = event
-                event.isInterested = interestedIDSet.contains(event.id)
+                event.isInterested = event.isInterested || interestedIDSet.contains(event.id)
                 return event
             }
         } catch {
