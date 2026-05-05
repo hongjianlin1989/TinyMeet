@@ -128,4 +128,22 @@ struct GroupsRepositoryMockJSONTests {
         #expect(json["summary"] as? String == "Easy weekend hikes.")
         #expect(friendUIDs == ["friend-1", "friend-2"])
     }
+
+    @Test func deleteGroupUsesDeleteGroupsAPI() async throws {
+        let recorder = RequestRecorder()
+        let repository = GroupsRepository(
+            networkManager: RecordingNetworkManager(
+                data: try #require("{}".data(using: .utf8)),
+                recorder: recorder
+            )
+        )
+
+        try await repository.deleteGroup(groupID: "group-123")
+
+        let request = await recorder.lastRequest
+
+        #expect(request?.httpMethod == "DELETE")
+        #expect(request?.url?.path == "/api/v1/groups/group-123")
+        #expect(request?.httpBody == nil)
+    }
 }

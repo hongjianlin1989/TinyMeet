@@ -36,6 +36,10 @@ enum NetworkError: LocalizedError {
     }
 }
 
+struct GeneralResponse: Decodable, Sendable {
+    let success: Bool?
+}
+
 struct NetworkManager: NetworkManaging {
     private let session: URLSession
     private let decoder: JSONDecoder
@@ -55,6 +59,10 @@ struct NetworkManager: NetworkManaging {
 
         guard 200..<300 ~= httpResponse.statusCode else {
             throw NetworkError.unsuccessfulStatusCode(httpResponse.statusCode)
+        }
+        
+        guard !data.isEmpty else {
+            return GeneralResponse(success: true) as! T
         }
 
         do {

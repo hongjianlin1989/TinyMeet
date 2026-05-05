@@ -3,21 +3,19 @@ import Testing
 @testable import TinyMeet
 
 struct CreateGroupViewModelTests {
-    struct MockProfileRepository: ProfileRespositoryProtocol {
+    struct MockFriendsRepository: FriendsRepositoryProtocol {
         let fetchFriendsHandler: @Sendable () async throws -> [UserProfile]
 
         init(fetchFriendsHandler: @escaping @Sendable () async throws -> [UserProfile] = { [] }) {
             self.fetchFriendsHandler = fetchFriendsHandler
         }
 
-        func fetchUserProfile() async throws -> UserProfile { UserProfile.mock }
         func fetchFriendProfiles() async throws -> [UserProfile] { try await fetchFriendsHandler() }
         func fetchFriendRequests() async throws -> [UserProfile] { [] }
-        func searchUserProfiles(query: String) async throws -> [UserProfile] { [] }
-        func acceptFriendRequest(_ request: UserProfile) async throws {}
-        func rejectFriendRequest(_ request: UserProfile) async throws {}
-        func addFriend(_ profile: UserProfile) async throws {}
-        func removeFriend(_ profile: UserProfile) async throws {}
+        func acceptFriendRequest(_ request: UserProfile) async throws { }
+        func rejectFriendRequest(_ request: UserProfile) async throws { }
+        func addFriend(_ profile: UserProfile) async throws { }
+        func removeFriend(_ profile: UserProfile) async throws { }
     }
 
     struct MockGroupsRepository: GroupsRepositoryProtocol {
@@ -30,9 +28,10 @@ struct CreateGroupViewModelTests {
         func fetchGroups() async throws -> [MeetupGroup] { [] }
         func createGroup(_ request: CreateGroupRequest) async throws { try await createGroupHandler(request) }
         func fetchGroupDetail(groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
+        func deleteGroup(groupID: String) async throws { }
         func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
-        func addUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
-        func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
+        func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws { }
+        func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool { true }
     }
 
     actor CreateGroupRequestRecorder {
@@ -65,7 +64,7 @@ struct CreateGroupViewModelTests {
         )
         let recorder = CreateGroupRequestRecorder()
         let viewModel = CreateGroupViewModel(
-            profileRepository: MockProfileRepository(fetchFriendsHandler: { [amy, noah] }),
+            friendsRepository: MockFriendsRepository(fetchFriendsHandler: { [amy, noah] }),
             groupsRepository: MockGroupsRepository(createGroupHandler: { request in
                 await recorder.record(request)
             })
@@ -108,7 +107,7 @@ struct CreateGroupViewModelTests {
             avatarURL: nil
         )
         let viewModel = CreateGroupViewModel(
-            profileRepository: MockProfileRepository(fetchFriendsHandler: { [amy] }),
+            friendsRepository: MockFriendsRepository(fetchFriendsHandler: { [amy] }),
             groupsRepository: MockGroupsRepository(createGroupHandler: { _ in
                 throw SampleError()
             })

@@ -34,7 +34,7 @@ final class CreateEventViewModel: ObservableObject {
     @Published private(set) var createdEvent: NearbyEvent?
 
     private let eventsRepository: EventsRepositoryProtocol
-    private let profileRepository: ProfileRespositoryProtocol
+    private let friendsRepository: FriendsRepositoryProtocol
     private let groupsRepository: GroupsRepositoryProtocol
 
     init(
@@ -48,7 +48,7 @@ final class CreateEventViewModel: ObservableObject {
         joinVisibility: JoinVisibility = .friends,
         selectedGroupID: String? = nil,
         eventsRepository: EventsRepositoryProtocol = EventsRepository(),
-        profileRepository: ProfileRespositoryProtocol = ProfileRespository(),
+        friendsRepository: FriendsRepositoryProtocol = FriendsRepository(),
         groupsRepository: GroupsRepositoryProtocol = GroupsRepository()
     ) {
         self.title = title
@@ -61,7 +61,7 @@ final class CreateEventViewModel: ObservableObject {
         self.joinVisibility = joinVisibility
         self.selectedGroupID = selectedGroupID
         self.eventsRepository = eventsRepository
-        self.profileRepository = profileRepository
+        self.friendsRepository = friendsRepository
         self.groupsRepository = groupsRepository
     }
 
@@ -116,7 +116,7 @@ final class CreateEventViewModel: ObservableObject {
         var loadErrors: [String] = []
 
         do {
-            friends = try await profileRepository.fetchFriendProfiles()
+            friends = try await friendsRepository.fetchFriendProfiles()
         } catch {
             friends = []
             loadErrors.append((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)

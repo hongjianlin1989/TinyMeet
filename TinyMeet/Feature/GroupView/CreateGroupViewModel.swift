@@ -13,20 +13,20 @@ final class CreateGroupViewModel: ObservableObject {
     @Published private(set) var isSubmitting = false
     @Published private(set) var errorMessage: String?
 
-    private let profileRepository: ProfileRespositoryProtocol
+    private let friendsRepository: FriendsRepositoryProtocol
     private let groupsRepository: GroupsRepositoryProtocol
 
     init(
-        profileRepository: ProfileRespositoryProtocol,
+        friendsRepository: FriendsRepositoryProtocol,
         groupsRepository: GroupsRepositoryProtocol
     ) {
-        self.profileRepository = profileRepository
+        self.friendsRepository = friendsRepository
         self.groupsRepository = groupsRepository
     }
 
     static func makeDefault() -> CreateGroupViewModel {
         CreateGroupViewModel(
-            profileRepository: ProfileRespository(),
+            friendsRepository: FriendsRepository(),
             groupsRepository: GroupsRepository()
         )
     }
@@ -65,7 +65,7 @@ final class CreateGroupViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            friends = try await profileRepository.fetchFriendProfiles()
+            friends = try await friendsRepository.fetchFriendProfiles()
         } catch {
             friends = []
             errorMessage = error.localizedDescription

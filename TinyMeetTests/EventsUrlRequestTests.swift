@@ -47,7 +47,7 @@ struct EventsUrlRequestTests {
         #expect(urlRequest.url?.path == "/api/v1/events/private")
         #expect(urlRequest.value(forHTTPHeaderField: "Accept") == "application/json")
         #expect(urlRequest.value(forHTTPHeaderField: "Content-Type") == "application/json")
-        #expect(json["title"] == "Playground Party")
+        #expect(json["title"] as? String == "Playground Party")
         #expect(json["location_name"] as? String == "Central Park")
         #expect(json["age_range"] as? String == "3 - 5")
         #expect(json["theme_emoji"] as? String == "🎉")

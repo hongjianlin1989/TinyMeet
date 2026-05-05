@@ -9,14 +9,14 @@ final class MyFriendsViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var removingFriendIDs: Set<String> = []
 
-    private let profileRepository: ProfileRespositoryProtocol
+    private let friendsRepository: FriendsRepositoryProtocol
 
-    init(profileRepository: ProfileRespositoryProtocol) {
-        self.profileRepository = profileRepository
+    init(friendsRepository: FriendsRepositoryProtocol) {
+        self.friendsRepository = friendsRepository
     }
 
     static func makeDefault() -> MyFriendsViewModel {
-        MyFriendsViewModel(profileRepository: ProfileRespository())
+        MyFriendsViewModel(friendsRepository: FriendsRepository())
     }
 
     var filteredFriends: [UserProfile] {
@@ -42,7 +42,7 @@ final class MyFriendsViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            friends = try await profileRepository.fetchFriendProfiles()
+            friends = try await friendsRepository.fetchFriendProfiles()
         } catch {
             friends = []
             errorMessage = error.localizedDescription
@@ -61,7 +61,7 @@ final class MyFriendsViewModel: ObservableObject {
         defer { removingFriendIDs.remove(friend.id) }
 
         do {
-            try await profileRepository.removeFriend(friend)
+            try await friendsRepository.removeFriend(friend)
             friends.removeAll { $0.id == friend.id }
         } catch {
             errorMessage = error.localizedDescription

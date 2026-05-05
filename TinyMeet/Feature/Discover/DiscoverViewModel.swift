@@ -11,13 +11,21 @@ final class DiscoverViewModel: ObservableObject {
     @Published private(set) var successMessage: String?
 
     private let profileRespository: ProfileRespositoryProtocol
+    private let friendsRepository: FriendsRepositoryProtocol
 
-    init(profileRespository: ProfileRespositoryProtocol) {
+    init(
+        profileRespository: ProfileRespositoryProtocol,
+        friendsRepository: FriendsRepositoryProtocol
+    ) {
         self.profileRespository = profileRespository
+        self.friendsRepository = friendsRepository
     }
 
     static func makeDefault() -> DiscoverViewModel {
-        DiscoverViewModel(profileRespository: ProfileRespository())
+        DiscoverViewModel(
+            profileRespository: ProfileRespository(),
+            friendsRepository: FriendsRepository()
+        )
     }
 
     var hasActiveQuery: Bool {
@@ -65,7 +73,7 @@ final class DiscoverViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            try await profileRespository.addFriend(profile)
+            try await friendsRepository.addFriend(profile)
             addedFriendIDs.insert(profile.id)
             successMessage = "Added @\(profile.username) as a friend."
         } catch {

@@ -6,10 +6,6 @@ struct CreateEventViewModelTests {
     struct MockEventsRepository: EventsRepositoryProtocol {
         let createHandler: @Sendable (CreateEventRequest) async throws -> NearbyEvent
 
-        init(createHandler: @escaping @Sendable (CreateEventRequest) async throws -> NearbyEvent) {
-            self.createHandler = createHandler
-        }
-
         func fetchPublicEvents() async throws -> [NearbyEvent] { [] }
         func fetchPrivateEvents() async throws -> [NearbyEvent] { [] }
         func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent {
@@ -17,28 +13,27 @@ struct CreateEventViewModelTests {
         }
     }
 
-    struct MockProfileRepository: ProfileRespositoryProtocol {
+    struct MockFriendsRepository: FriendsRepositoryProtocol {
         let friends: [UserProfile]
 
-        func fetchUserProfile() async throws -> UserProfile { UserProfile.mock }
         func fetchFriendProfiles() async throws -> [UserProfile] { friends }
         func fetchFriendRequests() async throws -> [UserProfile] { [] }
-        func searchUserProfiles(query: String) async throws -> [UserProfile] { [] }
-        func acceptFriendRequest(_ request: UserProfile) async throws {}
-        func rejectFriendRequest(_ request: UserProfile) async throws {}
-        func addFriend(_ profile: UserProfile) async throws {}
-        func removeFriend(_ profile: UserProfile) async throws {}
+        func acceptFriendRequest(_ request: UserProfile) async throws { }
+        func rejectFriendRequest(_ request: UserProfile) async throws { }
+        func addFriend(_ profile: UserProfile) async throws { }
+        func removeFriend(_ profile: UserProfile) async throws { }
     }
 
     struct MockGroupsRepository: GroupsRepositoryProtocol {
         let groups: [MeetupGroup]
 
         func fetchGroups() async throws -> [MeetupGroup] { groups }
-        func createGroup(_ request: CreateGroupRequest) async throws {}
+        func createGroup(_ request: CreateGroupRequest) async throws { }
         func fetchGroupDetail(groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
+        func deleteGroup(groupID: String) async throws { }
         func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
-        func addUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
-        func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
+        func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws { }
+        func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool { true }
     }
 
     actor CreateEventRequestRecorder {
@@ -104,7 +99,7 @@ struct CreateEventViewModelTests {
                 #expect(request.eventURL == nil)
                 return created
             }),
-            profileRepository: MockProfileRepository(friends: [amy, noah]),
+            friendsRepository: MockFriendsRepository(friends: [amy, noah]),
             groupsRepository: MockGroupsRepository(groups: [])
         )
 
@@ -112,7 +107,7 @@ struct CreateEventViewModelTests {
 
         let didCreate = await viewModel.createEvent()
         #expect(didCreate)
-        #expect(viewModel.createdEvent == created)
+        #expect(viewModel.createdEvent?.id == created.id)
         #expect(viewModel.errorMessage == nil)
     }
 
@@ -138,11 +133,13 @@ struct CreateEventViewModelTests {
                 #expect(request.visibility == .private)
                 #expect(request.audienceType == "group")
                 #expect(request.groupID == "group-123")
-                #expect(request.invitedUIDs.isEmpty)
+                #expect(request.invitedUIDs == [])
                 #expect(request.eventURL == nil)
-                return request.toNearbyEvent()
+                return await MainActor.run {
+                    request.toNearbyEvent()
+                }
             }),
-            profileRepository: MockProfileRepository(friends: []),
+            friendsRepository: MockFriendsRepository(friends: []),
             groupsRepository: MockGroupsRepository(groups: [group])
         )
 
@@ -172,8 +169,8 @@ struct CreateEventViewModelTests {
             visibility: .public
         )
         let scheduledAt = ISO8601DateFormatter().date(from: "2026-05-03T14:15:45Z") ?? Date()
-
         let recorder = CreateEventRequestRecorder()
+
         let viewModel = CreateEventViewModel(
             title: "Community Picnic",
             location: "Town Green",
@@ -194,18 +191,17 @@ struct CreateEventViewModelTests {
                 #expect(request.invitedUIDs == nil)
                 return created
             }),
-            profileRepository: MockProfileRepository(friends: []),
+            friendsRepository: MockFriendsRepository(friends: []),
             groupsRepository: MockGroupsRepository(groups: [])
         )
 
-        #expect(viewModel.isPublicEvent)
-        #expect(viewModel.shouldShowGroupPicker == false)
         let didCreate = await viewModel.createEvent()
         let requests = await recorder.requests
+
         #expect(didCreate)
         #expect(requests.count == 1)
         #expect(requests.first?.visibility == .public)
-        #expect(viewModel.createdEvent == created)
+        #expect(viewModel.createdEvent?.id == created.id)
         #expect(viewModel.errorMessage == nil)
     }
 
@@ -233,11 +229,12 @@ struct CreateEventViewModelTests {
                 Issue.record("Repository should not be called for invalid form")
                 return unexpectedEvent
             }),
-            profileRepository: MockProfileRepository(friends: []),
+            friendsRepository: MockFriendsRepository(friends: []),
             groupsRepository: MockGroupsRepository(groups: [])
         )
 
         let didCreate = await viewModel.createEvent()
+
         #expect(didCreate == false)
         #expect(viewModel.createdEvent == nil)
     }

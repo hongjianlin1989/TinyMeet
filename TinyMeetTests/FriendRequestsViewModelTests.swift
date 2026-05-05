@@ -3,7 +3,7 @@ import Foundation
 @testable import TinyMeet
 
 struct FriendRequestsViewModelTests {
-    struct MockProfileRepository: ProfileRespositoryProtocol {
+    struct MockFriendsRepository: FriendsRepositoryProtocol {
         let fetchFriendRequestsHandler: @Sendable () async throws -> [UserProfile]
         let acceptFriendRequestHandler: @Sendable (UserProfile) async throws -> Void
         let rejectFriendRequestHandler: @Sendable (UserProfile) async throws -> Void
@@ -18,14 +18,12 @@ struct FriendRequestsViewModelTests {
             self.rejectFriendRequestHandler = rejectFriendRequestHandler
         }
 
-        func fetchUserProfile() async throws -> UserProfile { UserProfile.mock }
         func fetchFriendProfiles() async throws -> [UserProfile] { [] }
         func fetchFriendRequests() async throws -> [UserProfile] { try await fetchFriendRequestsHandler() }
-        func searchUserProfiles(query: String) async throws -> [UserProfile] { [] }
         func acceptFriendRequest(_ request: UserProfile) async throws { try await acceptFriendRequestHandler(request) }
         func rejectFriendRequest(_ request: UserProfile) async throws { try await rejectFriendRequestHandler(request) }
-        func addFriend(_ profile: UserProfile) async throws {}
-        func removeFriend(_ profile: UserProfile) async throws {}
+        func addFriend(_ profile: UserProfile) async throws { }
+        func removeFriend(_ profile: UserProfile) async throws { }
     }
 
     @MainActor
@@ -50,7 +48,7 @@ struct FriendRequestsViewModelTests {
         )
 
         let viewModel = FriendRequestsViewModel(
-            profileRepository: MockProfileRepository(fetchFriendRequestsHandler: { [amy, noah] })
+            friendsRepository: MockFriendsRepository(fetchFriendRequestsHandler: { [amy, noah] })
         )
 
         await viewModel.loadRequests()
@@ -67,7 +65,7 @@ struct FriendRequestsViewModelTests {
         }
 
         let viewModel = FriendRequestsViewModel(
-            profileRepository: MockProfileRepository(fetchFriendRequestsHandler: { throw SampleError() })
+            friendsRepository: MockFriendsRepository(fetchFriendRequestsHandler: { throw SampleError() })
         )
 
         await viewModel.loadRequests()
@@ -88,7 +86,7 @@ struct FriendRequestsViewModelTests {
             avatarURL: nil
         )
         let viewModel = FriendRequestsViewModel(
-            profileRepository: MockProfileRepository(
+            friendsRepository: MockFriendsRepository(
                 fetchFriendRequestsHandler: { [amy] },
                 acceptFriendRequestHandler: { request in
                     #expect(request.id == amy.id)
@@ -117,7 +115,7 @@ struct FriendRequestsViewModelTests {
             avatarURL: nil
         )
         let viewModel = FriendRequestsViewModel(
-            profileRepository: MockProfileRepository(
+            friendsRepository: MockFriendsRepository(
                 fetchFriendRequestsHandler: { [noah] },
                 rejectFriendRequestHandler: { request in
                     #expect(request.id == noah.id)

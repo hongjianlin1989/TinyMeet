@@ -41,6 +41,14 @@ struct GroupUrlRequestTests {
         #expect(request.url?.path == "/api/v1/groups/group-42")
     }
 
+    @Test func deleteGroupRequestUsesDeleteMethod() throws {
+        let request = try GroupUrlRequest.deleteGroup(groupID: "group-42").asURLRequest()
+
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/api/v1/groups/group-42")
+        #expect(request.httpBody == nil)
+    }
+
     @Test func addMemberRequestEncodesNamePayload() throws {
         let request = try GroupUrlRequest.addMember(groupID: "group-7", name: "Taylor Brooks").asURLRequest()
         let body = try #require(request.httpBody)
@@ -52,14 +60,14 @@ struct GroupUrlRequestTests {
         #expect(json["name"] == "Taylor Brooks")
     }
 
-    @Test func addUserProfileRequestEncodesUserIDPayload() throws {
-        let request = try GroupUrlRequest.addUserProfile(groupID: "group-9", userID: "firebase-uid-101").asURLRequest()
+    @Test func inviteUserProfileRequestEncodesInviteeUIDPayload() throws {
+        let request = try GroupUrlRequest.inviteUserProfile(groupID: "group-9", inviteeUID: "firebase-uid-101").asURLRequest()
         let body = try #require(request.httpBody)
         let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
 
         #expect(request.httpMethod == "POST")
-        #expect(request.url?.path == "/api/v1/groups/group-9/members")
-        #expect(json["userID"] == "firebase-uid-101")
+        #expect(request.url?.path == "/api/v1/groups/group-9/invites")
+        #expect(json["invitee_uid"] == "firebase-uid-101")
     }
 
     @Test func deleteMemberRequestUsesDeleteMethod() throws {

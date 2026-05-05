@@ -36,7 +36,7 @@ struct GroupDetail: Identifiable, Equatable, Sendable {
     let summary: String?
     let ownerUID: String?
     let createdAt: String?
-    let members: [GroupMember]
+    var members: [GroupMember]
 
     var memberCount: Int { members.count }
 }

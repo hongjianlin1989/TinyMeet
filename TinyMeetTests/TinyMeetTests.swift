@@ -21,10 +21,9 @@ struct TinyMeetTests {
         #expect(addedDetail.members.contains(where: { $0.name == "Taylor Brooks" }))
 
         let addedMember = try #require(addedDetail.members.first(where: { $0.name == "Taylor Brooks" }))
-        let deletedDetail = try await repository.deleteMember(memberID: addedMember.id, from: addedDetail)
+        let didDelete = try await repository.deleteMember(memberID: addedMember.id, from: addedDetail)
 
-        #expect(deletedDetail.members.count == originalDetail.members.count)
-        #expect(deletedDetail.members.contains(where: { $0.id == addedMember.id }) == false)
+        #expect(didDelete)
     }
 
     @Test func profileRepositoryMockSearchReturnsExpectedUsers() async throws {
@@ -44,7 +43,10 @@ struct TinyMeetTests {
 
     @MainActor
     @Test func discoverViewModelSearchesProfilesAndAddsFriend() async throws {
-        let viewModel = DiscoverViewModel(profileRespository: ProfileRespository())
+        let viewModel = DiscoverViewModel(
+            profileRespository: ProfileRespository(),
+            friendsRepository: FriendsRepository()
+        )
 
         viewModel.searchText = "bay area"
         await viewModel.searchProfiles()

@@ -1,10 +1,17 @@
 import SwiftUI
 
 struct GroupDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: GroupDetailViewModel
+    @State private var isShowingDeleteConfirmation = false
+    private let onGroupDeleted: @Sendable () async -> Void
 
-    init(viewModel: GroupDetailViewModel) {
+    init(
+        viewModel: GroupDetailViewModel,
+        onGroupDeleted: @escaping @Sendable () async -> Void = {}
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.onGroupDeleted = onGroupDeleted
     }
 
     var body: some View {
@@ -16,7 +23,9 @@ struct GroupDetailView: View {
                 ScrollView {
                     VStack(spacing: 18) {
                         summaryCard(groupDetail)
-                        addMemberCard
+                        if viewModel.canManageMembers {
+                            addMemberCard
+                        }
                         membersCard(groupDetail)
                     }
                     .padding(16)
@@ -47,6 +56,36 @@ struct GroupDetailView: View {
         .tinyMeetPageBackground()
         .navigationTitle("Group Detail")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if viewModel.canDeleteGroup {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(role: .destructive) {
+                        isShowingDeleteConfirmation = true
+                    } label: {
+                        Label("Delete Group", systemImage: "trash")
+                    }
+                    .disabled(viewModel.isLoading)
+                }
+            }
+        }
+        .confirmationDialog(
+            "Delete this group?",
+            isPresented: $isShowingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Group", role: .destructive) {
+                Task {
+                    if await viewModel.deleteGroup() {
+                        await onGroupDeleted()
+                        dismiss()
+                    }
+                }
+            }
+
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This action cannot be undone.")
+        }
         .task {
             await viewModel.fetchGroupDetail()
         }
@@ -86,23 +125,20 @@ struct GroupDetailView: View {
 
     private var addMemberCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Add member")
+            Text("Invite member")
                 .font(.headline)
 
-            TextField("Member name", text: $viewModel.newMemberName)
-                .textInputAutocapitalization(.words)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .background(TinyMeetTheme.badge)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            Text("Invite one of your friends to join this group.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
 
-            Button("Add Member") {
-                Task {
-                    await viewModel.addMember()
-                }
+            NavigationLink {
+                GroupAddMemberView(viewModel: viewModel)
+            } label: {
+                Label("Invite Friend", systemImage: "paperplane.fill")
+                    .frame(maxWidth: .infinity)
             }
             .buttonStyle(TinyMeetPrimaryButtonStyle())
-            .disabled(viewModel.isLoading || viewModel.newMemberName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
         .padding(20)
         .tinyMeetCardStyle()
@@ -142,19 +178,21 @@ struct GroupDetailView: View {
 
                         Spacer()
 
-                        Button(role: .destructive) {
-                            Task {
-                                await viewModel.deleteMember(memberID: member.id)
+                        if viewModel.canManageMembers {
+                            Button(role: .destructive) {
+                                Task {
+                                    await viewModel.deleteMember(memberID: member.id)
+                                }
+                            } label: {
+                                Image(systemName: "trash.fill")
+                                    .foregroundStyle(.white)
+                                    .padding(10)
+                                    .background(TinyMeetTheme.accent)
+                                    .clipShape(Circle())
                             }
-                        } label: {
-                            Image(systemName: "trash.fill")
-                                .foregroundStyle(.white)
-                                .padding(10)
-                                .background(TinyMeetTheme.accent)
-                                .clipShape(Circle())
+                            .buttonStyle(.plain)
+                            .disabled(viewModel.isLoading)
                         }
-                        .buttonStyle(.plain)
-                        .disabled(viewModel.isLoading)
                     }
                     .padding(14)
                     .background(TinyMeetTheme.badge)

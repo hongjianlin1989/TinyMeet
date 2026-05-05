@@ -4,9 +4,10 @@ protocol GroupsRepositoryProtocol: Sendable {
     func fetchGroups() async throws -> [MeetupGroup]
     func createGroup(_ request: CreateGroupRequest) async throws
     func fetchGroupDetail(groupID: String) async throws -> GroupDetail
+    func deleteGroup(groupID: String) async throws
     func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail
-    func addUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws -> GroupDetail
-    func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> GroupDetail
+    func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws
+    func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool
 }
 
 struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
@@ -49,6 +50,11 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
         return response.toGroupDetail()
     }
 
+    func deleteGroup(groupID: String) async throws {
+        let request = try GroupUrlRequest.deleteGroup(groupID: groupID).asURLRequest()
+        let _: GeneralResponse = try await networkManager.perform(request)
+    }
+
     func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
@@ -60,7 +66,7 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
         return response.toGroupDetail()
     }
 
-    func addUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws -> GroupDetail {
+    func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws {
         let groupDetail = try await fetchGroupDetail(groupID: groupID)
 
         guard groupDetail.members.contains(where: {
@@ -70,19 +76,20 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
             throw GroupsRepositoryError.memberAlreadyExists
         }
 
-        let request = try GroupUrlRequest.addUserProfile(groupID: groupID, userID: userProfile.id).asURLRequest()
-        let response: MockGroupDetailDTO = try await networkManager.perform(request)
-        return response.toGroupDetail()
+        let request = try GroupUrlRequest.inviteUserProfile(groupID: groupID, inviteeUID: userProfile.id).asURLRequest()
+        let _: GeneralResponse = try await networkManager.perform(request)
     }
 
-    func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> GroupDetail {
+    func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool {
         guard groupDetail.members.contains(where: { $0.id == memberID }) else {
             throw GroupsRepositoryError.memberNotFound
         }
 
         let request = try GroupUrlRequest.deleteMember(groupID: groupDetail.id, memberID: memberID).asURLRequest()
-        let response: MockGroupDetailDTO = try await networkManager.perform(request)
-        return response.toGroupDetail()
+        let response: GeneralResponse = try await networkManager.perform(
+            request
+        )
+        return response.success ?? true
     }
 
     private func loadMockGroups() throws -> [GroupDetail] {

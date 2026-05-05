@@ -31,7 +31,12 @@ struct GroupsView: View {
                         LazyVStack(spacing: 16) {
                             ForEach(viewModel.groups) { group in
                                 NavigationLink {
-                                    GroupDetailView(viewModel: GroupDetailViewModel.makeDefault(groupID: group.id))
+                                    GroupDetailView(
+                                        viewModel: GroupDetailViewModel.makeDefault(groupID: group.id),
+                                        onGroupDeleted: {
+                                            await viewModel.fetchGroups()
+                                        }
+                                    )
                                 } label: {
                                     groupRow(group)
                                 }

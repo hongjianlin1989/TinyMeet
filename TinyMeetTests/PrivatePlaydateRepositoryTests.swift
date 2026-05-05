@@ -12,6 +12,7 @@ struct PrivatePlaydateRepositoryTests {
         }
     }
 
+    @MainActor
     @Test func fetchPrivatePlaydatesDecodesAndMapsToMapItems() async throws {
         let id = UUID()
         let payload = """
@@ -31,7 +32,7 @@ struct PrivatePlaydateRepositoryTests {
         """
 
         let networkManager = MockNetworkManager(data: try #require(payload.data(using: .utf8)))
-        let repository = PrivatePlaydateRepository(networkManager: networkManager, shouldUseMockData: false)
+        let repository = PrivatePlaydateRepository(networkManager: networkManager)
 
         let results = try await repository.fetchPrivatePlaydates()
         #expect(results.count == 1)

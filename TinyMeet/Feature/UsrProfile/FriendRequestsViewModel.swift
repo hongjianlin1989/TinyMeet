@@ -9,14 +9,14 @@ final class FriendRequestsViewModel: ObservableObject {
     @Published private(set) var successMessage: String?
     @Published private(set) var respondingRequestIDs: Set<String> = []
 
-    private let profileRepository: ProfileRespositoryProtocol
+    private let friendsRepository: FriendsRepositoryProtocol
 
-    init(profileRepository: ProfileRespositoryProtocol) {
-        self.profileRepository = profileRepository
+    init(friendsRepository: FriendsRepositoryProtocol) {
+        self.friendsRepository = friendsRepository
     }
 
     static func makeDefault() -> FriendRequestsViewModel {
-        FriendRequestsViewModel(profileRepository: ProfileRespository())
+        FriendRequestsViewModel(friendsRepository: FriendsRepository())
     }
 
     func loadRequests() async {
@@ -29,7 +29,7 @@ final class FriendRequestsViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            requests = try await profileRepository.fetchFriendRequests()
+            requests = try await friendsRepository.fetchFriendRequests()
         } catch {
             requests = []
             errorMessage = error.localizedDescription
@@ -60,10 +60,10 @@ final class FriendRequestsViewModel: ObservableObject {
         do {
             switch action {
             case .accept:
-                try await profileRepository.acceptFriendRequest(request)
+                try await friendsRepository.acceptFriendRequest(request)
                 successMessage = "Accepted @\(request.username)'s request."
             case .reject:
-                try await profileRepository.rejectFriendRequest(request)
+                try await friendsRepository.rejectFriendRequest(request)
                 successMessage = "Rejected @\(request.username)'s request."
             }
 

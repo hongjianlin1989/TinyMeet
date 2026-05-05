@@ -2,7 +2,7 @@ import Testing
 @testable import TinyMeet
 
 struct MyFriendsViewModelTests {
-    struct MockProfileRepository: ProfileRespositoryProtocol {
+    struct MockFriendsRepository: FriendsRepositoryProtocol {
         let fetchFriends: @Sendable () async throws -> [UserProfile]
         let removeFriendHandler: @Sendable (UserProfile) async throws -> Void
 
@@ -14,13 +14,11 @@ struct MyFriendsViewModelTests {
             self.removeFriendHandler = removeFriendHandler
         }
 
-        func fetchUserProfile() async throws -> UserProfile { UserProfile.mock }
         func fetchFriendProfiles() async throws -> [UserProfile] { try await fetchFriends() }
         func fetchFriendRequests() async throws -> [UserProfile] { [] }
-        func searchUserProfiles(query: String) async throws -> [UserProfile] { [] }
-        func acceptFriendRequest(_ request: UserProfile) async throws {}
-        func rejectFriendRequest(_ request: UserProfile) async throws {}
-        func addFriend(_ profile: UserProfile) async throws {}
+        func acceptFriendRequest(_ request: UserProfile) async throws { }
+        func rejectFriendRequest(_ request: UserProfile) async throws { }
+        func addFriend(_ profile: UserProfile) async throws { }
         func removeFriend(_ profile: UserProfile) async throws { try await removeFriendHandler(profile) }
     }
 
@@ -45,7 +43,7 @@ struct MyFriendsViewModelTests {
             avatarURL: nil
         )
         let viewModel = MyFriendsViewModel(
-            profileRepository: MockProfileRepository(fetchFriends: { [amy, sofia] })
+            friendsRepository: MockFriendsRepository(fetchFriends: { [amy, sofia] })
         )
 
         await viewModel.loadFriends()
@@ -87,7 +85,7 @@ struct MyFriendsViewModelTests {
         )
 
         let viewModel = MyFriendsViewModel(
-            profileRepository: MockProfileRepository(fetchFriends: { [amy, sofia] })
+            friendsRepository: MockFriendsRepository(fetchFriends: { [amy, sofia] })
         )
 
         await viewModel.loadFriends()

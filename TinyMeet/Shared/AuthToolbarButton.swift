@@ -7,10 +7,10 @@ struct AuthToolbarButton: View {
     @State private var isShowingSettings = false
     @State private var isShowingFriendRequests = false
 
-    private let profileRepository: ProfileRespositoryProtocol
+    private let friendsRepository: FriendsRepositoryProtocol
 
-    init(profileRepository: ProfileRespositoryProtocol = ProfileRespository()) {
-        self.profileRepository = profileRepository
+    init(friendsRepository: FriendsRepositoryProtocol = FriendsRepository()) {
+        self.friendsRepository = friendsRepository
     }
 
     var body: some View {
@@ -89,7 +89,7 @@ struct AuthToolbarButton: View {
         }
 
         do {
-            let requests = try await profileRepository.fetchFriendRequests()
+            let requests = try await friendsRepository.fetchFriendRequests()
             friendRequestCount = requests.count
         } catch {
             friendRequestCount = 0
