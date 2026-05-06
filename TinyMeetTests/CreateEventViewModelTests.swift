@@ -34,6 +34,7 @@ struct CreateEventViewModelTests {
         func createGroup(_ request: CreateGroupRequest) async throws { }
         func fetchGroupDetail(groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
         func deleteGroup(groupID: String) async throws { }
+        func leaveGroup(groupID: String) async throws -> Bool { true }
         func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
         func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws { }
         func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool { true }
@@ -47,8 +48,14 @@ struct CreateEventViewModelTests {
         }
     }
 
+    private let formatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
     @MainActor
-    @Test func createFriendsEventSubmitsAllFriendUIDsAndStoresCreatedEvent() async throws {
+    @Test func createFriendsEventSubmitsSelectedFriendUIDsAndNewPrivateFields() async throws {
         let created = NearbyEvent(
             title: "Playground Party",
             locationName: "Central Park",
@@ -57,7 +64,7 @@ struct CreateEventViewModelTests {
             distanceDescription: "Just created",
             hostName: "Hosted by You",
             attendeeSummary: "Private friends event",
-            themeEmoji: "🎉",
+            themeEmoji: "🛝",
             summary: "A fun private playdate for local families.",
             visibility: .private
         )
@@ -79,27 +86,43 @@ struct CreateEventViewModelTests {
             age: nil,
             avatarURL: nil
         )
-        let scheduledAt = ISO8601DateFormatter().date(from: "2026-05-03T13:56:44Z") ?? Date()
+        let scheduledAt = try #require(formatter.date(from: "2026-05-03T13:56:44.745Z"))
+        let endsAt = try #require(formatter.date(from: "2026-05-03T15:56:44.745Z"))
+        let scheduledAtString = formatter.string(from: scheduledAt)
+        let endsAtString = formatter.string(from: endsAt)
 
         let viewModel = CreateEventViewModel(
             title: "Playground Party",
             location: "Central Park",
             scheduledAt: scheduledAt,
+            endsAt: endsAt,
             kidsAge: "3 - 5",
             summary: "A fun private playdate for local families.",
             eventMode: .private,
+            latitudeText: "37.3349",
+            longitudeText: "-122.0090",
+            themeEmoji: "🛝",
+            symbolName: "figure.play",
+            tintName: "orange",
             joinVisibility: .friends,
+            selectedFriendIDs: Set([amy.id]),
             eventsRepository: MockEventsRepository(createHandler: { request in
                 #expect(request.visibility == .private)
                 #expect(request.title == "Playground Party")
                 #expect(request.locationName == "Central Park")
-                #expect(request.latitude == 0)
-                #expect(request.longitude == 0)
+                #expect(request.latitude == 37.3349)
+                #expect(request.longitude == -122.0090)
                 #expect(request.ageRange == "3 - 5")
+                #expect(request.themeEmoji == "🛝")
+                #expect(request.symbolName == "figure.play")
+                #expect(request.tintName == "orange")
+                #expect(request.summary == "A fun private playdate for local families.")
                 #expect(request.audienceType == "friends")
                 #expect(request.groupID == nil)
-                #expect(request.invitedUIDs == ["friend-amy", "friend-noah"])
+                #expect(request.invitedUIDs == ["friend-amy"])
                 #expect(request.eventURL == nil)
+                #expect(request.scheduledAt == scheduledAtString)
+                #expect(request.endsAt == endsAtString)
                 return created
             }),
             friendsRepository: MockFriendsRepository(friends: [amy, noah]),
@@ -107,6 +130,7 @@ struct CreateEventViewModelTests {
         )
 
         await viewModel.loadAudienceOptions()
+        #expect(viewModel.selectedFriendIDs == Set([amy.id]))
 
         let didCreate = await viewModel.createEvent()
         #expect(didCreate)
@@ -115,7 +139,7 @@ struct CreateEventViewModelTests {
     }
 
     @MainActor
-    @Test func createGroupEventRequiresSelectedGroupAndSubmitsGroupID() async throws {
+    @Test func createGroupEventRequiresSelectedGroupAndSubmitsEndsAt() async throws {
         let group = MeetupGroup(
             id: "group-123",
             name: "Weekend Hikers",
@@ -123,20 +147,30 @@ struct CreateEventViewModelTests {
             memberCount: 0,
             summary: "Easy weekend hikes"
         )
-        let scheduledAt = ISO8601DateFormatter().date(from: "2026-05-03T13:56:44Z") ?? Date()
+        let scheduledAt = try #require(formatter.date(from: "2026-05-03T13:56:44.745Z"))
+        let endsAt = try #require(formatter.date(from: "2026-05-03T16:56:44.745Z"))
+        let endsAtString = formatter.string(from: endsAt)
+
         let viewModel = CreateEventViewModel(
             title: "Playground Party",
             location: "Central Park",
             scheduledAt: scheduledAt,
+            endsAt: endsAt,
             kidsAge: "3 - 5",
             summary: "Private group playdate.",
             eventMode: .private,
+            latitudeText: "37.4000",
+            longitudeText: "-122.1000",
+            themeEmoji: "🎉",
+            symbolName: "leaf.fill",
+            tintName: "mint",
             joinVisibility: .group,
             eventsRepository: MockEventsRepository(createHandler: { request in
                 #expect(request.visibility == .private)
                 #expect(request.audienceType == "group")
                 #expect(request.groupID == "group-123")
                 #expect(request.invitedUIDs == [])
+                #expect(request.endsAt == endsAtString)
                 #expect(request.eventURL == nil)
                 return await MainActor.run {
                     request.toNearbyEvent()
@@ -157,7 +191,7 @@ struct CreateEventViewModelTests {
     }
 
     @MainActor
-    @Test func createPublicEventUsesPublicPayloadAndDoesNotRequireAudienceSelection() async throws {
+    @Test func createPublicEventUsesPublicPayloadAndOmitsPrivateOnlyFields() async throws {
         let created = NearbyEvent(
             title: "Community Picnic",
             locationName: "Town Green",
@@ -166,32 +200,46 @@ struct CreateEventViewModelTests {
             distanceDescription: "Community",
             hostName: "Hosted by You",
             attendeeSummary: "New public event",
-            themeEmoji: "🎉",
+            themeEmoji: "🌳",
             summary: "Bring snacks and meet local families.",
             eventUrl: "https://tinymeet.app/events/community-picnic",
             visibility: .public
         )
-        let scheduledAt = ISO8601DateFormatter().date(from: "2026-05-03T14:15:45Z") ?? Date()
+        let scheduledAt = try #require(formatter.date(from: "2026-05-03T14:15:45.592Z"))
+        let endsAt = try #require(formatter.date(from: "2026-05-03T16:15:45.592Z"))
+        let scheduledAtString = formatter.string(from: scheduledAt)
+        let endsAtString = formatter.string(from: endsAt)
         let recorder = CreateEventRequestRecorder()
 
         let viewModel = CreateEventViewModel(
             title: "Community Picnic",
             location: "Town Green",
             scheduledAt: scheduledAt,
+            endsAt: endsAt,
             kidsAge: "4 - 7",
             summary: "Bring snacks and meet local families.",
             eventMode: .public,
             eventURL: "https://tinymeet.app/events/community-picnic",
+            latitudeText: "37.7749",
+            longitudeText: "-122.4194",
+            themeEmoji: "🌳",
             joinVisibility: .friends,
             eventsRepository: MockEventsRepository(createHandler: { request in
                 await recorder.record(request)
                 #expect(request.visibility == .public)
                 #expect(request.title == "Community Picnic")
                 #expect(request.locationName == "Town Green")
+                #expect(request.latitude == 37.7749)
+                #expect(request.longitude == -122.4194)
+                #expect(request.ageRange == "4 - 7")
+                #expect(request.themeEmoji == "🌳")
+                #expect(request.summary == "Bring snacks and meet local families.")
                 #expect(request.eventURL == "https://tinymeet.app/events/community-picnic")
                 #expect(request.audienceType == nil)
                 #expect(request.groupID == nil)
                 #expect(request.invitedUIDs == nil)
+                #expect(request.scheduledAt == scheduledAtString)
+                #expect(request.endsAt == endsAtString)
                 return created
             }),
             friendsRepository: MockFriendsRepository(friends: []),
@@ -206,6 +254,25 @@ struct CreateEventViewModelTests {
         #expect(requests.first?.visibility == .public)
         #expect(viewModel.createdEvent?.id == created.id)
         #expect(viewModel.errorMessage == nil)
+    }
+
+    @MainActor
+    @Test func publicEventWithoutURLIsInvalidAndExplainsWhy() async throws {
+        let viewModel = CreateEventViewModel(
+            title: "Community Picnic",
+            location: "Town Green",
+            scheduledAt: Date(timeIntervalSince1970: 1_778_076_945),
+            endsAt: Date(timeIntervalSince1970: 1_778_084_145),
+            kidsAge: "4 - 7",
+            summary: "Bring snacks and meet local families.",
+            eventMode: .public,
+            eventURL: "   ",
+            friendsRepository: MockFriendsRepository(friends: []),
+            groupsRepository: MockGroupsRepository(groups: [])
+        )
+
+        #expect(viewModel.isFormValid == false)
+        #expect(viewModel.validationMessage == "Add an event URL to create a public event.")
     }
 
     @MainActor

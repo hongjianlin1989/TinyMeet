@@ -4,6 +4,7 @@ struct GroupDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: GroupDetailViewModel
     @State private var isShowingDeleteConfirmation = false
+    @State private var isLeavingGroup = false
     private let onGroupDeleted: @Sendable () async -> Void
 
     init(
@@ -146,8 +147,31 @@ struct GroupDetailView: View {
 
     private func membersCard(_ groupDetail: GroupDetail) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Members")
-                .font(.headline)
+            HStack {
+                Text("Members")
+                    .font(.headline)
+
+                Spacer()
+
+                if viewModel.canLeaveGroup {
+                    Button(role: .destructive) {
+                        Task {
+                            isLeavingGroup = true
+                            defer { isLeavingGroup = false }
+
+                            if await viewModel.leaveGroup() {
+                                await onGroupDeleted()
+                                dismiss()
+                            }
+                        }
+                    } label: {
+                        Text("Leave")
+                            .font(.subheadline.weight(.semibold))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.isLoading || isLeavingGroup)
+                }
+            }
 
             if groupDetail.members.isEmpty {
                 ContentUnavailableView(

@@ -87,14 +87,13 @@ struct InterestedEventsRepositoryTests {
 
         let repository = InterestedEventsRepository(
             networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
-            eventsRepository: MockEventsRepository(publicEvents: [publicEvent], privateEvents: [privateEvent]),
-            shouldUseMockData: false
+            eventsRepository: MockEventsRepository(publicEvents: [publicEvent], privateEvents: [privateEvent])
         )
 
         let rows = try await repository.fetchInterestedEvents()
         #expect(rows.count == 2)
-        #expect(rows.contains(where: { $0.title == "Playground Picnic Crew" && $0.visibility == .public }))
-        #expect(rows.contains(where: { $0.title == "Neighborhood Sandbox Circle" && $0.visibility == .private }))
+        #expect(rows.contains(where: { $0.title == "Playground Picnic Crew" && $0.visibility == NearbyEventVisibility.public }))
+        #expect(rows.contains(where: { $0.title == "Neighborhood Sandbox Circle" && $0.visibility == NearbyEventVisibility.private }))
     }
 
     @MainActor
@@ -146,8 +145,7 @@ struct InterestedEventsRepositoryTests {
 
         let repository = InterestedEventsRepository(
             networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
-            eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [privateEvent]),
-            shouldUseMockData: false
+            eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [privateEvent])
         )
 
         let playdates = try await repository.fetchInterestedPrivatePlaydates()
@@ -191,8 +189,7 @@ struct InterestedEventsRepositoryTests {
         """
 
         let repository = InterestedEventsRepository(
-            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
-            shouldUseMockData: false
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8)))
         )
 
         try await repository.setInterested(true, event: event)

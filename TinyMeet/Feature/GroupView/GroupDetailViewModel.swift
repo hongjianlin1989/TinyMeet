@@ -51,6 +51,16 @@ final class GroupDetailViewModel: ObservableObject {
         return ownerUID.caseInsensitiveCompare(currentUserProfileID) == .orderedSame
     }
 
+    var canLeaveGroup: Bool {
+        guard canDeleteGroup == false, let groupDetail, let currentUserProfileID else {
+            return false
+        }
+
+        return groupDetail.members.contains {
+            $0.id.caseInsensitiveCompare(currentUserProfileID) == .orderedSame
+        }
+    }
+
     var availableFriendsToAdd: [UserProfile] {
         guard let groupDetail else {
             return []
@@ -176,6 +186,34 @@ final class GroupDetailViewModel: ObservableObject {
             friends = []
             invitedFriendIDs.removeAll()
             return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    func leaveGroup() async -> Bool {
+        guard !isLoading, let groupDetail else { return false }
+        guard canLeaveGroup else {
+            errorMessage = "Only group members can leave this group."
+            return false
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        defer { isLoading = false }
+
+        do {
+            let success = try await groupsRepository.leaveGroup(groupID: groupDetail.id)
+
+            if success {
+                self.groupDetail = nil
+                friends = []
+                invitedFriendIDs.removeAll()
+            }
+
+            return success
         } catch {
             errorMessage = error.localizedDescription
             return false

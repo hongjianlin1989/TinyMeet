@@ -32,6 +32,7 @@ struct CreateGroupViewModelTests {
         func createGroup(_ request: CreateGroupRequest) async throws { try await createGroupHandler(request) }
         func fetchGroupDetail(groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
         func deleteGroup(groupID: String) async throws { }
+        func leaveGroup(groupID: String) async throws -> Bool { true }
         func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
         func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws { }
         func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool { true }

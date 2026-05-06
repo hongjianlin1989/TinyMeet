@@ -8,6 +8,7 @@ enum GroupUrlRequest {
     case detail(groupID: String)
     case deleteGroup(groupID: String)
     case addMember(groupID: String, name: String)
+    case leaveGroup(groupID: String)
     case inviteUserProfile(groupID: String, inviteeUID: String)
     case deleteMember(groupID: String, memberID: String)
 
@@ -21,7 +22,7 @@ enum GroupUrlRequest {
             return "/api/v1/groups/invites/\(inviteID)/respond"
         case .detail(let groupID), .deleteGroup(let groupID):
             return "/api/v1/groups/\(groupID)"
-        case .addMember(let groupID, _):
+        case .addMember(let groupID, _), .leaveGroup(let groupID):
             return "/api/v1/groups/\(groupID)/members"
         case .inviteUserProfile(let groupID, _):
             return "/api/v1/groups/\(groupID)/invites"
@@ -36,7 +37,7 @@ enum GroupUrlRequest {
             return "GET"
         case .respondToInvite, .create, .addMember, .inviteUserProfile:
             return "POST"
-        case .deleteGroup, .deleteMember:
+        case .deleteGroup, .leaveGroup, .deleteMember:
             return "DELETE"
         }
     }
@@ -60,7 +61,7 @@ enum GroupUrlRequest {
         let encoder = JSONEncoder()
 
         switch self {
-        case .list, .invites, .detail, .deleteGroup, .deleteMember:
+        case .list, .invites, .detail, .deleteGroup, .leaveGroup, .deleteMember:
             return nil
         case .respondToInvite(_, let action):
             return try encoder.encode(InviteResponsePayload(accept: action.acceptValue))

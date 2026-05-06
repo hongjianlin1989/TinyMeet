@@ -3,6 +3,7 @@ import SwiftUI
 struct MyFriendsView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: MyFriendsViewModel
+    @State private var friendPendingRemoval: UserProfile?
     private let onAddFriendTapped: () -> Void
 
     init(
@@ -62,6 +63,31 @@ struct MyFriendsView: View {
                 addFriendButton
             }
         }
+        .alert(
+            "Delete friend?",
+            isPresented: Binding(
+                get: { friendPendingRemoval != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        friendPendingRemoval = nil
+                    }
+                }
+            ),
+            presenting: friendPendingRemoval
+        ) { friend in
+            Button("Delete", role: .destructive) {
+                friendPendingRemoval = nil
+                Task {
+                    await viewModel.removeFriend(friend)
+                }
+            }
+
+            Button("Cancel", role: .cancel) {
+                friendPendingRemoval = nil
+            }
+        } message: { friend in
+            Text("Are you sure you want to delete \(friend.displayName) from your friends?")
+        }
         .tinyMeetPageBackground()
     }
 
@@ -103,9 +129,7 @@ struct MyFriendsView: View {
             Spacer(minLength: 12)
 
             Button {
-                Task {
-                    await viewModel.removeFriend(friend)
-                }
+                friendPendingRemoval = friend
             } label: {
                 if viewModel.isRemoving(friend) {
                     ProgressView()

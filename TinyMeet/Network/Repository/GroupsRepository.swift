@@ -8,6 +8,7 @@ protocol GroupsRepositoryProtocol: Sendable {
     func createGroup(_ request: CreateGroupRequest) async throws
     func fetchGroupDetail(groupID: String) async throws -> GroupDetail
     func deleteGroup(groupID: String) async throws
+    func leaveGroup(groupID: String) async throws -> Bool
     func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail
     func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws
     func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool
@@ -70,6 +71,12 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
     func deleteGroup(groupID: String) async throws {
         let request = try GroupUrlRequest.deleteGroup(groupID: groupID).asURLRequest()
         let _: GeneralResponse = try await networkManager.perform(request)
+    }
+
+    func leaveGroup(groupID: String) async throws -> Bool {
+        let request = try GroupUrlRequest.leaveGroup(groupID: groupID).asURLRequest()
+        let response: GeneralResponse = try await networkManager.perform(request)
+        return response.success ?? true
     }
 
     func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail {

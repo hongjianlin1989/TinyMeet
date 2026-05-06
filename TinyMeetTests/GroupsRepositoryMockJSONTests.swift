@@ -175,6 +175,25 @@ struct GroupsRepositoryMockJSONTests {
         #expect(request?.httpBody == nil)
     }
 
+    @Test func leaveGroupUsesDeleteGroupMembersAPI() async throws {
+        let recorder = RequestRecorder()
+        let repository = GroupsRepository(
+            networkManager: RecordingNetworkManager(
+                data: try #require("{}".data(using: .utf8)),
+                recorder: recorder
+            )
+        )
+
+        let didLeave = try await repository.leaveGroup(groupID: "group-123")
+
+        let request = await recorder.lastRequest
+
+        #expect(didLeave)
+        #expect(request?.httpMethod == "DELETE")
+        #expect(request?.url?.path == "/api/v1/groups/group-123/members")
+        #expect(request?.httpBody == nil)
+    }
+
     @Test func acceptGroupInviteUsesRespondAPI() async throws {
         let recorder = RequestRecorder()
         let repository = GroupsRepository(

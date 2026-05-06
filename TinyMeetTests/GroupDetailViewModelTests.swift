@@ -8,17 +8,20 @@ struct GroupDetailViewModelTests {
         let inviteUserProfileHandler: @Sendable (UserProfile, String) async throws -> Void
         let deleteMemberHandler: @Sendable (String, GroupDetail) async throws -> Bool
         let deleteGroupHandler: @Sendable (String) async throws -> Void
+        let leaveGroupHandler: @Sendable (String) async throws -> Bool
 
         init(
             fetchGroupDetailHandler: @escaping @Sendable (String) async throws -> GroupDetail,
             inviteUserProfileHandler: @escaping @Sendable (UserProfile, String) async throws -> Void = { _, _ in },
             deleteMemberHandler: @escaping @Sendable (String, GroupDetail) async throws -> Bool = { _, _ in true },
-            deleteGroupHandler: @escaping @Sendable (String) async throws -> Void = { _ in }
+            deleteGroupHandler: @escaping @Sendable (String) async throws -> Void = { _ in },
+            leaveGroupHandler: @escaping @Sendable (String) async throws -> Bool = { _ in true }
         ) {
             self.fetchGroupDetailHandler = fetchGroupDetailHandler
             self.inviteUserProfileHandler = inviteUserProfileHandler
             self.deleteMemberHandler = deleteMemberHandler
             self.deleteGroupHandler = deleteGroupHandler
+            self.leaveGroupHandler = leaveGroupHandler
         }
 
         func fetchGroups() async throws -> [MeetupGroup] { [] }
@@ -31,6 +34,9 @@ struct GroupDetailViewModelTests {
         }
         func deleteGroup(groupID: String) async throws {
             try await deleteGroupHandler(groupID)
+        }
+        func leaveGroup(groupID: String) async throws -> Bool {
+            try await leaveGroupHandler(groupID)
         }
         func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
         func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws {
@@ -94,6 +100,14 @@ struct GroupDetailViewModelTests {
 
         func record(memberID: String, groupID: String) {
             entries.append((memberID: memberID, groupID: groupID))
+        }
+    }
+
+    actor LeftGroupRecorder {
+        private(set) var groupIDs: [String] = []
+
+        func record(groupID: String) {
+            groupIDs.append(groupID)
         }
     }
 
@@ -436,5 +450,87 @@ struct GroupDetailViewModelTests {
         #expect(await recorder.entries.isEmpty)
         #expect(viewModel.groupDetail == detail)
         #expect(viewModel.errorMessage == "Only the group owner can remove members.")
+    }
+
+    @MainActor
+    @Test func leaveGroupUsesRepositoryForNonOwnerMember() async throws {
+        let detail = GroupDetail(
+            id: "group-777",
+            name: "Coffee Chat Crew",
+            location: "Cupertino",
+            summary: "Weekly meetups.",
+            ownerUID: "owner-777",
+            createdAt: nil,
+            members: [
+                GroupMember(id: "owner-777", name: "Owner", role: "organizer", joinedAt: nil),
+                GroupMember(id: "member-777", name: "Guest", role: "member", joinedAt: nil)
+            ]
+        )
+        let recorder = LeftGroupRecorder()
+
+        let viewModel = GroupDetailViewModel(
+            groupID: detail.id,
+            groupsRepository: MockGroupsRepository(
+                fetchGroupDetailHandler: { _ in detail },
+                leaveGroupHandler: { groupID in
+                    await recorder.record(groupID: groupID)
+                    return true
+                }
+            ),
+            profileRepository: MockProfileRepository(fetchUserProfileHandler: {
+                UserProfile(id: "member-777", username: "guest", displayName: "Guest", email: nil, bio: nil, age: nil, avatarURL: nil)
+            }),
+            friendsRepository: MockFriendsRepository()
+        )
+
+        await viewModel.fetchGroupDetail()
+        let didLeave = await viewModel.leaveGroup()
+
+        #expect(viewModel.canLeaveGroup)
+        #expect(didLeave)
+        #expect(await recorder.groupIDs == ["group-777"])
+        #expect(viewModel.groupDetail == nil)
+        #expect(viewModel.errorMessage == nil)
+        #expect(viewModel.isLoading == false)
+    }
+
+    @MainActor
+    @Test func leaveGroupDoesNothingForOwner() async throws {
+        let detail = GroupDetail(
+            id: "group-888",
+            name: "SwiftUI Builders",
+            location: "San Jose",
+            summary: "Ship side projects.",
+            ownerUID: "owner-888",
+            createdAt: nil,
+            members: [
+                GroupMember(id: "owner-888", name: "Owner", role: "organizer", joinedAt: nil)
+            ]
+        )
+        let recorder = LeftGroupRecorder()
+
+        let viewModel = GroupDetailViewModel(
+            groupID: detail.id,
+            groupsRepository: MockGroupsRepository(
+                fetchGroupDetailHandler: { _ in detail },
+                leaveGroupHandler: { groupID in
+                    await recorder.record(groupID: groupID)
+                    return true
+                }
+            ),
+            profileRepository: MockProfileRepository(fetchUserProfileHandler: {
+                UserProfile(id: "owner-888", username: "owner", displayName: "Owner", email: nil, bio: nil, age: nil, avatarURL: nil)
+            }),
+            friendsRepository: MockFriendsRepository()
+        )
+
+        await viewModel.fetchGroupDetail()
+        let didLeave = await viewModel.leaveGroup()
+
+        #expect(viewModel.canLeaveGroup == false)
+        #expect(didLeave == false)
+        #expect(await recorder.groupIDs.isEmpty)
+        #expect(viewModel.groupDetail == detail)
+        #expect(viewModel.errorMessage == "Only group members can leave this group.")
     }
 }

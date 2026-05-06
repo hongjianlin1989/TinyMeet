@@ -103,8 +103,8 @@ struct EventsRepositoryTests {
             visibility: .private,
             title: "Playground Party",
             locationName: "Central Park",
-            latitude: 0,
-            longitude: 0,
+            latitude: 37.3349,
+            longitude: -122.0090,
             ageRange: "3 - 5",
             themeEmoji: "🎉",
             summary: "A newly created playdate for your TinyMeet community.",
@@ -114,7 +114,8 @@ struct EventsRepositoryTests {
             groupID: nil,
             invitedUIDs: ["friend-1"],
             eventURL: nil,
-            scheduledAt: "2026-05-03T13:56:44.745Z"
+            scheduledAt: "2026-05-03T13:56:44.745Z",
+            endsAt: "2026-05-03T15:56:44.745Z"
         )
 
         let event = try await repo.createEvent(request)
@@ -135,8 +136,8 @@ struct EventsRepositoryTests {
                 visibility: .private,
                 title: "Created Event",
                 locationName: "Central Park",
-                latitude: 0,
-                longitude: 0,
+                latitude: 37.3349,
+                longitude: -122.0090,
                 ageRange: "3 - 5",
                 themeEmoji: "🎉",
                 summary: "A newly created playdate for your TinyMeet community.",
@@ -146,7 +147,8 @@ struct EventsRepositoryTests {
                 groupID: "group-123",
                 invitedUIDs: [],
                 eventURL: nil,
-                scheduledAt: "2026-05-03T13:56:44.745Z"
+                scheduledAt: "2026-05-03T13:56:44.745Z",
+                endsAt: "2026-05-03T15:56:44.745Z"
             )
         )
 
@@ -165,8 +167,8 @@ struct EventsRepositoryTests {
                 visibility: .public,
                 title: "Community Picnic",
                 locationName: "Town Green",
-                latitude: 0,
-                longitude: 0,
+                latitude: 37.7749,
+                longitude: -122.4194,
                 ageRange: "4 - 7",
                 themeEmoji: "🌳",
                 summary: "Bring snacks and meet local families.",
@@ -176,7 +178,8 @@ struct EventsRepositoryTests {
                 groupID: nil,
                 invitedUIDs: nil,
                 eventURL: "https://tinymeet.app/events/community-picnic",
-                scheduledAt: "2026-05-03T14:15:45.592Z"
+                scheduledAt: "2026-05-03T14:15:45.592Z",
+                endsAt: "2026-05-03T16:15:45.592Z"
             )
         )
 

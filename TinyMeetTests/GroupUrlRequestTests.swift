@@ -79,6 +79,14 @@ struct GroupUrlRequestTests {
         #expect(json["name"] == "Taylor Brooks")
     }
 
+    @Test func leaveGroupRequestUsesMembersEndpointWithDeleteMethod() throws {
+        let request = try GroupUrlRequest.leaveGroup(groupID: "group-7").asURLRequest()
+
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/api/v1/groups/group-7/members")
+        #expect(request.httpBody == nil)
+    }
+
     @Test func inviteUserProfileRequestEncodesInviteeUIDPayload() throws {
         let request = try GroupUrlRequest.inviteUserProfile(groupID: "group-9", inviteeUID: "firebase-uid-101").asURLRequest()
         let body = try #require(request.httpBody)

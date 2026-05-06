@@ -302,6 +302,7 @@ struct CreateEventRequest: Encodable, Sendable {
     let invitedUIDs: [String]?
     let eventURL: String?
     let scheduledAt: String
+    let endsAt: String?
 
     private enum CodingKeys: String, CodingKey {
         case title
@@ -318,6 +319,7 @@ struct CreateEventRequest: Encodable, Sendable {
         case invitedUIDs = "invited_uids"
         case eventURL = "event_url"
         case scheduledAt = "scheduled_at"
+        case endsAt = "ends_at"
     }
 
     var nearbyEventVisibility: NearbyEventVisibility {
@@ -338,12 +340,14 @@ struct CreateEventRequest: Encodable, Sendable {
         switch visibility {
         case .public:
             try container.encodeIfPresent(eventURL, forKey: .eventURL)
+            try container.encodeIfPresent(endsAt, forKey: .endsAt)
         case .private:
             try container.encodeIfPresent(symbolName, forKey: .symbolName)
             try container.encodeIfPresent(tintName, forKey: .tintName)
             try container.encodeIfPresent(audienceType, forKey: .audienceType)
             try container.encodeIfPresent(groupID, forKey: .groupID)
             try container.encodeIfPresent(invitedUIDs, forKey: .invitedUIDs)
+            try container.encodeIfPresent(endsAt, forKey: .endsAt)
         }
     }
 

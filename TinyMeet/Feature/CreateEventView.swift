@@ -20,6 +20,8 @@ struct CreateEventView: View {
                     }
                     if let errorMessage = viewModel.errorMessage {
                         errorCard(message: errorMessage)
+                    } else if let validationMessage = viewModel.validationMessage {
+                        validationCard(message: validationMessage)
                     }
                     createButton
                 }
@@ -30,6 +32,9 @@ struct CreateEventView: View {
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.loadAudienceOptions()
+            }
+            .onChange(of: viewModel.scheduledAt) { _, _ in
+                viewModel.syncEndsAtIfNeeded()
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -81,15 +86,15 @@ struct CreateEventView: View {
             formField(title: "Location", text: $viewModel.location, prompt: "Central Park")
             formField(title: "Kids Age", text: $viewModel.kidsAge, prompt: "3 - 5")
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Scheduled At")
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Schedule")
                     .font(.headline)
 
                 DatePicker(
-                    "Scheduled At",
+                    "Date",
                     selection: $viewModel.scheduledAt,
                     in: Date()...,
-                    displayedComponents: [.date, .hourAndMinute]
+                    displayedComponents: .date
                 )
                 .labelsHidden()
                 .datePickerStyle(.graphical)
@@ -97,6 +102,48 @@ struct CreateEventView: View {
                 .padding(.vertical, 8)
                 .background(TinyMeetTheme.badge)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Begin Time")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+
+                        DatePicker(
+                            "Begin Time",
+                            selection: $viewModel.scheduledAt,
+                            in: Date()...,
+                            displayedComponents: .hourAndMinute
+                        )
+                        .labelsHidden()
+                        .datePickerStyle(.compact)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(TinyMeetTheme.badge)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("End Time")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+
+                        DatePicker(
+                            "End Time",
+                            selection: $viewModel.endsAt,
+                            in: viewModel.scheduledAt...,
+                            displayedComponents: .hourAndMinute
+                        )
+                        .labelsHidden()
+                        .datePickerStyle(.compact)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(TinyMeetTheme.badge)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                }
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -140,7 +187,7 @@ struct CreateEventView: View {
             VStack(spacing: 12) {
                 ForEach(CreateEventViewModel.JoinVisibility.allCases) { option in
                     Button {
-                        viewModel.joinVisibility = option
+                        viewModel.selectJoinVisibility(option)
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: viewModel.joinVisibility == option ? "largecircle.fill.circle" : "circle")
@@ -159,6 +206,52 @@ struct CreateEventView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                }
+            }
+
+            if viewModel.joinVisibility == .friends {
+                if viewModel.isLoadingOptions && viewModel.friends.isEmpty {
+                    ProgressView("Loading friends...")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if viewModel.friends.isEmpty {
+                    Text("No friends available yet.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Invite Friends")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+
+                        ForEach(viewModel.friends) { friend in
+                            Button {
+                                viewModel.toggleFriendSelection(friend)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: viewModel.selectedFriendIDs.contains(friend.id) ? "checkmark.circle.fill" : "circle")
+                                        .font(.title3)
+                                        .foregroundStyle(viewModel.selectedFriendIDs.contains(friend.id) ? TinyMeetTheme.accent : Color.secondary)
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(friend.displayName)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(.primary)
+
+                                        Text("@\(friend.username)")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .background(viewModel.selectedFriendIDs.contains(friend.id) ? TinyMeetTheme.badge : Color.white.opacity(0.55))
+                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                 }
             }
 
@@ -229,6 +322,15 @@ struct CreateEventView: View {
             .background(TinyMeetTheme.accent, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
+    private func validationCard(message: String) -> some View {
+        Text(message)
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(TinyMeetTheme.badge, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
     private func formField(title: String, text: Binding<String>, prompt: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
@@ -242,6 +344,7 @@ struct CreateEventView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
     }
+
 }
 
 #Preview {

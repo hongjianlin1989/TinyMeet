@@ -55,24 +55,27 @@ struct TinyMeetCardStyle: ViewModifier {
 }
 
 struct TinyMeetPrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline.weight(.bold))
-            .foregroundStyle(.white)
+            .foregroundStyle(isEnabled ? .white : Color.white.opacity(0.8))
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(TinyMeetTheme.playfulGradient)
+                    .fill(isEnabled ? AnyShapeStyle(TinyMeetTheme.playfulGradient) : AnyShapeStyle(Color.secondary.opacity(0.35)))
             )
             .shadow(
-                color: TinyMeetTheme.shadow.opacity(configuration.isPressed ? 0.10 : 0.22),
-                radius: configuration.isPressed ? 6 : 12,
+                color: TinyMeetTheme.shadow.opacity(isEnabled ? (configuration.isPressed ? 0.10 : 0.22) : 0.08),
+                radius: isEnabled ? (configuration.isPressed ? 6 : 12) : 4,
                 x: 0,
-                y: configuration.isPressed ? 3 : 8
+                y: isEnabled ? (configuration.isPressed ? 3 : 8) : 2
             )
-            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .scaleEffect(isEnabled && configuration.isPressed ? 0.98 : 1)
+            .opacity(isEnabled ? 1 : 0.72)
             .animation(
                 .spring(response: 0.22, dampingFraction: 0.75),
                 value: configuration.isPressed
