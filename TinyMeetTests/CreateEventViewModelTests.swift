@@ -28,6 +28,9 @@ struct CreateEventViewModelTests {
         let groups: [MeetupGroup]
 
         func fetchGroups() async throws -> [MeetupGroup] { groups }
+        func fetchGroupInvites() async throws -> [GroupInvite] { [] }
+        func acceptGroupInvite(_ invite: GroupInvite) async throws { }
+        func rejectGroupInvite(_ invite: GroupInvite) async throws { }
         func createGroup(_ request: CreateGroupRequest) async throws { }
         func fetchGroupDetail(groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
         func deleteGroup(groupID: String) async throws { }

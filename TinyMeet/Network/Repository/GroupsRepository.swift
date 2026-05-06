@@ -2,6 +2,9 @@ import Foundation
 
 protocol GroupsRepositoryProtocol: Sendable {
     func fetchGroups() async throws -> [MeetupGroup]
+    func fetchGroupInvites() async throws -> [GroupInvite]
+    func acceptGroupInvite(_ invite: GroupInvite) async throws
+    func rejectGroupInvite(_ invite: GroupInvite) async throws
     func createGroup(_ request: CreateGroupRequest) async throws
     func fetchGroupDetail(groupID: String) async throws -> GroupDetail
     func deleteGroup(groupID: String) async throws
@@ -37,6 +40,20 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
                 summary: group.summary
             )
         }
+    }
+
+    func fetchGroupInvites() async throws -> [GroupInvite] {
+        let request = try GroupUrlRequest.invites.asURLRequest()
+        let response: [GroupInviteResponseDTO] = try await networkManager.perform(request)
+        return response.map { $0.toGroupInvite() }
+    }
+
+    func acceptGroupInvite(_ invite: GroupInvite) async throws {
+        try await respondToGroupInvite(invite, action: .accept)
+    }
+
+    func rejectGroupInvite(_ invite: GroupInvite) async throws {
+        try await respondToGroupInvite(invite, action: .reject)
     }
 
     func createGroup(_ request: CreateGroupRequest) async throws {
@@ -90,6 +107,11 @@ struct GroupsRepository: GroupsRepositoryProtocol, Sendable {
             request
         )
         return response.success ?? true
+    }
+
+    private func respondToGroupInvite(_ invite: GroupInvite, action: FriendRequestResponseAction) async throws {
+        let request = try GroupUrlRequest.respondToInvite(inviteID: invite.id, action: action).asURLRequest()
+        let _: GeneralResponse = try await networkManager.perform(request)
     }
 
     private func loadMockGroups() throws -> [GroupDetail] {
@@ -205,6 +227,77 @@ private struct GroupDetailResponseDTO: Decodable, Sendable {
     }
 }
 
+private struct GroupInviteResponseDTO: Decodable, Sendable {
+    let id: String
+    let groupID: String
+    let groupName: String
+    let groupSummary: String?
+    let ownerUID: String?
+    let createdAt: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let nestedGroup = try container.decodeIfPresent(GroupInviteNestedGroupDTO.self, forKey: .group)
+        let decodedGroupName = try container.decodeIfPresent(String.self, forKey: .groupName)
+        let decodedName = try container.decodeIfPresent(String.self, forKey: .name)
+        let decodedGroupSummary = try container.decodeIfPresent(String.self, forKey: .groupSummary)
+        let decodedSummary = try container.decodeIfPresent(String.self, forKey: .summary)
+        let decodedOwnerUID = try container.decodeIfPresent(String.self, forKey: .ownerUID)
+
+        id = try container.decodeFlexibleString(forKey: .id)
+        groupID = container.decodeFlexibleStringIfPresent(forKey: .groupID) ?? nestedGroup?.id ?? id
+        groupName = decodedGroupName ?? decodedName ?? nestedGroup?.name ?? groupID
+        groupSummary = decodedGroupSummary ?? decodedSummary ?? nestedGroup?.summary
+        ownerUID = decodedOwnerUID ?? nestedGroup?.ownerUID
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case groupID = "group_id"
+        case groupName = "group_name"
+        case name
+        case groupSummary = "group_summary"
+        case summary
+        case ownerUID = "owner_uid"
+        case createdAt = "created_at"
+        case group
+    }
+
+    func toGroupInvite() -> GroupInvite {
+        GroupInvite(
+            id: id,
+            groupID: groupID,
+            groupName: groupName,
+            groupSummary: groupSummary,
+            ownerUID: ownerUID,
+            createdAt: createdAt
+        )
+    }
+}
+
+private struct GroupInviteNestedGroupDTO: Decodable, Sendable {
+    let id: String
+    let name: String?
+    let summary: String?
+    let ownerUID: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeFlexibleString(forKey: .id)
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        summary = try container.decodeIfPresent(String.self, forKey: .summary)
+        ownerUID = try container.decodeIfPresent(String.self, forKey: .ownerUID)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case summary
+        case ownerUID = "owner_uid"
+    }
+}
+
 private struct GroupDetailMemberDTO: Decodable, Sendable {
     let groupID: String
     let uid: String
@@ -303,5 +396,35 @@ private struct MockGroupMemberDTO: Decodable, Sendable {
 
     func toGroupMember() -> GroupMember {
         GroupMember(id: id, name: name, role: role, joinedAt: nil)
+    }
+}
+
+private extension KeyedDecodingContainer {
+    func decodeFlexibleString(forKey key: Key) throws -> String {
+        if let stringValue = try? decode(String.self, forKey: key) {
+            return stringValue
+        }
+
+        if let intValue = try? decode(Int.self, forKey: key) {
+            return String(intValue)
+        }
+
+        throw DecodingError.dataCorruptedError(
+            forKey: key,
+            in: self,
+            debugDescription: "Expected a string or int value."
+        )
+    }
+
+    func decodeFlexibleStringIfPresent(forKey key: Key) -> String? {
+        if let stringValue = try? decodeIfPresent(String.self, forKey: key) {
+            return stringValue
+        }
+
+        if let intValue = try? decode(Int.self, forKey: key) {
+            return String(intValue)
+        }
+
+        return nil
     }
 }

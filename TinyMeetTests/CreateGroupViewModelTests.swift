@@ -26,6 +26,9 @@ struct CreateGroupViewModelTests {
         }
 
         func fetchGroups() async throws -> [MeetupGroup] { [] }
+        func fetchGroupInvites() async throws -> [GroupInvite] { [] }
+        func acceptGroupInvite(_ invite: GroupInvite) async throws { }
+        func rejectGroupInvite(_ invite: GroupInvite) async throws { }
         func createGroup(_ request: CreateGroupRequest) async throws { try await createGroupHandler(request) }
         func fetchGroupDetail(groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
         func deleteGroup(groupID: String) async throws { }

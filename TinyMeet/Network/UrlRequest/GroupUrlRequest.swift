@@ -2,6 +2,8 @@ import Foundation
 
 enum GroupUrlRequest {
     case list
+    case invites
+    case respondToInvite(inviteID: String, action: FriendRequestResponseAction)
     case create(CreateGroupRequest)
     case detail(groupID: String)
     case deleteGroup(groupID: String)
@@ -13,6 +15,10 @@ enum GroupUrlRequest {
         switch self {
         case .list, .create:
             return "/api/v1/groups"
+        case .invites:
+            return "/api/v1/groups/invites"
+        case .respondToInvite(let inviteID, _):
+            return "/api/v1/groups/invites/\(inviteID)/respond"
         case .detail(let groupID), .deleteGroup(let groupID):
             return "/api/v1/groups/\(groupID)"
         case .addMember(let groupID, _):
@@ -26,9 +32,9 @@ enum GroupUrlRequest {
 
     private var method: String {
         switch self {
-        case .list, .detail:
+        case .list, .invites, .detail:
             return "GET"
-        case .create, .addMember, .inviteUserProfile:
+        case .respondToInvite, .create, .addMember, .inviteUserProfile:
             return "POST"
         case .deleteGroup, .deleteMember:
             return "DELETE"
@@ -54,8 +60,10 @@ enum GroupUrlRequest {
         let encoder = JSONEncoder()
 
         switch self {
-        case .list, .detail, .deleteGroup, .deleteMember:
+        case .list, .invites, .detail, .deleteGroup, .deleteMember:
             return nil
+        case .respondToInvite(_, let action):
+            return try encoder.encode(InviteResponsePayload(accept: action.acceptValue))
         case .create(let request):
             return try encoder.encode(request)
         case .addMember(_, let name):
@@ -76,4 +84,8 @@ private struct InviteUserProfilePayload: Encodable {
     private enum CodingKeys: String, CodingKey {
         case inviteeUID = "invitee_uid"
     }
+}
+
+private struct InviteResponsePayload: Encodable {
+    let accept: Bool
 }

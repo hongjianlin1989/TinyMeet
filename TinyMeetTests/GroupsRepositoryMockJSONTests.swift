@@ -98,6 +98,34 @@ struct GroupsRepositoryMockJSONTests {
         #expect(firstMember.joinedAt == "2026-05-03T13:31:30.463Z")
     }
 
+    @Test func fetchGroupInvitesDecodesLiveInvitesResponse() async throws {
+        let payload = """
+        [
+          {
+            "id": "invite-123",
+            "group_id": "group-456",
+            "group_name": "South Bay Builders",
+            "group_summary": "Weekend maker meetups.",
+            "owner_uid": "owner-123",
+            "created_at": "2026-05-03T13:31:30.463Z"
+          }
+        ]
+        """
+
+        let repository = GroupsRepository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8)))
+        )
+
+        let invites = try await repository.fetchGroupInvites()
+
+        #expect(invites.count == 1)
+        #expect(invites.first?.id == "invite-123")
+        #expect(invites.first?.groupID == "group-456")
+        #expect(invites.first?.groupName == "South Bay Builders")
+        #expect(invites.first?.groupSummary == "Weekend maker meetups.")
+        #expect(invites.first?.ownerUID == "owner-123")
+    }
+
     @Test func createGroupUsesPostGroupsAPI() async throws {
         let recorder = RequestRecorder()
         let repository = GroupsRepository(
@@ -145,5 +173,33 @@ struct GroupsRepositoryMockJSONTests {
         #expect(request?.httpMethod == "DELETE")
         #expect(request?.url?.path == "/api/v1/groups/group-123")
         #expect(request?.httpBody == nil)
+    }
+
+    @Test func acceptGroupInviteUsesRespondAPI() async throws {
+        let recorder = RequestRecorder()
+        let repository = GroupsRepository(
+            networkManager: RecordingNetworkManager(
+                data: try #require("{}".data(using: .utf8)),
+                recorder: recorder
+            )
+        )
+        let invite = GroupInvite(
+            id: "invite-123",
+            groupID: "group-456",
+            groupName: "South Bay Builders",
+            groupSummary: "Weekend maker meetups.",
+            ownerUID: "owner-123",
+            createdAt: nil
+        )
+
+        try await repository.acceptGroupInvite(invite)
+
+        let request = await recorder.lastRequest
+        let body = try #require(request?.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Bool])
+
+        #expect(request?.httpMethod == "POST")
+        #expect(request?.url?.path == "/api/v1/groups/invites/invite-123/respond")
+        #expect(json["accept"] == true)
     }
 }

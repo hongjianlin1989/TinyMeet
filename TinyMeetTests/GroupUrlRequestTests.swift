@@ -49,6 +49,25 @@ struct GroupUrlRequestTests {
         #expect(request.httpBody == nil)
     }
 
+    @Test func invitesRequestUsesGroupInvitesEndpoint() throws {
+        let request = try GroupUrlRequest.invites.asURLRequest()
+
+        #expect(request.httpMethod == "GET")
+        #expect(request.url?.path == "/api/v1/groups/invites")
+        #expect(request.httpBody == nil)
+    }
+
+    @Test func respondToInviteRequestUsesRespondEndpointAndEncodesAcceptPayload() throws {
+        let request = try GroupUrlRequest.respondToInvite(inviteID: "invite-123", action: .accept).asURLRequest()
+        let body = try #require(request.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Bool])
+
+        #expect(request.httpMethod == "POST")
+        #expect(request.url?.path == "/api/v1/groups/invites/invite-123/respond")
+        #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+        #expect(json["accept"] == true)
+    }
+
     @Test func addMemberRequestEncodesNamePayload() throws {
         let request = try GroupUrlRequest.addMember(groupID: "group-7", name: "Taylor Brooks").asURLRequest()
         let body = try #require(request.httpBody)

@@ -3,14 +3,19 @@ import SwiftUI
 struct AuthToolbarButton: View {
     @EnvironmentObject private var appSession: AppSession
     @EnvironmentObject private var deepLinkHandler: DeepLinkHandler
-    @State private var friendRequestCount = 0
+    @State private var inviteCount = 0
     @State private var isShowingSettings = false
     @State private var isShowingFriendRequests = false
 
     private let friendsRepository: FriendsRepositoryProtocol
+    private let groupsRepository: GroupsRepositoryProtocol
 
-    init(friendsRepository: FriendsRepositoryProtocol = FriendsRepository()) {
+    init(
+        friendsRepository: FriendsRepositoryProtocol = FriendsRepository(),
+        groupsRepository: GroupsRepositoryProtocol = GroupsRepository()
+    ) {
         self.friendsRepository = friendsRepository
+        self.groupsRepository = groupsRepository
     }
 
     var body: some View {
@@ -23,7 +28,7 @@ struct AuthToolbarButton: View {
                         friendRequestsIcon
                     }
                     .buttonStyle(TinyMeetAuthToolbarButtonStyle())
-                    .accessibilityLabel("Friend Requests")
+                    .accessibilityLabel("Invites")
 
                     Button {
                         isShowingSettings = true
@@ -62,11 +67,11 @@ struct AuthToolbarButton: View {
     }
 
     private var friendRequestsIcon: some View {
-        Image(systemName: friendRequestCount > 0 ? "bell.badge.fill" : "bell.fill")
+        Image(systemName: inviteCount > 0 ? "bell.badge.fill" : "bell.fill")
             .font(.subheadline.weight(.bold))
             .frame(width: 18, height: 18)
             .overlay(alignment: .topTrailing) {
-                if friendRequestCount > 0 {
+                if inviteCount > 0 {
                     Text(friendRequestBadgeText)
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(.white)
@@ -79,21 +84,26 @@ struct AuthToolbarButton: View {
     }
 
     private var friendRequestBadgeText: String {
-        friendRequestCount > 9 ? "9+" : "\(friendRequestCount)"
+        inviteCount > 9 ? "9+" : "\(inviteCount)"
     }
 
     private func loadFriendRequestCountIfNeeded() async {
         guard appSession.isLoggedIn else {
-            friendRequestCount = 0
+            inviteCount = 0
             return
         }
 
-        do {
-            let requests = try await friendsRepository.fetchFriendRequests()
-            friendRequestCount = requests.count
-        } catch {
-            friendRequestCount = 0
+        var totalCount = 0
+
+        if let friendRequests = try? await friendsRepository.fetchFriendRequests() {
+            totalCount += friendRequests.count
         }
+
+        if let groupInvites = try? await groupsRepository.fetchGroupInvites() {
+            totalCount += groupInvites.count
+        }
+
+        inviteCount = totalCount
     }
 }
 

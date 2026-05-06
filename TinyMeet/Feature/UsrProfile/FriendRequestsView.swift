@@ -10,19 +10,19 @@ struct FriendRequestsView: View {
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.requests.isEmpty {
-                ProgressView("Loading friend requests...")
+                ProgressView("Loading requests...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let errorMessage = viewModel.errorMessage, viewModel.requests.isEmpty {
                 ContentUnavailableView(
-                    "Friend requests unavailable",
+                    "Requests unavailable",
                     systemImage: "bell.slash",
                     description: Text(errorMessage)
                 )
             } else if viewModel.requests.isEmpty {
                 ContentUnavailableView(
-                    "No friend requests",
+                    "No requests",
                     systemImage: "bell.badge",
-                    description: Text("New friend requests will show up here.")
+                    description: Text("New friend requests and group invites will show up here.")
                 )
             } else {
                 ScrollView {
@@ -36,7 +36,7 @@ struct FriendRequestsView: View {
                 }
             }
         }
-        .navigationTitle("Friend Requests")
+        .navigationTitle("Invites")
         .task {
             await viewModel.loadRequests()
         }
@@ -46,7 +46,17 @@ struct FriendRequestsView: View {
         .tinyMeetPageBackground()
     }
 
-    private func requestRow(_ request: UserProfile) -> some View {
+    @ViewBuilder
+    private func requestRow(_ request: InviteRequestItem) -> some View {
+        switch request {
+        case .friend(let friendRequest):
+            friendRequestRow(friendRequest, request: request)
+        case .group(let groupInvite):
+            groupInviteRow(groupInvite, request: request)
+        }
+    }
+
+    private func friendRequestRow(_ request: UserProfile, request item: InviteRequestItem) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
                 ZStack {
@@ -88,10 +98,10 @@ struct FriendRequestsView: View {
             HStack(spacing: 10) {
                 Button {
                     Task {
-                        await viewModel.accept(request)
+                        await viewModel.accept(item)
                     }
                 } label: {
-                    if viewModel.isResponding(request) {
+                    if viewModel.isResponding(item) {
                         ProgressView()
                             .controlSize(.small)
                             .frame(maxWidth: .infinity)
@@ -101,18 +111,96 @@ struct FriendRequestsView: View {
                     }
                 }
                 .buttonStyle(TinyMeetPrimaryButtonStyle())
-                .disabled(viewModel.isResponding(request))
+                .disabled(viewModel.isResponding(item))
 
                 Button {
                     Task {
-                        await viewModel.reject(request)
+                        await viewModel.reject(item)
                     }
                 } label: {
                     Label("Reject", systemImage: "xmark.circle")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(TinyMeetSecondaryButtonStyle())
-                .disabled(viewModel.isResponding(request))
+                .disabled(viewModel.isResponding(item))
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .tinyMeetCardStyle()
+    }
+
+    private func groupInviteRow(_ invite: GroupInvite, request item: InviteRequestItem) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(TinyMeetTheme.playfulGradient)
+                        .frame(width: 52, height: 52)
+
+                    Image(systemName: "person.3.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(invite.groupName)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+
+                    Text("Group invite")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    if let ownerUID = invite.ownerUID, !ownerUID.isEmpty {
+                        Text("Owner @\(ownerUID)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if let summary = invite.groupSummary, !summary.isEmpty {
+                        Text(summary)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            Label("Pending group invite", systemImage: "bell.badge")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(TinyMeetTheme.accent)
+
+            HStack(spacing: 10) {
+                Button {
+                    Task {
+                        await viewModel.accept(item)
+                    }
+                } label: {
+                    if viewModel.isResponding(item) {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Label("Accept", systemImage: "checkmark.circle.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .buttonStyle(TinyMeetPrimaryButtonStyle())
+                .disabled(viewModel.isResponding(item))
+
+                Button {
+                    Task {
+                        await viewModel.reject(item)
+                    }
+                } label: {
+                    Label("Reject", systemImage: "xmark.circle")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(TinyMeetSecondaryButtonStyle())
+                .disabled(viewModel.isResponding(item))
             }
         }
         .padding(18)
