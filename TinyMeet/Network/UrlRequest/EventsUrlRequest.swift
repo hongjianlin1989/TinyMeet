@@ -8,11 +8,11 @@ enum EventsUrlRequest {
     private var path: String {
         switch self {
         case .listPublic:
-            return "/api/v1/events/public"
+            return "/events/public"
         case .listPrivate:
-            return "/api/v1/events/private"
+            return "/events/private"
         case .create(let request):
-            return request.visibility == .public ? "/api/v1/events/public" : "/api/v1/events/private"
+            return request.visibility == .public ? "/events/public" : "/events/private"
         }
     }
 
@@ -26,7 +26,7 @@ enum EventsUrlRequest {
     }
 
     func asURLRequest() throws -> URLRequest {
-        let url = ApiConfig.baseURL.appending(path: path)
+        let url = ApiConfig.apiURL(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = ApiConfig.timeoutInterval

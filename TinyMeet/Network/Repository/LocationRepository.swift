@@ -26,7 +26,3 @@ struct LocationRepository: LocationRepositoryProtocol {
         let _: UpdateCurrentLocationResponse = try await networkManager.perform(request)
     }
 }
-
-private struct UpdateCurrentLocationResponse: Decodable, Sendable {
-    let success: Bool?
-}

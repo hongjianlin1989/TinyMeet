@@ -15,29 +15,32 @@ struct ProfileView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if appSession.isLoggedIn {
-                    loggedInContent
-                } else {
-                    signedOutContent
+            ScrollView {
+                Group {
+                    if appSession.isLoggedIn {
+                        loggedInContent
+                    } else {
+                        signedOutContent
+                    }
                 }
-            }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .navigationTitle("profile.navigation.title")
-            .task(id: appSession.isLoggedIn) {
-                await viewModel.fetchUserProfile(isLoggedIn: appSession.isLoggedIn)
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    inviteToolbarButton
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .navigationTitle("profile.navigation.title")
+                .task(id: appSession.isLoggedIn) {
+                    await viewModel.fetchUserProfile(isLoggedIn: appSession.isLoggedIn)
                 }
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        inviteToolbarButton
+                    }
 
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    createEventToolbarButton
-                    AuthToolbarButton()
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        createEventToolbarButton
+                        AuthToolbarButton()
+                    }
                 }
             }
+        
         }
         .tinyMeetPageBackground()
         .sheet(isPresented: $viewModel.isShowingCreateEvent) {
@@ -133,17 +136,6 @@ struct ProfileView: View {
                 Label(email, systemImage: "envelope.fill")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(TinyMeetTheme.sky)
-            }
-
-            if let avatarURL = userProfile.avatarURL {
-                Label("profile.avatar.ready", systemImage: "sparkles")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(TinyMeetTheme.accent)
-
-                Text(avatarURL.absoluteString)
-                    .font(.footnote)
-                    .foregroundStyle(.tertiary)
-                    .multilineTextAlignment(.center)
             }
         }
         .padding(24)

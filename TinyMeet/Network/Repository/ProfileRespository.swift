@@ -45,7 +45,3 @@ struct ProfileRespository: ProfileRespositoryProtocol {
         return response.items.map { $0.toUserProfile() }
     }
 }
-
-private struct UserProfileListResponse: Decodable, Sendable {
-    let items: [UserProfileResponse]
-}

@@ -9,6 +9,7 @@ import Foundation
 
 enum ApiConfig {
     private static let productionBaseURLString = "https://tinymeet-api.licongchen.org"
+    private static let apiPathPrefix = "/api/v1"
 
     static let baseURL: URL = {
         let configuredBaseURL = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String
@@ -27,4 +28,21 @@ enum ApiConfig {
     }()
 
     static let timeoutInterval: TimeInterval = 15
+
+    static func apiURL(path: String) -> URL {
+        let trimmedPath = path.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let normalizedPath: String
+        if trimmedPath.isEmpty {
+            normalizedPath = apiPathPrefix
+        } else if trimmedPath == apiPathPrefix || trimmedPath.hasPrefix("\(apiPathPrefix)/") {
+            normalizedPath = trimmedPath
+        } else if trimmedPath.hasPrefix("/") {
+            normalizedPath = apiPathPrefix + trimmedPath
+        } else {
+            normalizedPath = apiPathPrefix + "/" + trimmedPath
+        }
+
+        return baseURL.appending(path: normalizedPath)
+    }
 }

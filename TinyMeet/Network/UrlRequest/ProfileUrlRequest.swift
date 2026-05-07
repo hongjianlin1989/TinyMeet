@@ -14,9 +14,9 @@ enum ProfileUrlRequest {
     private var path: String {
         switch self {
         case .getUserProfile:
-            return "/api/v1/users/profile"
+            return "/users/profile"
         case .searchProfiles:
-            return "/api/v1/users/search"
+            return "/users/search"
         }
     }
 
@@ -43,7 +43,7 @@ enum ProfileUrlRequest {
     }
 
     private func resolvedURL() -> URL {
-        let url = ApiConfig.baseURL.appending(path: path)
+        let url = ApiConfig.apiURL(path: path)
 
         guard case .searchProfiles(let query) = self,
               var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {

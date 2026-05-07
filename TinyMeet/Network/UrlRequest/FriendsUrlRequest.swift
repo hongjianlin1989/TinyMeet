@@ -24,15 +24,15 @@ enum FriendsUrlRequest {
     private var path: String {
         switch self {
         case .friends:
-            return "/api/v1/friends"
+            return "/friends"
         case .friendRequests:
-            return "/api/v1/friends/requests"
+            return "/friends/requests"
         case .respondToFriendRequest(let requestID, _):
-            return "/api/v1/friends/requests/\(requestID)/respond"
+            return "/friends/requests/\(requestID)/respond"
         case .addFriend:
-            return "/api/v1/friends/requests"
+            return "/friends/requests"
         case .removeFriend(let userID):
-            return "/api/v1/friends/\(userID)"
+            return "/friends/\(userID)"
         }
     }
 
@@ -48,7 +48,7 @@ enum FriendsUrlRequest {
     }
 
     func asURLRequest() -> URLRequest {
-        let url = ApiConfig.baseURL.appending(path: path)
+        let url = ApiConfig.apiURL(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = ApiConfig.timeoutInterval

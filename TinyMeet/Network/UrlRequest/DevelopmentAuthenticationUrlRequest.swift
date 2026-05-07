@@ -4,7 +4,7 @@ enum DevelopmentAuthenticationUrlRequest {
     case token(email: String)
 
     func asURLRequest() throws -> URLRequest {
-        let url = ApiConfig.baseURL.appending(path: "/api/v1/dev/token")
+        let url = ApiConfig.apiURL(path: "/dev/token")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = ApiConfig.timeoutInterval

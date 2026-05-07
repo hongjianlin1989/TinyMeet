@@ -15,19 +15,19 @@ enum GroupUrlRequest {
     private var path: String {
         switch self {
         case .list, .create:
-            return "/api/v1/groups"
+            return "/groups"
         case .invites:
-            return "/api/v1/groups/invites"
+            return "/groups/invites"
         case .respondToInvite(let inviteID, _):
-            return "/api/v1/groups/invites/\(inviteID)/respond"
+            return "/groups/invites/\(inviteID)/respond"
         case .detail(let groupID), .deleteGroup(let groupID):
-            return "/api/v1/groups/\(groupID)"
+            return "/groups/\(groupID)"
         case .addMember(let groupID, _), .leaveGroup(let groupID):
-            return "/api/v1/groups/\(groupID)/members"
+            return "/groups/\(groupID)/members"
         case .inviteUserProfile(let groupID, _):
-            return "/api/v1/groups/\(groupID)/invites"
+            return "/groups/\(groupID)/invites"
         case .deleteMember(let groupID, let memberID):
-            return "/api/v1/groups/\(groupID)/members/\(memberID)"
+            return "/groups/\(groupID)/members/\(memberID)"
         }
     }
 
@@ -43,7 +43,7 @@ enum GroupUrlRequest {
     }
 
     func asURLRequest() throws -> URLRequest {
-        let url = ApiConfig.baseURL.appending(path: path)
+        let url = ApiConfig.apiURL(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = ApiConfig.timeoutInterval

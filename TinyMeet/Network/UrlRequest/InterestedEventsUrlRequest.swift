@@ -8,9 +8,9 @@ enum InterestedEventsUrlRequest {
     private var path: String {
         switch self {
         case .list:
-            return "/api/v1/events/interested"
+            return "/events/interested"
         case .interested(let eventID, _, _), .uninterested(let eventID):
-            return "/api/v1/events/\(eventID.uuidString)/interested"
+            return "/events/\(eventID.uuidString)/interested"
         }
     }
 
@@ -26,7 +26,7 @@ enum InterestedEventsUrlRequest {
     }
 
     func asURLRequest() throws -> URLRequest {
-        let url = ApiConfig.baseURL.appending(path: path)
+        let url = ApiConfig.apiURL(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = ApiConfig.timeoutInterval

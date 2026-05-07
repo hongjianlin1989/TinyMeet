@@ -174,7 +174,7 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
     }
 
     private func syncBackendUserProfile() async throws {
-        let url = ApiConfig.baseURL.appending(path: "/api/v1/auth/login")
+        let url = ApiConfig.apiURL(path: "/auth/login")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = ApiConfig.timeoutInterval
