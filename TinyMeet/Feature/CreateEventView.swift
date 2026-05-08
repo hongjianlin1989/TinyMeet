@@ -1,5 +1,6 @@
 import SwiftUI
 
+// swiftlint:disable type_body_length
 struct CreateEventView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: CreateEventViewModel
@@ -346,6 +347,7 @@ struct CreateEventView: View {
     }
 
 }
+// swiftlint:enable type_body_length
 
 #Preview {
     CreateEventView(viewModel: CreateEventViewModel.makeDefault())

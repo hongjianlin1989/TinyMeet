@@ -21,7 +21,8 @@ enum AuthenticationError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingGoogleClientID:
-            return "Google Sign-In is not configured yet. Please update GoogleService-Info.plist with a CLIENT_ID and REVERSED_CLIENT_ID from Firebase Console."
+            return "Google Sign-In is not configured yet. "
+                + "Please update GoogleService-Info.plist with a CLIENT_ID and REVERSED_CLIENT_ID from Firebase Console."
         case .missingPresentingViewController:
             return "Unable to present Google Sign-In right now. Please try again."
         case .missingGoogleIDToken:
@@ -29,7 +30,8 @@ enum AuthenticationError: LocalizedError {
         case .invalidEmail:
             return "Enter a valid email address."
         case .missingEmailLinkURL:
-            return "Email link sign-in is not configured yet. Please make sure Firebase has a valid project ID and authorized email link domain."
+            return "Email link sign-in is not configured yet. "
+                + "Please make sure Firebase has a valid project ID and authorized email link domain."
         }
     }
 }

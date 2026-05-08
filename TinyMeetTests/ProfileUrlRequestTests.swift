@@ -11,13 +11,14 @@ struct ProfileUrlRequestTests {
         #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
     }
 
-    @Test func searchProfilesRequestUsesSearchEndpointAndTrimmedQueryValue() {
+    @Test func searchProfilesRequestUsesSearchEndpointAndTrimmedQueryValue() throws {
         let request = ProfileUrlRequest.searchProfiles(query: "amy chen").asURLRequest()
+        let url = try #require(request.url)
 
         #expect(request.httpMethod == "GET")
-        #expect(request.url?.path == "/api/v1/users/search")
+        #expect(url.path == "/api/v1/users/search")
         #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
-        let queryItem = URLComponents(url: try! #require(request.url), resolvingAgainstBaseURL: false)?
+        let queryItem = URLComponents(url: url, resolvingAgainstBaseURL: false)?
             .queryItems?
             .first(where: { $0.name == "query" })
         #expect(queryItem?.value == "amy chen")

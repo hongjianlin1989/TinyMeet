@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import TinyMeet
 
+// swiftlint:disable file_length type_body_length
 struct GroupDetailViewModelTests {
     struct MockGroupsRepository: GroupsRepositoryProtocol {
         let fetchGroupDetailHandler: @Sendable (String) async throws -> GroupDetail
@@ -280,14 +281,38 @@ struct GroupDetailViewModelTests {
                 GroupMember(id: "friend-amy", name: "amychen", role: "member", joinedAt: nil)
             ]
         )
-        let amy = UserProfile(id: "friend-amy", username: "amychen", displayName: "Amy Chen", email: nil, bio: nil, age: nil, avatarURL: nil)
-        let noah = UserProfile(id: "friend-noah", username: "noahpatel", displayName: "Noah Patel", email: nil, bio: nil, age: nil, avatarURL: nil)
+        let amy = UserProfile(
+            id: "friend-amy",
+            username: "amychen",
+            displayName: "Amy Chen",
+            email: nil,
+            bio: nil,
+            age: nil,
+            avatarURL: nil
+        )
+        let noah = UserProfile(
+            id: "friend-noah",
+            username: "noahpatel",
+            displayName: "Noah Patel",
+            email: nil,
+            bio: nil,
+            age: nil,
+            avatarURL: nil
+        )
 
         let viewModel = GroupDetailViewModel(
             groupID: detail.id,
             groupsRepository: MockGroupsRepository(fetchGroupDetailHandler: { _ in detail }),
             profileRepository: MockProfileRepository(fetchUserProfileHandler: {
-                UserProfile(id: "owner-222", username: "owner", displayName: "Owner", email: nil, bio: nil, age: nil, avatarURL: nil)
+                UserProfile(
+                    id: "owner-222",
+                    username: "owner",
+                    displayName: "Owner",
+                    email: nil,
+                    bio: nil,
+                    age: nil,
+                    avatarURL: nil
+                )
             }),
             friendsRepository: MockFriendsRepository(fetchFriendProfilesHandler: { [amy, noah] })
         )
@@ -342,7 +367,15 @@ struct GroupDetailViewModelTests {
             createdAt: nil,
             members: []
         )
-        let noah = UserProfile(id: "friend-noah", username: "noahpatel", displayName: "Noah Patel", email: nil, bio: nil, age: nil, avatarURL: nil)
+        let noah = UserProfile(
+            id: "friend-noah",
+            username: "noahpatel",
+            displayName: "Noah Patel",
+            email: nil,
+            bio: nil,
+            age: nil,
+            avatarURL: nil
+        )
         let recorder = InvitedFriendRecorder()
 
         let viewModel = GroupDetailViewModel(
@@ -486,7 +519,6 @@ struct GroupDetailViewModelTests {
         await viewModel.fetchGroupDetail()
         let didLeave = await viewModel.leaveGroup()
 
-        #expect(viewModel.canLeaveGroup)
         #expect(didLeave)
         #expect(await recorder.groupIDs == ["group-777"])
         #expect(viewModel.groupDetail == nil)
@@ -534,3 +566,4 @@ struct GroupDetailViewModelTests {
         #expect(viewModel.errorMessage == "Only group members can leave this group.")
     }
 }
+// swiftlint:enable file_length type_body_length

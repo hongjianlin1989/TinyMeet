@@ -71,6 +71,7 @@ struct GroupAddMemberView: View {
         return "Try a different name or keyword."
     }
 
+    // swiftlint:disable function_body_length
     private func friendRow(_ friend: UserProfile) -> some View {
         Button {
             Task {
@@ -131,6 +132,7 @@ struct GroupAddMemberView: View {
         .buttonStyle(.plain)
         .disabled(viewModel.isLoading)
     }
+    // swiftlint:enable function_body_length
 }
 
 #Preview {

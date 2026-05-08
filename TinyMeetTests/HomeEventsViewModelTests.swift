@@ -55,8 +55,9 @@ struct HomeEventsViewModelTests {
 
     @MainActor
     @Test func loadNearbyEventsMarksInterestedRows() async throws {
-        let interestedID = UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1")!
-        let otherID = UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F")!
+        let interestedID = try #require(UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1"))
+        let otherID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
+        let userDefaults = try #require(UserDefaults(suiteName: #function))
 
         let publicEvent = NearbyEvent(
             id: interestedID,
@@ -94,7 +95,7 @@ struct HomeEventsViewModelTests {
         ]
 
         let viewModel = HomeEventsViewModel(
-            userDefaults: UserDefaults(suiteName: #function)!,
+            userDefaults: userDefaults,
             eventsRepository: MockEventsRepository(publicEvents: [publicEvent], privateEvents: [privateEvent]),
             interestedEventsRepository: MockInterestedEventsRepository(interestedRows: interestedRows)
         )
@@ -108,7 +109,8 @@ struct HomeEventsViewModelTests {
 
     @MainActor
     @Test func toggleInterestCallsRepositoryAndUpdatesEvent() async throws {
-        let eventID = UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F")!
+        let eventID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
+        let userDefaults = try #require(UserDefaults(suiteName: #function))
         let recorder = InterestCallRecorder()
         let event = NearbyEvent(
             id: eventID,
@@ -125,7 +127,7 @@ struct HomeEventsViewModelTests {
         )
 
         let viewModel = HomeEventsViewModel(
-            userDefaults: UserDefaults(suiteName: #function)!,
+            userDefaults: userDefaults,
             eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [event]),
             interestedEventsRepository: MockInterestedEventsRepository(
                 interestedRows: [],
@@ -147,7 +149,8 @@ struct HomeEventsViewModelTests {
 
     @MainActor
     @Test func refreshNearbyEventsPreservesServerInterestStateForPrivateEvents() async throws {
-        let eventID = UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F")!
+        let eventID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
+        let userDefaults = try #require(UserDefaults(suiteName: #function))
         let privateEvent = NearbyEvent(
             id: eventID,
             title: "Neighborhood Sandbox Circle",
@@ -164,7 +167,7 @@ struct HomeEventsViewModelTests {
         )
 
         let viewModel = HomeEventsViewModel(
-            userDefaults: UserDefaults(suiteName: #function)!,
+            userDefaults: userDefaults,
             eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [privateEvent]),
             interestedEventsRepository: MockInterestedEventsRepository(interestedRows: [])
         )

@@ -13,7 +13,7 @@ struct InterestedEventsUrlRequestTests {
     }
 
     @Test func interestedRequestUsesPostEndpointAndBody() throws {
-        let eventID = UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1")!
+        let eventID = try #require(UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1"))
         let request = try InterestedEventsUrlRequest.interested(
             eventID: eventID,
             eventType: .public,
@@ -30,7 +30,7 @@ struct InterestedEventsUrlRequestTests {
     }
 
     @Test func uninterestedRequestUsesDeleteEndpoint() throws {
-        let eventID = UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1")!
+        let eventID = try #require(UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1"))
         let request = try InterestedEventsUrlRequest.uninterested(eventID: eventID).asURLRequest()
 
         #expect(request.httpMethod == "DELETE")

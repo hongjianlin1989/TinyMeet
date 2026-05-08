@@ -15,14 +15,14 @@ enum DevelopmentAuthenticationUrlRequest {
         return request
     }
 
-    private var body: DevelopmentAuthenticationTokenRequestBody {
+    private var body: DevAuthTokenBody {
         switch self {
         case .token(let email):
-            return DevelopmentAuthenticationTokenRequestBody(email: email)
+            return DevAuthTokenBody(email: email)
         }
     }
 }
 
-private struct DevelopmentAuthenticationTokenRequestBody: Encodable {
+private struct DevAuthTokenBody: Encodable {
     let email: String
 }

@@ -32,9 +32,12 @@ enum InterestedEventsUrlRequest {
         request.timeoutInterval = ApiConfig.timeoutInterval
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        if case .interested(_, _, _) = self {
+        switch self {
+        case .interested:
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONEncoder().encode(markInterestedBody)
+        case .list, .uninterested:
+            break
         }
 
         return request

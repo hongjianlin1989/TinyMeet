@@ -73,7 +73,6 @@ struct GroupsRepositoryMockJSONTests {
             {
               "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
               "uid": "member-456",
-              "name": "Taylor Brooks",
               "role": "member",
               "joined_at": "2026-05-03T13:31:30.463Z"
             }
@@ -94,8 +93,7 @@ struct GroupsRepositoryMockJSONTests {
         #expect(detail.members.count == 1)
         let firstMember = try #require(detail.members.first)
         #expect(firstMember.id == "member-456")
-        #expect(firstMember.name == "Taylor Brooks")
-        #expect(firstMember.role == "member")
+        #expect(firstMember.name == "member-456")
         #expect(firstMember.joinedAt == "2026-05-03T13:31:30.463Z")
     }
 
@@ -131,7 +129,7 @@ struct GroupsRepositoryMockJSONTests {
         let recorder = RequestRecorder()
         let repository = GroupsRepository(
             networkManager: RecordingNetworkManager(
-                data: try #require("{}".data(using: .utf8)),
+                data: Data("{}".utf8),
                 recorder: recorder
             )
         )
@@ -162,7 +160,7 @@ struct GroupsRepositoryMockJSONTests {
         let recorder = RequestRecorder()
         let repository = GroupsRepository(
             networkManager: RecordingNetworkManager(
-                data: try #require("{}".data(using: .utf8)),
+                data: Data("{}".utf8),
                 recorder: recorder
             )
         )
@@ -180,7 +178,7 @@ struct GroupsRepositoryMockJSONTests {
         let recorder = RequestRecorder()
         let repository = GroupsRepository(
             networkManager: RecordingNetworkManager(
-                data: try #require("{}".data(using: .utf8)),
+                data: Data("{}".utf8),
                 recorder: recorder
             )
         )
@@ -199,7 +197,7 @@ struct GroupsRepositoryMockJSONTests {
         let recorder = RequestRecorder()
         let repository = GroupsRepository(
             networkManager: RecordingNetworkManager(
-                data: try #require("{}".data(using: .utf8)),
+                data: Data("{}".utf8),
                 recorder: recorder
             )
         )

@@ -145,6 +145,7 @@ struct GroupDetailView: View {
         .tinyMeetCardStyle()
     }
 
+    // swiftlint:disable function_body_length
     private func membersCard(_ groupDetail: GroupDetail) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -227,6 +228,7 @@ struct GroupDetailView: View {
         .padding(20)
         .tinyMeetCardStyle()
     }
+    // swiftlint:enable function_body_length
 }
 
 #Preview {

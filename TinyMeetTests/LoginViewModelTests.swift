@@ -1,6 +1,6 @@
+import Foundation
 import Testing
 @testable import TinyMeet
-import Foundation
 
 struct LoginViewModelTests {
     actor EmailRecorder {
@@ -12,10 +12,14 @@ struct LoginViewModelTests {
     }
 
     actor CallCounter {
-        private(set) var count = 0
+        private(set) var wasCalled = false
 
         func increment() {
-            count += 1
+            wasCalled = true
+        }
+
+        func hasNoCalls() -> Bool {
+            !wasCalled
         }
     }
 
@@ -90,7 +94,7 @@ struct LoginViewModelTests {
         let didSend = await viewModel.sendSignInLinkTapped()
 
         #expect(didSend == false)
-        #expect(await callCounter.count == 0)
+        #expect(await callCounter.hasNoCalls())
         #expect(viewModel.errorMessage == AuthenticationError.invalidEmail.localizedDescription)
         #expect(viewModel.signInLinkMessage == nil)
     }
@@ -143,7 +147,7 @@ struct LoginViewModelTests {
         let didSignIn = await viewModel.signInWithDevelopmentEmailTapped()
 
         #expect(didSignIn == false)
-        #expect(await callCounter.count == 0)
+        #expect(await callCounter.hasNoCalls())
         #expect(viewModel.errorMessage == AuthenticationError.invalidEmail.localizedDescription)
         #expect(viewModel.isDevelopmentSigningIn == false)
     }

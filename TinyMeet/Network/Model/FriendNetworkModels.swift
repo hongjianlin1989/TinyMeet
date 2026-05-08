@@ -21,7 +21,9 @@ struct FriendProfileResponse: Decodable, Sendable {
 
     func toUserProfile() -> UserProfile {
         let resolvedDisplayName = displayName?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let fallbackDisplayName = resolvedDisplayName?.isEmpty == false ? resolvedDisplayName! : friendUID
+        let fallbackDisplayName = (
+            resolvedDisplayName?.isEmpty == false ? resolvedDisplayName : nil
+        ) ?? friendUID
 
         return UserProfile(
             id: friendUID,

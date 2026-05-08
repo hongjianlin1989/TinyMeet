@@ -87,7 +87,7 @@ struct FriendsRepositoryTests {
         let recorder = RequestRecorder()
         let repository = FriendsRepository(
             networkManager: RecordingNetworkManager(
-                data: try #require("{\"success\":true}".data(using: .utf8)),
+                data: Data("{\"success\":true}".utf8),
                 recorder: recorder
             )
         )
@@ -116,7 +116,7 @@ struct FriendsRepositoryTests {
         let recorder = RequestRecorder()
         let repository = FriendsRepository(
             networkManager: RecordingNetworkManager(
-                data: try #require("{\"success\":true}".data(using: .utf8)),
+                data: Data("{\"success\":true}".utf8),
                 recorder: recorder
             )
         )
@@ -142,7 +142,7 @@ struct FriendsRepositoryTests {
         let recorder = RequestRecorder()
         let repository = FriendsRepository(
             networkManager: RecordingNetworkManager(
-                data: try #require("{\"success\":true}".data(using: .utf8)),
+                data: Data("{\"success\":true}".utf8),
                 recorder: recorder
             )
         )
@@ -171,7 +171,7 @@ struct FriendsRepositoryTests {
         let recorder = RequestRecorder()
         let repository = FriendsRepository(
             networkManager: RecordingNetworkManager(
-                data: try #require("{\"success\":true}".data(using: .utf8)),
+                data: Data("{\"success\":true}".utf8),
                 recorder: recorder
             )
         )

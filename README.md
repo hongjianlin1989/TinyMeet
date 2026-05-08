@@ -81,6 +81,8 @@ The `ios tests` lane will:
 - disable code signing for CI test runs
 
 ### Local setup
+Bundler is configured in the repo to install gems into `vendor/bundle`, so local setup and CI do not need `sudo` or writes to `/Library/Ruby/Gems`.
+
 Install gems with Bundler:
 
 ```bash
@@ -91,6 +93,12 @@ Run the Fastlane test lane locally:
 
 ```bash
 bundle exec fastlane ios tests
+```
+
+If your shell uses the system Ruby on macOS and Fastlane reports `invalid byte sequence in US-ASCII`, run it with explicit UTF-8 settings:
+
+```bash
+LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 RUBYOPT='-EUTF-8:UTF-8' bundle exec fastlane ios tests
 ```
 
 If you need a different simulator, override the environment variables:

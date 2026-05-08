@@ -2,23 +2,30 @@ name: iOS CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
-      - '**'
   pull_request:
     branches:
       - main
       - develop
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+  LANG: en_US.UTF-8
+  LC_ALL: en_US.UTF-8
+  PROJECT_PATH: TinyMeet.xcodeproj
+  RUBYOPT: -EUTF-8:UTF-8
+  SCHEME_NAME: TinyMeet-Staging
+  SIMULATOR_NAME: iPhone 16
+
 jobs:
-  test:
-    name: Build
+  swiftlint:
+    name: SwiftLint
     runs-on: [self-hosted, macos, x86-64]
+    timeout-minutes: 15
     env:
-      SCHEME_NAME: TinyMeet-Staging
-      PROJECT_PATH: TinyMeet.xcodeproj
       RUNNER_PASSWORD: ${{ secrets.RUNNER_PASSWORD }}
 
     steps:
@@ -27,11 +34,61 @@ jobs:
 
       - name: Select Xcode
         run: |
-          echo $RUNNER_PASSWORD | sudo -S xcode-select -s /Applications/Xcode.app/Contents/Developer
+          if [ -n "${RUNNER_PASSWORD:-}" ]; then
+            echo "$RUNNER_PASSWORD" | sudo -S xcode-select -s /Applications/Xcode.app/Contents/Developer
+          else
+            echo "RUNNER_PASSWORD is not set; using current Xcode selection at $(xcode-select -p)"
+          fi
+          xcodebuild -version
 
-      - name: Swift syntax check
+      - name: Install SwiftLint
         run: |
-          find . -name "*.swift" -exec swift -parse {} + 2>&1 | head -20
+          if ! command -v brew >/dev/null 2>&1; then
+            echo "Homebrew is required to install SwiftLint on the self-hosted runner."
+            exit 1
+          fi
 
-      - name: Xcode build note
-        run: echo "Build manually in Xcode GUI: open -a Xcode"
+          if ! command -v swiftlint >/dev/null 2>&1; then
+            brew install swiftlint
+          fi
+
+          swiftlint version
+
+      - name: Run SwiftLint
+        run: swiftlint lint --strict --config .swiftlint.yml
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: [self-hosted, macos, x86-64]
+    timeout-minutes: 45
+    env:
+      RUNNER_PASSWORD: ${{ secrets.RUNNER_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          if [ -n "${RUNNER_PASSWORD:-}" ]; then
+            echo "$RUNNER_PASSWORD" | sudo -S xcode-select -s /Applications/Xcode.app/Contents/Developer
+          else
+            echo "RUNNER_PASSWORD is not set; using current Xcode selection at $(xcode-select -p)"
+          fi
+          xcodebuild -version
+
+      - name: Set up Bundler dependencies
+        run: |
+          ruby --version
+          gem --version
+
+          if ! command -v bundle >/dev/null 2>&1; then
+            gem install bundler
+          fi
+
+          bundle --version
+          bundle config set path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Run unit tests
+        run: bundle exec fastlane ios tests

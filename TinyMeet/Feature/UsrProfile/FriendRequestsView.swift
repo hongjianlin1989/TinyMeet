@@ -56,6 +56,7 @@ struct FriendRequestsView: View {
         }
     }
 
+    // swiftlint:disable function_body_length
     private func friendRequestRow(_ request: UserProfile, request item: InviteRequestItem) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
@@ -129,7 +130,9 @@ struct FriendRequestsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .tinyMeetCardStyle()
     }
+    // swiftlint:enable function_body_length
 
+    // swiftlint:disable function_body_length
     private func groupInviteRow(_ invite: GroupInvite, request item: InviteRequestItem) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
@@ -207,6 +210,7 @@ struct FriendRequestsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .tinyMeetCardStyle()
     }
+    // swiftlint:enable function_body_length
 
     @ViewBuilder
     private var bannerMessage: some View {

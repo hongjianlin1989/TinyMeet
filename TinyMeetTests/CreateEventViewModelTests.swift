@@ -55,6 +55,7 @@ struct CreateEventViewModelTests {
     }()
 
     @MainActor
+    // swiftlint:disable function_body_length
     @Test func createFriendsEventSubmitsSelectedFriendUIDsAndNewPrivateFields() async throws {
         let created = NearbyEvent(
             title: "Playground Party",
@@ -137,6 +138,7 @@ struct CreateEventViewModelTests {
         #expect(viewModel.createdEvent?.id == created.id)
         #expect(viewModel.errorMessage == nil)
     }
+    // swiftlint:enable function_body_length
 
     @MainActor
     @Test func createGroupEventRequiresSelectedGroupAndSubmitsEndsAt() async throws {
@@ -191,6 +193,7 @@ struct CreateEventViewModelTests {
     }
 
     @MainActor
+    // swiftlint:disable function_body_length
     @Test func createPublicEventUsesPublicPayloadAndOmitsPrivateOnlyFields() async throws {
         let created = NearbyEvent(
             title: "Community Picnic",
@@ -255,6 +258,7 @@ struct CreateEventViewModelTests {
         #expect(viewModel.createdEvent?.id == created.id)
         #expect(viewModel.errorMessage == nil)
     }
+    // swiftlint:enable function_body_length
 
     @MainActor
     @Test func publicEventWithoutURLIsInvalidAndExplainsWhy() async throws {

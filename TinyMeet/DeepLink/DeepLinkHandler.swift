@@ -45,7 +45,7 @@ final class DeepLinkHandler: ObservableObject {
             }
         }
 
-        if (normalizedScheme == "https" || normalizedScheme == "http"),
+        if normalizedScheme == "https" || normalizedScheme == "http",
            normalizedHost == "tinymeet.app",
            normalizedPath == "/login" {
             return .login

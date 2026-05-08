@@ -2,6 +2,7 @@ import Combine
 import Foundation
 
 @MainActor
+// swiftlint:disable type_body_length
 final class CreateEventViewModel: ObservableObject {
     enum EventMode: String, CaseIterable, Identifiable {
         case `private` = "Private"
@@ -396,6 +397,7 @@ final class CreateEventViewModel: ObservableObject {
         TintOption(tintName: "pink", title: "Pink")
     ]
 }
+// swiftlint:enable type_body_length
 
 private extension CreateEventViewModel.JoinVisibility {
     var apiValue: String {

@@ -60,9 +60,16 @@ struct NetworkManager: NetworkManaging {
         guard 200..<300 ~= httpResponse.statusCode else {
             throw NetworkError.unsuccessfulStatusCode(httpResponse.statusCode)
         }
-        
+
         guard !data.isEmpty else {
-            return GeneralResponse(success: true) as! T
+            let emptyResponseData = Data("{}".utf8)
+
+            do {
+                return try decoder.decode(T.self, from: emptyResponseData)
+            } catch {
+                print("Failed to decode empty response: \(error)")
+                throw NetworkError.decodingFailed
+            }
         }
 
         do {

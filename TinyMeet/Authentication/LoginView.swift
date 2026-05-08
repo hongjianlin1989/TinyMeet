@@ -157,7 +157,12 @@ struct LoginView: View {
                     .frame(minWidth: 74)
                 }
                 .buttonStyle(TinyMeetPrimaryButtonStyle())
-                .disabled(!viewModel.canSignInWithDevelopmentEmail || viewModel.isDevelopmentSigningIn || viewModel.isGoogleSigningIn || viewModel.isSendingSignInLink)
+                .disabled(
+                    !viewModel.canSignInWithDevelopmentEmail
+                        || viewModel.isDevelopmentSigningIn
+                        || viewModel.isGoogleSigningIn
+                        || viewModel.isSendingSignInLink
+                )
                 .opacity(viewModel.canSignInWithDevelopmentEmail && !viewModel.isDevelopmentSigningIn ? 1 : 0.42)
             }
             .padding(.horizontal, 18)

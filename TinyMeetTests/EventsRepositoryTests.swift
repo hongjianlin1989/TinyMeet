@@ -97,7 +97,7 @@ struct EventsRepositoryTests {
 
     @Test func createEventReturnsMockNearbyEventWhenUsingMockData() async throws {
         let repo = EventsRepository(
-            networkManager: MockNetworkManager(data: try #require("{}".data(using: .utf8)))
+            networkManager: MockNetworkManager(data: Data("{}".utf8))
         )
         let request = CreateEventRequest(
             visibility: .private,
@@ -128,7 +128,7 @@ struct EventsRepositoryTests {
         let payload = "{}"
 
         let repo = EventsRepository(
-            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8)))
+            networkManager: MockNetworkManager(data: Data(payload.utf8))
         )
 
         let event = try await repo.createEvent(
@@ -159,7 +159,7 @@ struct EventsRepositoryTests {
 
     @Test func createPublicEventMapsToPublicNearbyEvent() async throws {
         let repo = EventsRepository(
-            networkManager: MockNetworkManager(data: try #require("{}".data(using: .utf8)))
+            networkManager: MockNetworkManager(data: Data("{}".utf8))
         )
 
         let event = try await repo.createEvent(

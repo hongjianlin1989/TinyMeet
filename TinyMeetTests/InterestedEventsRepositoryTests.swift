@@ -30,9 +30,10 @@ struct InterestedEventsRepositoryTests {
     }
 
     @MainActor
+    // swiftlint:disable function_body_length
     @Test func fetchInterestedEventsEnrichesPublicAndPrivateRecords() async throws {
-        let publicEventID = UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1")!
-        let privateEventID = UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F")!
+        let publicEventID = try #require(UUID(uuidString: "B1C4E4C9-4A8E-4F8E-A526-7E4C0F66B0A1"))
+        let privateEventID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
         let payload = """
         {
           "events": [
@@ -95,11 +96,13 @@ struct InterestedEventsRepositoryTests {
         #expect(rows.contains(where: { $0.title == "Playground Picnic Crew" && $0.visibility == NearbyEventVisibility.public }))
         #expect(rows.contains(where: { $0.title == "Neighborhood Sandbox Circle" && $0.visibility == NearbyEventVisibility.private }))
     }
+    // swiftlint:enable function_body_length
 
     @MainActor
+    // swiftlint:disable function_body_length
     @Test func fetchInterestedPrivatePlaydatesDecodesCoordinatesAndPeople() async throws {
         let interestID = UUID()
-        let eventID = UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F")!
+        let eventID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
         let personID = UUID()
         let payload = """
         {
@@ -163,6 +166,7 @@ struct InterestedEventsRepositoryTests {
         #expect(person.name == "Amy Chen")
         #expect(person.locationName == "Main Library")
     }
+    // swiftlint:enable function_body_length
 
     @MainActor
     @Test func setInterestedAndUninterestedUseMutationRequests() async throws {

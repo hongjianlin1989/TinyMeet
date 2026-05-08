@@ -132,7 +132,7 @@ struct CreateGroupView: View {
                 .font(.headline)
 
             formField(title: "Name", prompt: "Weekend Hikers", text: $viewModel.groupName)
-       
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Summary")
                     .font(.subheadline.weight(.semibold))

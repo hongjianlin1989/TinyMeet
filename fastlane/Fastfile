@@ -1,26 +1,55 @@
 # Fastfile
+require "open3"
 require "time"
 
 default_platform(:ios)
+
+def ensure_xcode_developer_dir!
+  return if developer_dir_supports_xcode?(ENV["DEVELOPER_DIR"])
+
+  detected_developer_dir = [
+    "/Applications/Xcode.app/Contents/Developer",
+    *Dir.glob("/Applications/Xcode*.app/Contents/Developer").sort
+  ].uniq.find { |path| developer_dir_supports_xcode?(path) }
+
+  unless detected_developer_dir
+    UI.user_error!(
+      "A full Xcode installation is required for simulator tests. Install Xcode and set DEVELOPER_DIR or run `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`."
+    )
+  end
+
+  ENV["DEVELOPER_DIR"] = detected_developer_dir
+  UI.important("Using Xcode developer directory: #{detected_developer_dir}")
+end
+
+def developer_dir_supports_xcode?(developer_dir)
+  return false if developer_dir.to_s.empty?
+
+  stdout, status = Open3.capture2e({ "DEVELOPER_DIR" => developer_dir }, "xcodebuild", "-version")
+  status.success? && stdout.include?("Xcode")
+end
 
 platform :ios do
   desc "Resolve Swift packages and run unit tests for TinyMeet staging"
   lane :tests do
     ENV["LANG"] ||= "en_US.UTF-8"
     ENV["LC_ALL"] ||= "en_US.UTF-8"
+    ensure_xcode_developer_dir!
 
-    project_path = "TinyMeet.xcodeproj"
+    workspace_root = File.expand_path("..", __dir__)
+    project_path = File.join(workspace_root, "TinyMeet.xcodeproj")
     scheme_name = "TinyMeet-Staging"
     simulator_name = ENV.fetch("SIMULATOR_NAME", "iPhone 16")
-    # Use a concrete runtime like "iOS 17.4" (match one from `xcrun simctl list runtimes`)
-    simulator_os = ENV.fetch("SIMULATOR_OS", "iOS 17.4")
+    simulator_os = ENV["SIMULATOR_OS"]
+    device_destination = simulator_os.to_s.empty? ? simulator_name : "#{simulator_name} (#{simulator_os})"
 
     sh("xcodebuild -resolvePackageDependencies -project '#{project_path}'")
 
     run_tests(
       project: project_path,
       scheme: scheme_name,
-      devices: ["#{simulator_name} (#{simulator_os})"],
+      devices: [device_destination],
+      only_testing: ["TinyMeetTests"],
       clean: true,
       code_coverage: true,
       xcargs: "CODE_SIGNING_ALLOWED=NO"
@@ -31,10 +60,12 @@ platform :ios do
   lane :nightly_beta do
     ENV["LANG"] ||= "en_US.UTF-8"
     ENV["LC_ALL"] ||= "en_US.UTF-8"
+    ensure_xcode_developer_dir!
 
-    project_path = "TinyMeet.xcodeproj"
+    workspace_root = File.expand_path("..", __dir__)
+    project_path = File.join(workspace_root, "TinyMeet.xcodeproj")
     scheme_name = "TinyMeet-Staging"
-    output_directory = "fastlane/build"
+    output_directory = File.join(workspace_root, "fastlane", "build")
     output_name = "TinyMeet-Staging"
     build_number = Time.now.utc.strftime("%Y%m%d%H%M")
 
