@@ -2,9 +2,11 @@ import SwiftUI
 
 struct HomeEventsView: View {
     @StateObject private var viewModel: HomeEventsViewModel
+    private let refreshTrigger: Int
 
-    init(viewModel: HomeEventsViewModel) {
+    init(viewModel: HomeEventsViewModel, refreshTrigger: Int = 0) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.refreshTrigger = refreshTrigger
     }
 
     var body: some View {
@@ -48,6 +50,10 @@ struct HomeEventsView: View {
             .navigationTitle("Home")
             .task {
                 await viewModel.loadNearbyEvents()
+            }
+            .task(id: refreshTrigger) {
+                guard refreshTrigger > 0 else { return }
+                await viewModel.refreshNearbyEvents()
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

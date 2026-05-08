@@ -30,7 +30,6 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
 
     func fetchInterestedEvents() async throws -> [InterestedEventRow] {
         async let recordsResponse = fetchInterestedResponse(
-            mockResourceName: "interested_events",
             request: try InterestedEventsUrlRequest.list.asURLRequest()
         )
         async let publicEvents = fetchEvents(for: .public)
@@ -49,17 +48,11 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
     }
 
     func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail] {
-        async let recordsResponse = fetchInterestedResponse(
-            mockResourceName: "interested_events",
-            request: try InterestedEventsUrlRequest.list.asURLRequest()
+        let response = try await fetchInterestedResponse(
+            request: InterestedEventsUrlRequest.list.asURLRequest()
         )
-        async let privateEvents = fetchEvents(for: .private)
 
-        let (response, privateResults) = try await (recordsResponse, privateEvents)
-        return buildInterestedPrivatePlaydates(
-            from: response.events,
-            privateEvents: privateResults
-        )
+        return buildInterestedPrivatePlaydates(from: response.events)
     }
 
     func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws {
@@ -74,10 +67,7 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
         let _: InterestedEventMutationResponse = try await networkManager.perform(request)
     }
 
-    private func fetchInterestedResponse(
-        mockResourceName: String,
-        request: URLRequest
-    ) async throws -> InterestedEventListResponse {
+    private func fetchInterestedResponse(request: URLRequest) async throws -> InterestedEventListResponse {
         return try await networkManager.perform(request)
     }
 
@@ -120,26 +110,26 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
     }
 
     private func buildInterestedPrivatePlaydates(
-        from records: [InterestedEventRecordDTO],
-        privateEvents: [NearbyEvent]
+        from records: [InterestedEventRecordDTO]
     ) -> [InterestedPlaydateMapDetail] {
-        let privateEventsByID = Dictionary(uniqueKeysWithValues: privateEvents.map { ($0.id, $0) })
-
         return records.compactMap { record in
             guard record.eventType == .private,
-                  let event = privateEventsByID[record.eventID],
                   let latitude = record.latitude,
                   let longitude = record.longitude else {
                 return nil
             }
 
-            let subtitleParts = [event.locationName, event.timeDescription].filter { $0.isEmpty == false }
-            let subtitle = subtitleParts.joined(separator: " · ")
+            let title = nonEmpty(record.title)
+                ?? nonEmpty(record.locationName)
+                ?? "Private Playdate"
+            let subtitle = nonEmpty(record.subtitle)
+                ?? nonEmpty(record.locationName)
+                ?? "Interested playdate"
 
             let mapItem = PrivateEventMapItem(
-                id: event.id,
-                title: event.title,
-                subtitle: subtitle.isEmpty ? event.timeDescription : subtitle,
+                id: record.eventID,
+                title: title,
+                subtitle: subtitle,
                 coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
                 tintName: record.tintName ?? "mint",
                 symbolName: record.symbolName ?? "house.fill"
@@ -147,10 +137,19 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
 
             return InterestedPlaydateMapDetail(
                 event: mapItem,
-                scheduledAt: InterestedEventRecordDTO.parseISO8601Date(record.createdAt),
+                scheduledAt: InterestedEventRecordDTO.parseISO8601Date(record.scheduledAt ?? record.createdAt),
                 interestedPeople: (record.interestedPeople ?? []).map { $0.toInterestedPersonLocation() }
             )
         }
+    }
+
+    private func nonEmpty(_ value: String?) -> String? {
+        guard let trimmedValue = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              trimmedValue.isEmpty == false else {
+            return nil
+        }
+
+        return trimmedValue
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {

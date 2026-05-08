@@ -55,6 +55,8 @@ final class CreateEventViewModel: ObservableObject {
     @Published var joinVisibility: JoinVisibility
     @Published var selectedGroupID: String?
     @Published var selectedFriendIDs: Set<String>
+    @Published private(set) var locationSuggestions: [AddressSuggestion] = []
+    @Published private(set) var isSearchingLocations = false
     @Published private(set) var availableGroups: [MeetupGroup] = []
     @Published private(set) var friends: [UserProfile] = []
     @Published private(set) var isLoadingOptions = false
@@ -65,6 +67,10 @@ final class CreateEventViewModel: ObservableObject {
     private let eventsRepository: EventsRepositoryProtocol
     private let friendsRepository: FriendsRepositoryProtocol
     private let groupsRepository: GroupsRepositoryProtocol
+    private let addressSearchService: AddressSearchServicing
+    private let locationSearchDebounceNanoseconds: UInt64
+    private var locationSearchTask: Task<Void, Never>?
+    private var selectedResolvedLocationText: String?
 
     init(
         title: String = "Playground",
@@ -75,8 +81,8 @@ final class CreateEventViewModel: ObservableObject {
         summary: String = "A fun private playdate for local families.",
         eventMode: EventMode = .private,
         eventURL: String = "",
-        latitudeText: String = "0",
-        longitudeText: String = "0",
+        latitudeText: String = "",
+        longitudeText: String = "",
         themeEmoji: String = "🎉",
         symbolName: String = "figure.2.and.child.holdinghands",
         tintName: String = "mint",
@@ -85,7 +91,9 @@ final class CreateEventViewModel: ObservableObject {
         selectedFriendIDs: Set<String> = [],
         eventsRepository: EventsRepositoryProtocol = EventsRepository(),
         friendsRepository: FriendsRepositoryProtocol = FriendsRepository(),
-        groupsRepository: GroupsRepositoryProtocol = GroupsRepository()
+        groupsRepository: GroupsRepositoryProtocol = GroupsRepository(),
+        addressSearchService: AddressSearchServicing? = nil,
+        locationSearchDebounceNanoseconds: UInt64 = 300_000_000
     ) {
         self.title = title
         self.location = location
@@ -106,6 +114,12 @@ final class CreateEventViewModel: ObservableObject {
         self.eventsRepository = eventsRepository
         self.friendsRepository = friendsRepository
         self.groupsRepository = groupsRepository
+        self.addressSearchService = addressSearchService ?? AppleAddressSearchService()
+        self.locationSearchDebounceNanoseconds = locationSearchDebounceNanoseconds
+    }
+
+    deinit {
+        locationSearchTask?.cancel()
     }
 
     static func makeDefault() -> CreateEventViewModel {
@@ -151,7 +165,7 @@ final class CreateEventViewModel: ObservableObject {
         }
 
         if latitude == nil || longitude == nil {
-            return "Private playdates need valid coordinates."
+            return "Choose a suggested location so we can save valid coordinates for this private playdate."
         }
 
         if themeEmoji.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -216,6 +230,14 @@ final class CreateEventViewModel: ObservableObject {
 
     var selectedFriendProfiles: [UserProfile] {
         friends.filter { selectedFriendIDs.contains($0.id) }
+    }
+
+    var locationCoordinateSummary: String? {
+        guard let latitude, let longitude else {
+            return nil
+        }
+
+        return "Coordinates: \(Self.formattedCoordinate(latitude)), \(Self.formattedCoordinate(longitude))"
     }
 
     func loadAudienceOptions() async {
@@ -300,6 +322,38 @@ final class CreateEventViewModel: ObservableObject {
         endsAt = Self.defaultEndsAt(from: scheduledAt)
     }
 
+    func updateLocationQuery(_ query: String) {
+        location = query
+
+        if selectedResolvedLocationText != query {
+            clearResolvedLocationSelection()
+        }
+
+        scheduleLocationSuggestions(for: query)
+    }
+
+    func selectLocationSuggestion(_ suggestion: AddressSuggestion) async {
+        locationSearchTask?.cancel()
+        isSearchingLocations = true
+
+        do {
+            let resolvedLocation = try await addressSearchService.resolve(suggestion)
+            selectedResolvedLocationText = resolvedLocation.displayText
+            location = resolvedLocation.displayText
+            latitudeText = Self.formattedCoordinate(resolvedLocation.latitude)
+            longitudeText = Self.formattedCoordinate(resolvedLocation.longitude)
+            locationSuggestions = []
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        }
+
+        isSearchingLocations = false
+    }
+
+    func clearLocationSuggestions() {
+        locationSuggestions = []
+    }
+
     private func makeCreateEventRequest() -> CreateEventRequest {
         if isPublicEvent {
             return CreateEventRequest(
@@ -350,62 +404,56 @@ final class CreateEventViewModel: ObservableObject {
         Self.parseCoordinate(longitudeText, validRange: -180...180)
     }
 
-    private static let iso8601Formatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
+    private func scheduleLocationSuggestions(for query: String) {
+        locationSearchTask?.cancel()
 
-    private nonisolated static func defaultScheduledAt() -> Date {
-        let calendar = Calendar.current
-        let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-        return calendar.date(bySettingHour: 15, minute: 0, second: 0, of: tomorrow) ?? tomorrow
-    }
-
-    private nonisolated static func defaultEndsAt(from scheduledAt: Date) -> Date {
-        Calendar.current.date(byAdding: .hour, value: 2, to: scheduledAt) ?? scheduledAt.addingTimeInterval(7200)
-    }
-
-    private nonisolated static func parseCoordinate(_ value: String, validRange: ClosedRange<Double>) -> Double? {
-        let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let coordinate = Double(trimmedValue), validRange.contains(coordinate) else {
-            return nil
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedQuery.isEmpty == false else {
+            isSearchingLocations = false
+            locationSuggestions = []
+            return
         }
 
-        return coordinate
+        locationSearchTask = Task { [weak self] in
+            guard let self else { return }
+
+            if self.locationSearchDebounceNanoseconds > 0 {
+                try? await Task.sleep(nanoseconds: self.locationSearchDebounceNanoseconds)
+            }
+
+            guard Task.isCancelled == false else { return }
+            await self.loadLocationSuggestions(for: trimmedQuery)
+        }
     }
 
-    private nonisolated static let themeOptions: [ThemeOption] = [
-        ThemeOption(emoji: "🎉", title: "Celebration"),
-        ThemeOption(emoji: "🛝", title: "Playground"),
-        ThemeOption(emoji: "☕️", title: "Coffee Chat"),
-        ThemeOption(emoji: "🧺", title: "Picnic"),
-        ThemeOption(emoji: "📚", title: "Story Time")
-    ]
+    private func loadLocationSuggestions(for query: String) async {
+        guard query.isEmpty == false else {
+            isSearchingLocations = false
+            locationSuggestions = []
+            return
+        }
 
-    private nonisolated static let symbolOptions: [SymbolOption] = [
-        SymbolOption(symbolName: "figure.2.and.child.holdinghands", title: "Playdate"),
-        SymbolOption(symbolName: "balloon.2.fill", title: "Party"),
-        SymbolOption(symbolName: "figure.play", title: "Active"),
-        SymbolOption(symbolName: "book.closed.fill", title: "Learning"),
-        SymbolOption(symbolName: "leaf.fill", title: "Outdoors")
-    ]
+        isSearchingLocations = true
 
-    private nonisolated static let tintOptions: [TintOption] = [
-        TintOption(tintName: "mint", title: "Mint"),
-        TintOption(tintName: "orange", title: "Peach"),
-        TintOption(tintName: "pink", title: "Pink")
-    ]
+        do {
+            let suggestions = try await addressSearchService.suggestions(for: query)
+            guard Task.isCancelled == false else { return }
+            guard location.trimmingCharacters(in: .whitespacesAndNewlines) == query else { return }
+            locationSuggestions = suggestions
+        } catch {
+            guard Task.isCancelled == false else { return }
+            guard location.trimmingCharacters(in: .whitespacesAndNewlines) == query else { return }
+            locationSuggestions = []
+        }
+
+        isSearchingLocations = false
+    }
+
+    private func clearResolvedLocationSelection() {
+        selectedResolvedLocationText = nil
+        latitudeText = ""
+        longitudeText = ""
+    }
+
 }
 // swiftlint:enable type_body_length
-
-private extension CreateEventViewModel.JoinVisibility {
-    var apiValue: String {
-        switch self {
-        case .friends:
-            return "friends"
-        case .group:
-            return "group"
-        }
-    }
-}

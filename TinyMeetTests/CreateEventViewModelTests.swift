@@ -2,58 +2,90 @@ import Foundation
 import Testing
 @testable import TinyMeet
 
+struct MockCreateEventEventsRepository: EventsRepositoryProtocol {
+    let createHandler: @Sendable (CreateEventRequest) async throws -> NearbyEvent
+
+    func fetchPublicEvents() async throws -> [NearbyEvent] { [] }
+    func fetchPrivateEvents() async throws -> [NearbyEvent] { [] }
+    func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent {
+        try await createHandler(request)
+    }
+}
+
+struct MockCreateEventFriendsRepository: FriendsRepositoryProtocol {
+    let friends: [UserProfile]
+
+    func fetchFriendProfiles() async throws -> [UserProfile] { friends }
+    func fetchFriendRequests() async throws -> [UserProfile] { [] }
+    func acceptFriendRequest(_ request: UserProfile) async throws { }
+    func rejectFriendRequest(_ request: UserProfile) async throws { }
+    func addFriend(_ profile: UserProfile) async throws { }
+    func removeFriend(_ profile: UserProfile) async throws { }
+}
+
+struct MockCreateEventGroupsRepository: GroupsRepositoryProtocol {
+    let groups: [MeetupGroup]
+
+    func fetchGroups() async throws -> [MeetupGroup] { groups }
+    func fetchGroupInvites() async throws -> [GroupInvite] { [] }
+    func acceptGroupInvite(_ invite: GroupInvite) async throws { }
+    func rejectGroupInvite(_ invite: GroupInvite) async throws { }
+    func createGroup(_ request: CreateGroupRequest) async throws { }
+    func fetchGroupDetail(groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
+    func deleteGroup(groupID: String) async throws { }
+    func leaveGroup(groupID: String) async throws -> Bool { true }
+    func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
+    func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws { }
+    func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool { true }
+}
+
+@MainActor
+struct MockAddressSearchService: AddressSearchServicing {
+    let suggestionsHandler: @Sendable (String) async throws -> [AddressSuggestion]
+    let resolveHandler: @Sendable (AddressSuggestion) async throws -> ResolvedAddressLocation
+
+    init(
+        suggestionsHandler: @escaping @Sendable (String) async throws -> [AddressSuggestion] = { _ in [] },
+        resolveHandler: @escaping @Sendable (AddressSuggestion) async throws -> ResolvedAddressLocation = { suggestion in
+            ResolvedAddressLocation(suggestion: suggestion, latitude: 0, longitude: 0)
+        }
+    ) {
+        self.suggestionsHandler = suggestionsHandler
+        self.resolveHandler = resolveHandler
+    }
+
+    func suggestions(for query: String) async throws -> [AddressSuggestion] {
+        try await suggestionsHandler(query)
+    }
+
+    func resolve(_ suggestion: AddressSuggestion) async throws -> ResolvedAddressLocation {
+        try await resolveHandler(suggestion)
+    }
+}
+
+actor CreateEventRequestRecorder {
+    private(set) var requests: [CreateEventRequest] = []
+
+    func record(_ request: CreateEventRequest) {
+        requests.append(request)
+    }
+}
+
+actor SearchQueryRecorder {
+    private(set) var queries: [String] = []
+
+    func record(_ query: String) {
+        queries.append(query)
+    }
+}
+
+private let createEventTestFormatter: ISO8601DateFormatter = {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return formatter
+}()
+
 struct CreateEventViewModelTests {
-    struct MockEventsRepository: EventsRepositoryProtocol {
-        let createHandler: @Sendable (CreateEventRequest) async throws -> NearbyEvent
-
-        func fetchPublicEvents() async throws -> [NearbyEvent] { [] }
-        func fetchPrivateEvents() async throws -> [NearbyEvent] { [] }
-        func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent {
-            try await createHandler(request)
-        }
-    }
-
-    struct MockFriendsRepository: FriendsRepositoryProtocol {
-        let friends: [UserProfile]
-
-        func fetchFriendProfiles() async throws -> [UserProfile] { friends }
-        func fetchFriendRequests() async throws -> [UserProfile] { [] }
-        func acceptFriendRequest(_ request: UserProfile) async throws { }
-        func rejectFriendRequest(_ request: UserProfile) async throws { }
-        func addFriend(_ profile: UserProfile) async throws { }
-        func removeFriend(_ profile: UserProfile) async throws { }
-    }
-
-    struct MockGroupsRepository: GroupsRepositoryProtocol {
-        let groups: [MeetupGroup]
-
-        func fetchGroups() async throws -> [MeetupGroup] { groups }
-        func fetchGroupInvites() async throws -> [GroupInvite] { [] }
-        func acceptGroupInvite(_ invite: GroupInvite) async throws { }
-        func rejectGroupInvite(_ invite: GroupInvite) async throws { }
-        func createGroup(_ request: CreateGroupRequest) async throws { }
-        func fetchGroupDetail(groupID: String) async throws -> GroupDetail { GroupDetail.mockDetails[0] }
-        func deleteGroup(groupID: String) async throws { }
-        func leaveGroup(groupID: String) async throws -> Bool { true }
-        func addMember(named name: String, to groupDetail: GroupDetail) async throws -> GroupDetail { groupDetail }
-        func inviteUserProfile(_ userProfile: UserProfile, toGroupID groupID: String) async throws { }
-        func deleteMember(memberID: String, from groupDetail: GroupDetail) async throws -> Bool { true }
-    }
-
-    actor CreateEventRequestRecorder {
-        private(set) var requests: [CreateEventRequest] = []
-
-        func record(_ request: CreateEventRequest) {
-            requests.append(request)
-        }
-    }
-
-    private let formatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
-
     @MainActor
     // swiftlint:disable function_body_length
     @Test func createFriendsEventSubmitsSelectedFriendUIDsAndNewPrivateFields() async throws {
@@ -87,10 +119,10 @@ struct CreateEventViewModelTests {
             age: nil,
             avatarURL: nil
         )
-        let scheduledAt = try #require(formatter.date(from: "2026-05-03T13:56:44.745Z"))
-        let endsAt = try #require(formatter.date(from: "2026-05-03T15:56:44.745Z"))
-        let scheduledAtString = formatter.string(from: scheduledAt)
-        let endsAtString = formatter.string(from: endsAt)
+        let scheduledAt = try #require(createEventTestFormatter.date(from: "2026-05-03T13:56:44.745Z"))
+        let endsAt = try #require(createEventTestFormatter.date(from: "2026-05-03T15:56:44.745Z"))
+        let scheduledAtString = createEventTestFormatter.string(from: scheduledAt)
+        let endsAtString = createEventTestFormatter.string(from: endsAt)
 
         let viewModel = CreateEventViewModel(
             title: "Playground Party",
@@ -107,7 +139,7 @@ struct CreateEventViewModelTests {
             tintName: "orange",
             joinVisibility: .friends,
             selectedFriendIDs: Set([amy.id]),
-            eventsRepository: MockEventsRepository(createHandler: { request in
+            eventsRepository: MockCreateEventEventsRepository(createHandler: { request in
                 #expect(request.visibility == .private)
                 #expect(request.title == "Playground Party")
                 #expect(request.locationName == "Central Park")
@@ -126,8 +158,8 @@ struct CreateEventViewModelTests {
                 #expect(request.endsAt == endsAtString)
                 return created
             }),
-            friendsRepository: MockFriendsRepository(friends: [amy, noah]),
-            groupsRepository: MockGroupsRepository(groups: [])
+            friendsRepository: MockCreateEventFriendsRepository(friends: [amy, noah]),
+            groupsRepository: MockCreateEventGroupsRepository(groups: [])
         )
 
         await viewModel.loadAudienceOptions()
@@ -149,9 +181,9 @@ struct CreateEventViewModelTests {
             memberCount: 0,
             summary: "Easy weekend hikes"
         )
-        let scheduledAt = try #require(formatter.date(from: "2026-05-03T13:56:44.745Z"))
-        let endsAt = try #require(formatter.date(from: "2026-05-03T16:56:44.745Z"))
-        let endsAtString = formatter.string(from: endsAt)
+        let scheduledAt = try #require(createEventTestFormatter.date(from: "2026-05-03T13:56:44.745Z"))
+        let endsAt = try #require(createEventTestFormatter.date(from: "2026-05-03T16:56:44.745Z"))
+        let endsAtString = createEventTestFormatter.string(from: endsAt)
 
         let viewModel = CreateEventViewModel(
             title: "Playground Party",
@@ -167,7 +199,7 @@ struct CreateEventViewModelTests {
             symbolName: "leaf.fill",
             tintName: "mint",
             joinVisibility: .group,
-            eventsRepository: MockEventsRepository(createHandler: { request in
+            eventsRepository: MockCreateEventEventsRepository(createHandler: { request in
                 #expect(request.visibility == .private)
                 #expect(request.audienceType == "group")
                 #expect(request.groupID == "group-123")
@@ -178,8 +210,8 @@ struct CreateEventViewModelTests {
                     request.toNearbyEvent()
                 }
             }),
-            friendsRepository: MockFriendsRepository(friends: []),
-            groupsRepository: MockGroupsRepository(groups: [group])
+            friendsRepository: MockCreateEventFriendsRepository(friends: []),
+            groupsRepository: MockCreateEventGroupsRepository(groups: [group])
         )
 
         await viewModel.loadAudienceOptions()
@@ -208,10 +240,10 @@ struct CreateEventViewModelTests {
             eventUrl: "https://tinymeet.app/events/community-picnic",
             visibility: .public
         )
-        let scheduledAt = try #require(formatter.date(from: "2026-05-03T14:15:45.592Z"))
-        let endsAt = try #require(formatter.date(from: "2026-05-03T16:15:45.592Z"))
-        let scheduledAtString = formatter.string(from: scheduledAt)
-        let endsAtString = formatter.string(from: endsAt)
+        let scheduledAt = try #require(createEventTestFormatter.date(from: "2026-05-03T14:15:45.592Z"))
+        let endsAt = try #require(createEventTestFormatter.date(from: "2026-05-03T16:15:45.592Z"))
+        let scheduledAtString = createEventTestFormatter.string(from: scheduledAt)
+        let endsAtString = createEventTestFormatter.string(from: endsAt)
         let recorder = CreateEventRequestRecorder()
 
         let viewModel = CreateEventViewModel(
@@ -227,7 +259,7 @@ struct CreateEventViewModelTests {
             longitudeText: "-122.4194",
             themeEmoji: "🌳",
             joinVisibility: .friends,
-            eventsRepository: MockEventsRepository(createHandler: { request in
+            eventsRepository: MockCreateEventEventsRepository(createHandler: { request in
                 await recorder.record(request)
                 #expect(request.visibility == .public)
                 #expect(request.title == "Community Picnic")
@@ -245,8 +277,8 @@ struct CreateEventViewModelTests {
                 #expect(request.endsAt == endsAtString)
                 return created
             }),
-            friendsRepository: MockFriendsRepository(friends: []),
-            groupsRepository: MockGroupsRepository(groups: [])
+            friendsRepository: MockCreateEventFriendsRepository(friends: []),
+            groupsRepository: MockCreateEventGroupsRepository(groups: [])
         )
 
         let didCreate = await viewModel.createEvent()
@@ -271,8 +303,8 @@ struct CreateEventViewModelTests {
             summary: "Bring snacks and meet local families.",
             eventMode: .public,
             eventURL: "   ",
-            friendsRepository: MockFriendsRepository(friends: []),
-            groupsRepository: MockGroupsRepository(groups: [])
+            friendsRepository: MockCreateEventFriendsRepository(friends: []),
+            groupsRepository: MockCreateEventGroupsRepository(groups: [])
         )
 
         #expect(viewModel.isFormValid == false)
@@ -299,12 +331,12 @@ struct CreateEventViewModelTests {
             location: "Central Park",
             scheduledAt: Date(),
             kidsAge: "3 - 5",
-            eventsRepository: MockEventsRepository(createHandler: { _ in
+            eventsRepository: MockCreateEventEventsRepository(createHandler: { _ in
                 Issue.record("Repository should not be called for invalid form")
                 return unexpectedEvent
             }),
-            friendsRepository: MockFriendsRepository(friends: []),
-            groupsRepository: MockGroupsRepository(groups: [])
+            friendsRepository: MockCreateEventFriendsRepository(friends: []),
+            groupsRepository: MockCreateEventGroupsRepository(groups: [])
         )
 
         let didCreate = await viewModel.createEvent()

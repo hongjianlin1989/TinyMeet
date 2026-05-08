@@ -10,10 +10,14 @@ enum RootTab: Hashable {
 struct RootTabView: View {
     @EnvironmentObject private var appSession: AppSession
     @State private var selectedTab: RootTab = .home
+    @State private var homeRefreshToken = 0
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeEventsView(viewModel: HomeEventsViewModel.makeDefault())
+            HomeEventsView(
+                viewModel: HomeEventsViewModel.makeDefault(),
+                refreshTrigger: homeRefreshToken
+            )
                 .tag(RootTab.home)
                 .tabItem {
                     Label("tab.home", systemImage: "house.fill")
@@ -41,6 +45,11 @@ struct RootTabView: View {
                 }
         }
         .background(TinyMeetTheme.backgroundGradient.ignoresSafeArea())
+        .onChange(of: selectedTab) { previousTab, currentTab in
+            if previousTab != .home, currentTab == .home {
+                homeRefreshToken += 1
+            }
+        }
         .onChange(of: appSession.isLoggedIn) { _, isLoggedIn in
             if !isLoggedIn {
                 selectedTab = .home

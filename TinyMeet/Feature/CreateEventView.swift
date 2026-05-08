@@ -84,7 +84,7 @@ struct CreateEventView: View {
     private var inputSection: some View {
         VStack(spacing: 16) {
             formField(title: "Title", text: $viewModel.title, prompt: "Playground")
-            formField(title: "Location", text: $viewModel.location, prompt: "Central Park")
+            locationFieldSection
             formField(title: "Kids Age", text: $viewModel.kidsAge, prompt: "3 - 5")
 
             VStack(alignment: .leading, spacing: 12) {
@@ -330,6 +330,75 @@ struct CreateEventView: View {
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(TinyMeetTheme.badge, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var locationFieldSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Location")
+                .font(.headline)
+
+            TextField(
+                "Start typing an address",
+                text: Binding(
+                    get: { viewModel.location },
+                    set: { viewModel.updateLocationQuery($0) }
+                )
+            )
+            .textInputAutocapitalization(.words)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(TinyMeetTheme.badge)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+            if viewModel.isSearchingLocations {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Finding matching addresses...")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            } else if viewModel.locationSuggestions.isEmpty == false {
+                VStack(spacing: 8) {
+                    ForEach(viewModel.locationSuggestions) { suggestion in
+                        Button {
+                            Task {
+                                await viewModel.selectLocationSuggestion(suggestion)
+                            }
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(suggestion.title)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                if suggestion.subtitle.isEmpty == false {
+                                    Text(suggestion.subtitle)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .background(Color.white.opacity(0.55))
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
+            if let coordinateSummary = viewModel.locationCoordinateSummary {
+                Text(coordinateSummary)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(TinyMeetTheme.sky)
+            } else if viewModel.isPrivateEvent {
+                Text("Choose a suggested location to automatically save latitude and longitude for this playdate.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     private func formField(title: String, text: Binding<String>, prompt: String) -> some View {

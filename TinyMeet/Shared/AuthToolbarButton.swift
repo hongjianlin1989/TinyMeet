@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct AuthToolbarButton: View {
+    private static let inviteCountLoader = InviteCountLoader()
+
     @EnvironmentObject private var appSession: AppSession
     @EnvironmentObject private var deepLinkHandler: DeepLinkHandler
     @State private var inviteCount = 0
@@ -53,9 +55,11 @@ struct AuthToolbarButton: View {
         .task(id: appSession.isLoggedIn) {
             await loadFriendRequestCountIfNeeded()
         }
-        .task(id: isShowingFriendRequests) {
-            if !isShowingFriendRequests {
-                await loadFriendRequestCountIfNeeded()
+        .onChange(of: isShowingFriendRequests) { _, isShowingFriendRequests in
+            guard !isShowingFriendRequests else { return }
+
+            Task {
+                await loadFriendRequestCountIfNeeded(forceRefresh: true)
             }
         }
         .navigationDestination(isPresented: $isShowingSettings) {
@@ -87,23 +91,69 @@ struct AuthToolbarButton: View {
         inviteCount > 9 ? "9+" : "\(inviteCount)"
     }
 
-    private func loadFriendRequestCountIfNeeded() async {
+    private func loadFriendRequestCountIfNeeded(forceRefresh: Bool = false) async {
         guard appSession.isLoggedIn else {
             inviteCount = 0
+            await Self.inviteCountLoader.reset()
             return
         }
 
-        var totalCount = 0
+        inviteCount = await Self.inviteCountLoader.loadCount(
+            forceRefresh: forceRefresh,
+            friendsRepository: friendsRepository,
+            groupsRepository: groupsRepository
+        )
+    }
+}
 
-        if let friendRequests = try? await friendsRepository.fetchFriendRequests() {
-            totalCount += friendRequests.count
+private actor InviteCountLoader {
+    private let cacheLifetime: TimeInterval = 30
+    private var cachedCount: Int?
+    private var lastLoadedAt: Date?
+    private var inFlightTask: Task<Int, Never>?
+
+    func loadCount(
+        forceRefresh: Bool,
+        friendsRepository: FriendsRepositoryProtocol,
+        groupsRepository: GroupsRepositoryProtocol
+    ) async -> Int {
+        if !forceRefresh,
+           let cachedCount,
+           let lastLoadedAt,
+           Date().timeIntervalSince(lastLoadedAt) < cacheLifetime {
+            return cachedCount
         }
 
-        if let groupInvites = try? await groupsRepository.fetchGroupInvites() {
-            totalCount += groupInvites.count
+        if let inFlightTask {
+            return await inFlightTask.value
         }
 
-        inviteCount = totalCount
+        let task = Task<Int, Never> {
+            var totalCount = 0
+
+            if let friendRequests = try? await friendsRepository.fetchFriendRequests() {
+                totalCount += friendRequests.count
+            }
+
+            if let groupInvites = try? await groupsRepository.fetchGroupInvites() {
+                totalCount += groupInvites.count
+            }
+
+            return totalCount
+        }
+
+        inFlightTask = task
+        let totalCount = await task.value
+        cachedCount = totalCount
+        lastLoadedAt = Date()
+        inFlightTask = nil
+        return totalCount
+    }
+
+    func reset() {
+        cachedCount = nil
+        lastLoadedAt = nil
+        inFlightTask = nil
     }
 }
 

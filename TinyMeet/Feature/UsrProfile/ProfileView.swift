@@ -26,6 +26,22 @@ struct ProfileView: View {
                 .padding(16)
                 .padding(.bottom, 28)
             }
+            .navigationTitle("Profile")
+            .toolbar {
+                if appSession.isLoggedIn {
+                    ToolbarItem(placement: .topBarLeading) {
+                        inviteToolbarButton
+                    }
+
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        createEventToolbarButton
+                        AuthToolbarButton()
+                    }
+                }
+            }
+        }
+        .task(id: appSession.isLoggedIn) {
+            await viewModel.fetchUserProfile(isLoggedIn: appSession.isLoggedIn)
         }
         .tinyMeetPageBackground()
         .sheet(isPresented: $viewModel.isShowingCreateEvent) {
@@ -146,6 +162,15 @@ struct ProfileView: View {
             )
         } label: {
             HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(TinyMeetTheme.heroGradient)
+                        .frame(width: 52, height: 52)
+
+                    Image(systemName: "person.2.fill")
+                        .foregroundStyle(.white)
+                }
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text("profile.friends.title")
                         .font(.headline)

@@ -15,10 +15,13 @@ struct InterestedEventRecordDTO: Decodable, Sendable {
     let eventID: UUID
     let eventType: EventType
     let uid: String
+    let title: String?
+    let subtitle: String?
     let locationName: String?
     let latitude: Double?
     let longitude: Double?
     let createdAt: String
+    let scheduledAt: String?
     let symbolName: String?
     let tintName: String?
     let interestedPeople: [InterestedPersonLocationDTO]?
@@ -28,10 +31,13 @@ struct InterestedEventRecordDTO: Decodable, Sendable {
         case eventID = "event_id"
         case eventType = "event_type"
         case uid
+        case title
+        case subtitle
         case locationName = "location_name"
         case latitude
         case longitude
         case createdAt = "created_at"
+        case scheduledAt = "scheduled_at"
         case symbolName = "symbol_name"
         case tintName = "tint_name"
         case interestedPeople = "interested_people"

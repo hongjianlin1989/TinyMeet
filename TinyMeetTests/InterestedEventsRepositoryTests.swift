@@ -100,22 +100,40 @@ struct InterestedEventsRepositoryTests {
 
     @MainActor
     // swiftlint:disable function_body_length
-    @Test func fetchInterestedPrivatePlaydatesDecodesCoordinatesAndPeople() async throws {
-        let interestID = UUID()
-        let eventID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
+    @Test func fetchInterestedPrivatePlaydatesUsesInterestedEventsPayloadAndFiltersToPrivateEvents() async throws {
+        let publicInterestID = UUID()
+        let publicEventID = UUID()
+        let privateInterestID = UUID()
+        let privateEventID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
         let personID = UUID()
         let payload = """
         {
           "events": [
             {
-              "id": "\(interestID.uuidString)",
-              "event_id": "\(eventID.uuidString)",
+              "id": "\(publicInterestID.uuidString)",
+              "event_id": "\(publicEventID.uuidString)",
+              "event_type": "public",
+              "uid": "user_public",
+              "title": "Library Story Time",
+              "subtitle": "Public meetup",
+              "location_name": "Main Library",
+              "latitude": 37.3300,
+              "longitude": -122.0300,
+              "created_at": "2026-04-25T16:30:00-07:00",
+              "scheduled_at": "2026-04-27T10:00:00-07:00"
+            },
+            {
+              "id": "\(privateInterestID.uuidString)",
+              "event_id": "\(privateEventID.uuidString)",
               "event_type": "private",
               "uid": "user_amy",
+              "title": "Backyard Playdate",
+              "subtitle": "Oak Lane Backyard · Today · 4:30 PM",
               "location_name": "Oak Lane Backyard",
               "latitude": 37.3317,
               "longitude": -122.0325,
               "created_at": "2026-04-26T16:30:00-07:00",
+              "scheduled_at": "2026-04-27T16:30:00-07:00",
               "symbol_name": "house.fill",
               "tint_name": "mint",
               "interested_people": [
@@ -132,34 +150,22 @@ struct InterestedEventsRepositoryTests {
         }
         """
 
-        let privateEvent = NearbyEvent(
-            id: eventID,
-            title: "Backyard Playdate",
-            locationName: "Oak Lane Backyard",
-            timeDescription: "Today · 4:30 PM",
-            ageRange: "Ages 2-5",
-            distanceDescription: "0.6 mi away",
-            hostName: "Hosted by Emma",
-            attendeeSummary: "Private group · 4 families",
-            themeEmoji: "🪣",
-            summary: "A cozy backyard sandbox playdate.",
-            visibility: .private
-        )
-
         let repository = InterestedEventsRepository(
             networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8))),
-            eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [privateEvent])
+            eventsRepository: MockEventsRepository(publicEvents: [], privateEvents: [])
         )
 
         let playdates = try await repository.fetchInterestedPrivatePlaydates()
         #expect(playdates.count == 1)
 
         let playdate = try #require(playdates.first)
-        #expect(playdate.id == eventID)
+        #expect(playdate.id == privateEventID)
         #expect(playdate.title == "Backyard Playdate")
+        #expect(playdate.subtitle == "Oak Lane Backyard · Today · 4:30 PM")
         #expect(abs(playdate.coordinate.latitude - 37.3317) < 0.0001)
         #expect(abs(playdate.coordinate.longitude - (-122.0325)) < 0.0001)
         #expect(playdate.interestedPeople.count == 1)
+        #expect(playdates.contains(where: { $0.id == publicEventID }) == false)
 
         let person = try #require(playdate.interestedPeople.first)
         #expect(person.id == personID)

@@ -35,7 +35,18 @@ struct DiscoverView: View {
                     ScrollView {
                         LazyVStack(spacing: 16) {
                             ForEach(viewModel.profiles) { profile in
-                                profileRow(profile)
+                                DiscoverProfileRowView(
+                                    viewModel: DiscoverProfileRowViewModel(
+                                        profile: profile,
+                                        isAdded: viewModel.hasAddedFriend(profile),
+                                        isLoading: viewModel.isLoading,
+                                        onAddFriendTapped: {
+                                            Task {
+                                                await viewModel.addFriend(profile)
+                                            }
+                                        }
+                                    )
+                                )
                             }
                         }
                         .padding(.horizontal, 16)
@@ -61,63 +72,6 @@ struct DiscoverView: View {
             }
         }
         .tinyMeetPageBackground()
-    }
-
-    @ViewBuilder
-    private func profileRow(_ profile: UserProfile) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            profileHeader(profile)
-            addFriendButton(for: profile)
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .tinyMeetCardStyle()
-    }
-
-    private func profileHeader(_ profile: UserProfile) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(TinyMeetTheme.playfulGradient)
-                    .frame(width: 54, height: 54)
-
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 30))
-                    .foregroundStyle(.white)
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text("@\(profile.username)")
-                    .font(.headline)
-
-                if let age = profile.age {
-                    Text("Age \(age)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                if let bio = profile.bio, !bio.isEmpty {
-                    Text(bio)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-    }
-
-    private func addFriendButton(for profile: UserProfile) -> some View {
-        Button(action: {
-            Task {
-                await viewModel.addFriend(profile)
-            }
-        }, label: {
-            Label(
-                viewModel.hasAddedFriend(profile) ? "Friend Added" : "Add Friend",
-                systemImage: viewModel.hasAddedFriend(profile) ? "checkmark.circle.fill" : "person.badge.plus"
-            )
-        })
-        .buttonStyle(TinyMeetPrimaryButtonStyle())
-        .disabled(viewModel.hasAddedFriend(profile) || viewModel.isLoading)
     }
 
     @ViewBuilder
