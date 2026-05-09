@@ -8,16 +8,10 @@ final class LocationManager: NSObject, ObservableObject {
     @Published private(set) var location: CLLocation?
 
     private let manager: CLLocationManager
-    private let locationRepository: LocationRepositoryProtocol
-    private var lastUploadedLocation: CLLocation?
-    private var locationUploadTask: Task<Void, Never>?
 
-    private static let minimumUploadDistance: CLLocationDistance = 500
-
-    init(locationRepository: LocationRepositoryProtocol = LocationRepository()) {
+    override init() {
         let manager = CLLocationManager()
         self.manager = manager
-        self.locationRepository = locationRepository
         self.authorizationStatus = manager.authorizationStatus
         super.init()
         manager.delegate = self
@@ -60,36 +54,6 @@ final class LocationManager: NSObject, ObservableObject {
         manager.startMonitoringSignificantLocationChanges()
         manager.requestLocation()
     }
-
-    private func uploadLocationIfNeeded(_ newLocation: CLLocation) {
-        guard shouldUploadLocation(newLocation) else { return }
-
-        locationUploadTask?.cancel()
-        locationUploadTask = Task { [locationRepository] in
-            do {
-                try await locationRepository.updateCurrentLocation(
-                    latitude: newLocation.coordinate.latitude,
-                    longitude: newLocation.coordinate.longitude
-                )
-
-                await MainActor.run {
-                    self.lastUploadedLocation = newLocation
-                }
-            } catch {
-                // Ignore upload failures for now; a future significant location change will retry.
-            }
-        }
-    }
-
-    private func shouldUploadLocation(_ newLocation: CLLocation) -> Bool {
-        guard newLocation.horizontalAccuracy >= 0 else { return false }
-
-        guard let lastUploadedLocation else {
-            return true
-        }
-
-        return newLocation.distance(from: lastUploadedLocation) >= Self.minimumUploadDistance
-    }
 }
 
 extension LocationManager: CLLocationManagerDelegate {
@@ -110,7 +74,6 @@ extension LocationManager: CLLocationManagerDelegate {
 
         Task { @MainActor [weak self] in
             self?.location = latestLocation
-            self?.uploadLocationIfNeeded(latestLocation)
         }
     }
 

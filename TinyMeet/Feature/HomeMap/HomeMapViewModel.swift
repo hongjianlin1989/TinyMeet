@@ -16,31 +16,51 @@ final class HomeMapViewModel: ObservableObject {
     @Published private(set) var overlayState: OverlayState?
     @Published private(set) var interestedPlaydates: [InterestedPlaydateMapDetail]
     @Published private(set) var selectedPlaydateID: UUID?
+    @Published private(set) var selectedAttendees: [InterestedPersonLocation]
+    @Published private(set) var locationSharingPromptPlaydate: InterestedPlaydateMapDetail?
     @Published private(set) var isLoadingInterestedPlaydates: Bool = false
     @Published private(set) var interestedPlaydatesErrorMessage: String?
 
     private let locationManager: LocationManager
     private let interestedEventsRepository: InterestedEventsRepositoryProtocol
+    private let locationRepository: LocationRepositoryProtocol
+    private let currentDateProvider: @Sendable () -> Date
     private var cancellables = Set<AnyCancellable>()
     private var hasCenteredOnUser = false
     private var latestLocation: CLLocation?
     private var interestedPlaydatesFetchTask: Task<Void, Never>?
+    private var attendeesFetchTask: Task<Void, Never>?
+    private var locationUploadTask: Task<Void, Never>?
+    private var approvedLocationSharingEventIDs = Set<UUID>()
+    private var declinedLocationSharingEventIDs = Set<UUID>()
+    private var lastUploadedLocation: CLLocation?
+    private var lastUploadedEventID: UUID?
+
+    private static let minimumUploadDistance: CLLocationDistance = 500
 
     init(
         locationManager: LocationManager? = nil,
-        interestedEventsRepository: InterestedEventsRepositoryProtocol? = nil
+        interestedEventsRepository: InterestedEventsRepositoryProtocol? = nil,
+        locationRepository: LocationRepositoryProtocol? = nil,
+        currentDateProvider: @escaping @Sendable () -> Date = Date.init
     ) {
         let locationManager = locationManager ?? LocationManager()
         self.locationManager = locationManager
         self.interestedEventsRepository = interestedEventsRepository ?? InterestedEventsRepository()
+        self.locationRepository = locationRepository ?? LocationRepository(shouldUseMockData: false)
+        self.currentDateProvider = currentDateProvider
         self.authorizationStatus = locationManager.authorizationStatus
         self.interestedPlaydates = []
+        self.selectedAttendees = []
+        self.locationSharingPromptPlaydate = nil
         bindLocationManager()
         updateOverlayState(for: authorizationStatus)
     }
 
     deinit {
         interestedPlaydatesFetchTask?.cancel()
+        attendeesFetchTask?.cancel()
+        locationUploadTask?.cancel()
     }
 
     func onAppear() {
@@ -69,13 +89,39 @@ final class HomeMapViewModel: ObservableObject {
     }
 
     var selectedInterestedPeople: [InterestedPersonLocation] {
-        selectedPlaydate?.interestedPeople ?? []
+        selectedAttendees
     }
 
     func selectPlaydate(_ id: UUID) {
         guard selectedPlaydateID != id else { return }
         selectedPlaydateID = id
-        updateCameraForSelectedPlaydate()
+        clearSelectedAttendees()
+        locationSharingPromptPlaydate = nil
+        resetLocationUploadStateIfNeeded(for: id)
+        loadAttendees(for: id)
+        evaluateLocationSharingPrompt()
+        uploadSelectedLocationIfNeeded()
+        recenterOnSelectedPlaydate()
+    }
+
+    func approveLocationSharing() {
+        guard let playdate = locationSharingPromptPlaydate else { return }
+        approvedLocationSharingEventIDs.insert(playdate.id)
+        declinedLocationSharingEventIDs.remove(playdate.id)
+        locationSharingPromptPlaydate = nil
+        requestLocationAccess()
+        uploadSelectedLocationIfNeeded()
+    }
+
+    func declineLocationSharing() {
+        guard let playdate = locationSharingPromptPlaydate else { return }
+        declinedLocationSharingEventIDs.insert(playdate.id)
+        approvedLocationSharingEventIDs.remove(playdate.id)
+        locationSharingPromptPlaydate = nil
+    }
+
+    func dismissLocationSharingPrompt() {
+        locationSharingPromptPlaydate = nil
     }
 
     func loadInterestedPlaydates() async {
@@ -83,6 +129,7 @@ final class HomeMapViewModel: ObservableObject {
         interestedPlaydatesErrorMessage = nil
 
         do {
+            let previousSelectedPlaydateID = selectedPlaydateID
             let playdates = try await interestedEventsRepository.fetchInterestedPrivatePlaydates()
             guard Task.isCancelled == false else { return }
 
@@ -95,17 +142,33 @@ final class HomeMapViewModel: ObservableObject {
                 self.selectedPlaydateID = interestedPlaydates.first?.id
             }
 
-            updateCameraForSelectedPlaydate()
+            let didChangeSelectedPlaydate = self.selectedPlaydateID != previousSelectedPlaydateID
+
+            clearSelectedAttendees()
+
+            if let selectedPlaydateID = self.selectedPlaydateID {
+                await fetchAttendees(for: selectedPlaydateID)
+            }
+
+            evaluateLocationSharingPrompt()
+            uploadSelectedLocationIfNeeded()
+
+            if didChangeSelectedPlaydate {
+                recenterOnSelectedPlaydate()
+            }
         } catch {
             guard Task.isCancelled == false else { return }
             interestedPlaydatesErrorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             interestedPlaydates = []
             selectedPlaydateID = nil
+            clearSelectedAttendees()
         }
 
         isLoadingInterestedPlaydates = false
     }
+}
 
+private extension HomeMapViewModel {
     private func bindLocationManager() {
         locationManager.$authorizationStatus
             .removeDuplicates()
@@ -128,6 +191,7 @@ final class HomeMapViewModel: ObservableObject {
 
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             locationManager.startUpdatingIfAuthorized()
+            uploadSelectedLocationIfNeeded()
         }
     }
 
@@ -143,16 +207,17 @@ final class HomeMapViewModel: ObservableObject {
                     span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
                 )
             )
-        } else {
-            updateCameraForSelectedPlaydate()
         }
+
+        evaluateLocationSharingPrompt()
+        uploadSelectedLocationIfNeeded()
     }
 
-    private func updateCameraForSelectedPlaydate() {
+    private func recenterOnSelectedPlaydate() {
         guard let selectedPlaydate else { return }
 
         var coordinates = [selectedPlaydate.coordinate]
-        coordinates.append(contentsOf: selectedPlaydate.interestedPeople.map(\.coordinate))
+        coordinates.append(contentsOf: selectedAttendees.map(\.coordinate))
 
         if let latestLocation {
             coordinates.append(latestLocation.coordinate)
@@ -171,6 +236,118 @@ final class HomeMapViewModel: ObservableObject {
             return false
         case (nil, nil):
             return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+        }
+    }
+
+    private func loadAttendees(for playdateID: UUID) {
+        attendeesFetchTask?.cancel()
+
+        attendeesFetchTask = Task { [weak self] in
+            await self?.fetchAttendees(for: playdateID)
+        }
+    }
+
+    private func fetchAttendees(for playdateID: UUID) async {
+        do {
+            let attendees = try await interestedEventsRepository.fetchPrivateEventAttendees(eventID: playdateID)
+            guard Task.isCancelled == false else { return }
+            guard selectedPlaydateID == playdateID else { return }
+
+            selectedAttendees = attendees
+        } catch {
+            guard Task.isCancelled == false else { return }
+            guard selectedPlaydateID == playdateID else { return }
+
+            selectedAttendees = []
+        }
+    }
+
+    private func clearSelectedAttendees() {
+        attendeesFetchTask?.cancel()
+        selectedAttendees = []
+    }
+
+    private func evaluateLocationSharingPrompt() {
+        guard let selectedPlaydate,
+              isWithinLocationSharingWindow(for: selectedPlaydate) else {
+            locationSharingPromptPlaydate = nil
+            return
+        }
+
+        guard approvedLocationSharingEventIDs.contains(selectedPlaydate.id) == false,
+              declinedLocationSharingEventIDs.contains(selectedPlaydate.id) == false else {
+            return
+        }
+
+        locationSharingPromptPlaydate = selectedPlaydate
+    }
+
+    private func uploadSelectedLocationIfNeeded() {
+        guard let selectedPlaydate,
+              approvedLocationSharingEventIDs.contains(selectedPlaydate.id),
+              isWithinLocationSharingWindow(for: selectedPlaydate),
+              let latestLocation,
+              shouldShowLocation else {
+            return
+        }
+
+        guard shouldUploadLocation(latestLocation, for: selectedPlaydate.id) else {
+            return
+        }
+
+        locationUploadTask?.cancel()
+        locationUploadTask = Task { [locationRepository] in
+            do {
+                try await locationRepository.updateCurrentLocation(
+                    latitude: latestLocation.coordinate.latitude,
+                    longitude: latestLocation.coordinate.longitude
+                )
+
+                await MainActor.run {
+                    self.lastUploadedLocation = latestLocation
+                    self.lastUploadedEventID = selectedPlaydate.id
+                }
+            } catch {
+                // Ignore upload failures for now; a later location update can retry.
+            }
+        }
+    }
+
+    private func isWithinLocationSharingWindow(for playdate: InterestedPlaydateMapDetail) -> Bool {
+        guard let scheduledAt = playdate.scheduledAt,
+              let endsAt = playdate.endsAt else {
+            return false
+        }
+
+        let now = currentDateProvider()
+        let sharingStart = scheduledAt.addingTimeInterval(-3600)
+        return now >= sharingStart && now < endsAt
+    }
+
+    private var shouldShowLocation: Bool {
+        switch authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func shouldUploadLocation(_ location: CLLocation, for eventID: UUID) -> Bool {
+        guard location.horizontalAccuracy >= 0 else { return false }
+
+        guard lastUploadedEventID == eventID,
+              let lastUploadedLocation else {
+            return true
+        }
+
+        return location.distance(from: lastUploadedLocation) >= Self.minimumUploadDistance
+    }
+
+    private func resetLocationUploadStateIfNeeded(for eventID: UUID) {
+        if lastUploadedEventID != eventID {
+            lastUploadedLocation = nil
+            lastUploadedEventID = nil
         }
     }
 

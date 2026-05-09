@@ -6,19 +6,19 @@ enum LocationUrlRequest {
     private var path: String {
         switch self {
         case .updateCurrentLocation:
-            return "/users/profile/location"
+            return "/users/location"
         }
     }
 
     private var method: String {
         switch self {
         case .updateCurrentLocation:
-            return "PATCH"
+            return "PUT"
         }
     }
 
     func asURLRequest() throws -> URLRequest {
-        let url = ApiConfig.baseURL.appending(path: path)
+        let url = ApiConfig.apiURL(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = ApiConfig.timeoutInterval

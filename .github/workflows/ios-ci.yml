@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 env:
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
@@ -21,6 +22,78 @@ env:
   SIMULATOR_NAME: iPhone 16
 
 jobs:
+  checkmarx:
+    name: Checkmarx
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CHECKMARX_BASE_URI: ${{ secrets.CX_BASE_URI }}
+      CHECKMARX_TENANT: ${{ secrets.CX_TENANT }}
+      CHECKMARX_CLIENT_ID: ${{ secrets.CX_CLIENT_ID }}
+      CHECKMARX_CLIENT_SECRET: ${{ secrets.CX_CLIENT_SECRET }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Checkmarx configuration
+        id: checkmarx-config
+        run: |
+          missing=0
+
+          for name in CHECKMARX_BASE_URI CHECKMARX_TENANT CHECKMARX_CLIENT_ID CHECKMARX_CLIENT_SECRET; do
+            if [ -z "${!name}" ]; then
+              echo "Missing required secret for Checkmarx: $name"
+              missing=1
+            fi
+          done
+
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "Checkmarx is skipped for forked pull requests because repository secrets are not exposed."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$missing" -ne 0 ]; then
+            echo "Checkmarx is skipped until the required repository secrets are configured."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+
+      - name: Run Checkmarx scan
+        if: steps.checkmarx-config.outputs.enabled == 'true'
+        uses: checkmarx/ast-github-action@1fe318de2993222574e6249750ba9000a4e2a6cd
+        with:
+          base_uri: ${{ env.CHECKMARX_BASE_URI }}
+          cx_tenant: ${{ env.CHECKMARX_TENANT }}
+          cx_client_id: ${{ env.CHECKMARX_CLIENT_ID }}
+          cx_client_secret: ${{ env.CHECKMARX_CLIENT_SECRET }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          project_name: ${{ github.repository }}
+          branch: ${{ github.head_ref || github.ref_name }}
+          scan_params: >-
+            --report-format sarif
+            --output-path .
+
+      - name: Check Checkmarx SARIF output
+        if: steps.checkmarx-config.outputs.enabled == 'true' && always()
+        id: checkmarx-sarif
+        run: |
+          if [ -f cx_result.sarif ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No Checkmarx SARIF report was generated; skipping SARIF upload."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload Checkmarx SARIF
+        if: steps.checkmarx-config.outputs.enabled == 'true' && steps.checkmarx-sarif.outputs.exists == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: cx_result.sarif
+
   swiftlint:
     name: SwiftLint
     runs-on: [self-hosted, macos, x86-64]

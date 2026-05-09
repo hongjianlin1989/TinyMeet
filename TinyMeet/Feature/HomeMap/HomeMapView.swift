@@ -36,6 +36,32 @@ struct HomeMapView: View {
         .onAppear {
             viewModel.onAppear()
         }
+        .alert(
+            "Share location for this playdate?",
+            isPresented: locationSharingAlertBinding,
+            presenting: viewModel.locationSharingPromptPlaydate
+        ) { _ in
+            Button("Share") {
+                viewModel.approveLocationSharing()
+            }
+
+            Button("Not now", role: .cancel) {
+                viewModel.declineLocationSharing()
+            }
+        } message: { playdate in
+            Text(locationSharingMessage(for: playdate))
+        }
+    }
+
+    private var locationSharingAlertBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.locationSharingPromptPlaydate != nil },
+            set: { isPresented in
+                if !isPresented {
+                    viewModel.dismissLocationSharingPrompt()
+                }
+            }
+        )
     }
 
     @ViewBuilder
@@ -72,7 +98,7 @@ struct HomeMapView: View {
     @ViewBuilder
     private var playdateSelectionPanel: some View {
         if isPlaydateSelectionVisible == false {
-            panelCard {
+            HomeMapPanelCard {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Playdate view hidden")
@@ -97,7 +123,7 @@ struct HomeMapView: View {
                 }
             }
         } else if viewModel.isLoadingInterestedPlaydates && viewModel.interestedPlaydates.isEmpty {
-            panelCard {
+            HomeMapPanelCard {
                 HStack(spacing: 10) {
                     ProgressView()
                     Text("Loading interested playdates...")
@@ -105,7 +131,7 @@ struct HomeMapView: View {
                 }
             }
         } else if let errorMessage = viewModel.interestedPlaydatesErrorMessage, viewModel.interestedPlaydates.isEmpty {
-            panelCard {
+            HomeMapPanelCard {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Couldn’t load your interested playdates")
                         .font(.headline)
@@ -116,7 +142,7 @@ struct HomeMapView: View {
                 }
             }
         } else if viewModel.interestedPlaydates.isEmpty {
-            panelCard {
+            HomeMapPanelCard {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("No interested playdates yet")
                         .font(.headline)
@@ -127,7 +153,7 @@ struct HomeMapView: View {
                 }
             }
         } else {
-            panelCard {
+            HomeMapPanelCard {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("Selected playdate")
@@ -158,7 +184,7 @@ struct HomeMapView: View {
                         )
                     ) {
                         ForEach(viewModel.interestedPlaydates) { playdate in
-                            Text(playdate.title)
+                            Text(playdate.pickerTitle)
                                 .tag(Optional(playdate.id))
                         }
                     }
@@ -245,16 +271,6 @@ struct HomeMapView: View {
         }
     }
 
-    private func panelCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .shadow(color: TinyMeetTheme.shadow, radius: 10, x: 0, y: 4)
-    }
-
     private func overlayCard(
         titleKey: LocalizedStringResource,
         messageKey: LocalizedStringResource,
@@ -284,6 +300,12 @@ struct HomeMapView: View {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .padding()
         }
+    }
+
+    private func locationSharingMessage(for playdate: InterestedPlaydateMapDetail) -> String {
+        let startTime = playdate.startTimeText ?? "its scheduled time"
+        return "\(playdate.title) starts at \(startTime). "
+            + "Share your location from one hour before the event until it ends?"
     }
 }
 

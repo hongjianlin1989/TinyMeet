@@ -24,6 +24,10 @@ struct LoginViewModelTests {
     }
 
     struct MockAuthenticationRepository: AuthenticationRepositoryProtocol {
+        func completeEmailLinkSignIn(email: String, link: String) async throws -> String {
+            return ""
+        }
+
         let googleHandler: @Sendable () async throws -> Void
         let emailLinkHandler: @Sendable (String) async throws -> Void
         let developmentEmailHandler: @Sendable (String) async throws -> DevelopmentAuthenticationSession

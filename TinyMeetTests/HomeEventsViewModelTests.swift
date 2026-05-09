@@ -21,6 +21,10 @@ struct HomeEventsViewModelTests {
     }
 
     struct MockInterestedEventsRepository: InterestedEventsRepositoryProtocol {
+        func fetchPrivateEventAttendees(eventID: UUID) async throws -> [TinyMeet.InterestedPersonLocation] {
+            return []
+        }
+
         let interestedRows: [InterestedEventRow]
         let onSetInterested: @Sendable (Bool, NearbyEvent) async throws -> Void
 

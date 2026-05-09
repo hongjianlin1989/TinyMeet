@@ -126,10 +126,26 @@ It runs on:
 - pull requests targeting `main` or `develop`
 
 The workflow currently runs these checks:
+- Checkmarx source scan with SARIF upload to GitHub code scanning
 - SwiftLint
 - Xcode unit tests against `TinyMeet-Staging`
 
 This is the workflow that should appear on GitHub pull requests as status checks.
+
+### Checkmarx configuration for GitHub Actions
+
+The GitHub Actions workflow includes a dedicated `Checkmarx` job that runs on `ubuntu-latest` and uploads a SARIF report to GitHub code scanning.
+
+Add these repository secrets in GitHub before expecting the scan to run:
+- `CX_BASE_URI` — your Checkmarx One base URL, for example `https://ast.checkmarx.net`
+- `CX_TENANT` — your Checkmarx tenant name
+- `CX_CLIENT_ID` — OAuth client ID for Checkmarx One
+- `CX_CLIENT_SECRET` — OAuth client secret for Checkmarx One
+
+Behavior notes:
+- If any required Checkmarx secret is missing, the workflow skips the Checkmarx scan job instead of failing the entire CI pipeline.
+- Forked pull requests also skip the Checkmarx job, because GitHub does not expose repository secrets to those runs.
+- SARIF results are uploaded to GitHub so findings can appear in code scanning results.
 
 ## CircleCI
 The CircleCI workflow currently uses a macOS Xcode image and runs on branch pushes, including commits that update an open pull request.

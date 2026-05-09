@@ -4,6 +4,7 @@ import Foundation
 protocol InterestedEventsRepositoryProtocol: Sendable {
     func fetchInterestedEvents() async throws -> [InterestedEventRow]
     func fetchInterestedPrivatePlaydates() async throws -> [InterestedPlaydateMapDetail]
+    func fetchPrivateEventAttendees(eventID: UUID) async throws -> [InterestedPersonLocation]
     func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws
 }
 
@@ -55,6 +56,12 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
         return buildInterestedPrivatePlaydates(from: response.events)
     }
 
+    func fetchPrivateEventAttendees(eventID: UUID) async throws -> [InterestedPersonLocation] {
+        let request = try InterestedEventsUrlRequest.attendees(eventID: eventID, eventType: .private).asURLRequest()
+        let response: PrivateEventAttendeesResponse = try await networkManager.perform(request)
+        return response.attendees.map { $0.toInterestedPersonLocation() }
+    }
+
     func setInterested(_ isInterested: Bool, event: NearbyEvent) async throws {
         let request = (isInterested
             ? try InterestedEventsUrlRequest.interested(
@@ -68,7 +75,7 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
     }
 
     private func fetchInterestedResponse(request: URLRequest) async throws -> InterestedEventListResponse {
-        return try await networkManager.perform(request)
+        try await networkManager.perform(request)
     }
 
     private func fetchEvents(for visibility: NearbyEventVisibility) async throws -> [NearbyEvent] {
@@ -112,7 +119,7 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
     private func buildInterestedPrivatePlaydates(
         from records: [InterestedEventRecordDTO]
     ) -> [InterestedPlaydateMapDetail] {
-        return records.compactMap { record in
+        records.compactMap { record in
             guard record.eventType == .private,
                   let latitude = record.latitude,
                   let longitude = record.longitude else {
@@ -138,7 +145,8 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
             return InterestedPlaydateMapDetail(
                 event: mapItem,
                 scheduledAt: InterestedEventRecordDTO.parseISO8601Date(record.scheduledAt ?? record.createdAt),
-                interestedPeople: (record.interestedPeople ?? []).map { $0.toInterestedPersonLocation() }
+                endsAt: InterestedEventRecordDTO.parseISO8601Date(record.endsAt ?? ""),
+                interestedPeople: []
             )
         }
     }

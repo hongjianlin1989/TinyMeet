@@ -2,13 +2,13 @@ import CoreLocation
 import Foundation
 
 struct InterestedPersonLocation: Identifiable, Equatable {
-    let id: UUID
+    let id: String
     let name: String
     let locationName: String
     let coordinate: CLLocationCoordinate2D
 
     init(
-        id: UUID = UUID(),
+        id: String = UUID().uuidString,
         name: String,
         locationName: String,
         coordinate: CLLocationCoordinate2D
@@ -31,6 +31,7 @@ struct InterestedPersonLocation: Identifiable, Equatable {
 struct InterestedPlaydateMapDetail: Identifiable, Equatable {
     let event: PrivateEventMapItem
     let scheduledAt: Date?
+    let endsAt: Date?
     let interestedPeople: [InterestedPersonLocation]
 
     var id: UUID { event.id }
@@ -39,10 +40,30 @@ struct InterestedPlaydateMapDetail: Identifiable, Equatable {
     var coordinate: CLLocationCoordinate2D { event.coordinate }
     var tintName: String { event.tintName }
     var symbolName: String { event.symbolName }
+    var startTimeText: String? { Self.startTimeFormatter.stringIfPossible(from: scheduledAt) }
+    var pickerTitle: String {
+        guard let startTimeText else { return title }
+        return "\(title), start: \(startTimeText)"
+    }
 
     static func == (lhs: InterestedPlaydateMapDetail, rhs: InterestedPlaydateMapDetail) -> Bool {
         lhs.event == rhs.event
             && lhs.scheduledAt == rhs.scheduledAt
+            && lhs.endsAt == rhs.endsAt
             && lhs.interestedPeople == rhs.interestedPeople
+    }
+
+    private static let startTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "h:mm a"
+        return formatter
+    }()
+}
+
+private extension DateFormatter {
+    func stringIfPossible(from date: Date?) -> String? {
+        guard let date else { return nil }
+        return string(from: date).lowercased()
     }
 }

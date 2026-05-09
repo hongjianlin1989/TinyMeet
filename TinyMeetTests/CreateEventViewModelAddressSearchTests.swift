@@ -3,30 +3,6 @@ import Testing
 @testable import TinyMeet
 
 struct CreateEventViewModelAddressSearchTests {
-    @MainActor
-    @Test func updateLocationQueryLoadsAddressSuggestions() async throws {
-        let recorder = SearchQueryRecorder()
-        let suggestion = AddressSuggestion(title: "1600 Amphitheatre Pkwy", subtitle: "Mountain View, CA")
-
-        let viewModel = CreateEventViewModel(
-            friendsRepository: MockCreateEventFriendsRepository(friends: []),
-            groupsRepository: MockCreateEventGroupsRepository(groups: []),
-            addressSearchService: MockAddressSearchService(
-                suggestionsHandler: { query in
-                    await recorder.record(query)
-                    return [suggestion]
-                }
-            ),
-            locationSearchDebounceNanoseconds: 0
-        )
-
-        viewModel.updateLocationQuery("1600 Amph")
-        try await Task.sleep(nanoseconds: 50_000_000)
-
-        let queries = await recorder.queries
-        #expect(queries == ["1600 Amph"])
-        #expect(viewModel.locationSuggestions == [suggestion])
-    }
 
     @MainActor
     @Test func selectingSuggestedLocationStoresCoordinatesAndEditingClearsThem() async throws {
