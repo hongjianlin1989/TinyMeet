@@ -5,6 +5,7 @@ import Foundation
 final class DeepLinkHandler: ObservableObject {
     enum Destination: Equatable {
         case login
+        case emailSignIn(email: String, link: String)
     }
 
     @Published var activeDestination: Destination?
@@ -36,6 +37,17 @@ final class DeepLinkHandler: ObservableObject {
         let normalizedPath = url.path.lowercased()
 
         if normalizedScheme == "tinymeet" {
+            // Email magic-link callback: tinymeet://auth/callback?link=<url>&email=<email>
+            if normalizedHost == "auth" && normalizedPath == "/callback" {
+                if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                   let queryItems = components.queryItems,
+                   let link  = queryItems.first(where: { $0.name == "link"  })?.value,
+                   let email = queryItems.first(where: { $0.name == "email" })?.value,
+                   !link.isEmpty, !email.isEmpty {
+                    return .emailSignIn(email: email, link: link)
+                }
+            }
+
             if normalizedHost == "login" || normalizedPath == "/login" {
                 return .login
             }

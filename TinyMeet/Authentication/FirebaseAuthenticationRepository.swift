@@ -9,6 +9,11 @@ protocol AuthenticationRepositoryProtocol: Sendable {
 
     func sendSignInLink(to email: String) async throws
     func signInWithDevelopmentEmail(_ email: String) async throws -> DevelopmentAuthenticationSession
+
+    /// Complete email-link sign-in from a deep link URL.
+    /// Call this when the app receives tinymeet://auth/callback?link=...&email=...
+    /// Returns the Firebase ID token on success.
+    func completeEmailLinkSignIn(email: String, link: String) async throws -> String
 }
 
 enum AuthenticationError: LocalizedError {
@@ -77,7 +82,7 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
             throw AuthenticationError.invalidEmail
         }
 
-        let actionCodeSettings = try Self.makeEmailActionCodeSettings()
+        let actionCodeSettings = try Self.makeEmailActionCodeSettings(for: trimmedEmail)
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             Auth.auth().sendSignInLink(toEmail: trimmedEmail, actionCodeSettings: actionCodeSettings) { error in
@@ -104,6 +109,22 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
         return session
     }
 
+    func completeEmailLinkSignIn(email: String, link: String) async throws -> String {
+        guard Auth.auth().isSignIn(withEmailLink: link) else {
+            throw AuthenticationError.missingEmailLinkURL
+        }
+
+        let result = try await Auth.auth().signIn(withEmail: email, link: link)
+        let token = try await result.user.getIDToken()
+
+        // Clear the stored pending email now that sign-in is complete
+        UserDefaults.standard.removeObject(forKey: Self.pendingEmailKey)
+        DevelopmentAuthenticationSessionStorage.clear()
+
+        try await syncBackendUserProfile()
+        return token
+    }
+
     private static var googleClientID: String? {
         if let firebaseClientID = FirebaseApp.app()?.options.clientID, !firebaseClientID.isEmpty {
             return firebaseClientID
@@ -120,13 +141,14 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
         return clientID
     }
 
-    private static func makeEmailActionCodeSettings() throws -> ActionCodeSettings {
-        guard let url = emailLinkURL else {
+    private static func makeEmailActionCodeSettings(for email: String) throws -> ActionCodeSettings {
+        guard let encodedEmail = email.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let callbackURL = URL(string: "https://tinymeet-api.licongchen.org/auth/callback?email=\(encodedEmail)") else {
             throw AuthenticationError.missingEmailLinkURL
         }
 
         let settings = ActionCodeSettings()
-        settings.url = url
+        settings.url = callbackURL
         settings.handleCodeInApp = true
 
         if let bundleIdentifier = Bundle.main.bundleIdentifier {
@@ -134,22 +156,6 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
         }
 
         return settings
-    }
-
-    private static var emailLinkURL: URL? {
-        if let infoValue = Bundle.main.object(forInfoDictionaryKey: "FirebaseEmailLinkURL") as? String,
-           let configuredURL = URL(string: infoValue),
-           !infoValue.isEmpty {
-            return configuredURL
-        }
-
-        let projectID = FirebaseApp.app()?.options.projectID ?? googleServiceValue(for: "PROJECT_ID")
-
-        guard let projectID, !projectID.isEmpty else {
-            return nil
-        }
-
-        return URL(string: "https://\(projectID).firebaseapp.com/finishSignIn")
     }
 
     private static func googleServiceValue(for key: String) -> String? {
