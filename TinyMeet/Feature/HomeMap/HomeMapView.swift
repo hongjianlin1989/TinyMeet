@@ -11,6 +11,8 @@ import MapKit
 import SwiftUI
 
 struct HomeMapView: View {
+    @EnvironmentObject private var appSession: AppSession
+    @EnvironmentObject private var deepLinkHandler: DeepLinkHandler
     @StateObject private var viewModel = HomeMapViewModel()
     @State private var isPlaydateSelectionVisible = true
 
@@ -18,8 +20,12 @@ struct HomeMapView: View {
         NavigationStack {
             GeometryReader { geometry in
                 ZStack {
-                    mapContent(for: geometry.size)
-                    permissionOverlay
+                    if appSession.isLoggedIn {
+                        mapContent(for: geometry.size)
+                        permissionOverlay
+                    } else {
+                        loginRequiredOverlay
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -34,7 +40,13 @@ struct HomeMapView: View {
             }
         }
         .onAppear {
-            viewModel.onAppear()
+            viewModel.onAppear(isLoggedIn: appSession.isLoggedIn)
+        }
+        .onChange(of: appSession.isLoggedIn) { _, isLoggedIn in
+            viewModel.authenticationStateChanged(isLoggedIn: isLoggedIn)
+        }
+        .onDisappear {
+            viewModel.onDisappear()
         }
         .alert(
             "Share location for this playdate?",
@@ -55,7 +67,7 @@ struct HomeMapView: View {
 
     private var locationSharingAlertBinding: Binding<Bool> {
         Binding(
-            get: { viewModel.locationSharingPromptPlaydate != nil },
+            get: { appSession.isLoggedIn && viewModel.locationSharingPromptPlaydate != nil },
             set: { isPresented in
                 if !isPresented {
                     viewModel.dismissLocationSharingPrompt()
@@ -97,6 +109,9 @@ struct HomeMapView: View {
 
     @ViewBuilder
     private var playdateSelectionPanel: some View {
+        if appSession.isLoggedIn == false {
+            EmptyView()
+        } else
         if isPlaydateSelectionVisible == false {
             HomeMapPanelCard {
                 HStack {
@@ -214,6 +229,15 @@ struct HomeMapView: View {
                 action: overlay.buttonTitleKey == nil ? nil : { viewModel.requestLocationAccess() }
             )
         }
+    }
+
+    private var loginRequiredOverlay: some View {
+        overlayCard(
+            titleKey: "Log in to use the map",
+            messageKey: "Log in to view your private playdates, attendee locations, and live map updates.",
+            buttonTitleKey: "login.submit",
+            action: { deepLinkHandler.presentLogin() }
+        )
     }
 
     private func privateEventAnnotation(_ event: PrivateEventMapItem) -> some View {

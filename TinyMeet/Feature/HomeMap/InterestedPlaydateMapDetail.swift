@@ -40,7 +40,14 @@ struct InterestedPlaydateMapDetail: Identifiable, Equatable {
     var coordinate: CLLocationCoordinate2D { event.coordinate }
     var tintName: String { event.tintName }
     var symbolName: String { event.symbolName }
-    var startTimeText: String? { Self.startTimeFormatter.stringIfPossible(from: scheduledAt) }
+    var startTimeText: String? {
+        guard let scheduledAt else { return nil }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "h:mm a"
+        return formatter.string(from: scheduledAt).lowercased()
+    }
     var pickerTitle: String {
         guard let startTimeText else { return title }
         return "\(title), start: \(startTimeText)"
@@ -51,19 +58,5 @@ struct InterestedPlaydateMapDetail: Identifiable, Equatable {
             && lhs.scheduledAt == rhs.scheduledAt
             && lhs.endsAt == rhs.endsAt
             && lhs.interestedPeople == rhs.interestedPeople
-    }
-
-    private static let startTimeFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "h:mm a"
-        return formatter
-    }()
-}
-
-private extension DateFormatter {
-    func stringIfPossible(from date: Date?) -> String? {
-        guard let date else { return nil }
-        return string(from: date).lowercased()
     }
 }

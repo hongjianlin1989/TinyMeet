@@ -8,6 +8,7 @@ final class LocationManager: NSObject, ObservableObject {
     @Published private(set) var location: CLLocation?
 
     private let manager: CLLocationManager
+    private var isMonitoringSignificantLocationChanges = false
 
     override init() {
         let manager = CLLocationManager()
@@ -49,9 +50,23 @@ final class LocationManager: NSObject, ObservableObject {
         startLocationServices()
     }
 
+    func stopUpdating() {
+        manager.stopUpdatingLocation()
+
+        if isMonitoringSignificantLocationChanges {
+            manager.stopMonitoringSignificantLocationChanges()
+            isMonitoringSignificantLocationChanges = false
+        }
+    }
+
     private func startLocationServices() {
-        manager.startUpdatingLocation()
-        manager.startMonitoringSignificantLocationChanges()
+        manager.stopUpdatingLocation()
+
+        if isMonitoringSignificantLocationChanges == false {
+            manager.startMonitoringSignificantLocationChanges()
+            isMonitoringSignificantLocationChanges = true
+        }
+
         manager.requestLocation()
     }
 }

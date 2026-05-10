@@ -24,6 +24,19 @@ struct SettingsView: View {
                 }
             }
 
+            Section("settings.section.locationSharing") {
+                NavigationLink {
+                    locationSharingSelectionList
+                } label: {
+                    HStack {
+                        Text("settings.locationSharing.label")
+                        Spacer()
+                        Text(LocalizedStringKey(viewModel.selectedLocationSharingOption.titleLocalizationKey))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
             Section("settings.section.security") {
                 Button("settings.password.reset") {
                     viewModel.resetPasswordTapped()
@@ -59,6 +72,7 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             viewModel.updateSelectedLanguageCode(appSession.selectedLanguageCode)
+            viewModel.refreshSelectedLocationSharingPreference()
         }
     }
 
@@ -88,6 +102,40 @@ struct SettingsView: View {
         .scrollContentBackground(.hidden)
         .background(TinyMeetTheme.backgroundGradient.ignoresSafeArea())
         .navigationTitle("settings.language.label")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var locationSharingSelectionList: some View {
+        List {
+            ForEach(viewModel.availableLocationSharingPreferences) { preference in
+                Button {
+                    viewModel.updateSelectedLocationSharingPreference(preference)
+                } label: {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(LocalizedStringKey(preference.titleLocalizationKey))
+                                .foregroundStyle(.primary)
+
+                            Text(LocalizedStringKey(preference.detailLocalizationKey))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        if preference == viewModel.selectedLocationSharingOption {
+                            Image(systemName: "checkmark")
+                                .font(.footnote.weight(.bold))
+                                .foregroundStyle(TinyMeetTheme.accent)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(TinyMeetTheme.backgroundGradient.ignoresSafeArea())
+        .navigationTitle("settings.locationSharing.label")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

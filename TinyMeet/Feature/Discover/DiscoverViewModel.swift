@@ -12,13 +12,16 @@ final class DiscoverViewModel: ObservableObject {
 
     private let profileRespository: ProfileRespositoryProtocol
     private let friendsRepository: FriendsRepositoryProtocol
+    private var isAuthenticated: Bool
 
     init(
         profileRespository: ProfileRespositoryProtocol,
-        friendsRepository: FriendsRepositoryProtocol
+        friendsRepository: FriendsRepositoryProtocol,
+        isAuthenticated: Bool = false
     ) {
         self.profileRespository = profileRespository
         self.friendsRepository = friendsRepository
+        self.isAuthenticated = isAuthenticated
     }
 
     static func makeDefault() -> DiscoverViewModel {
@@ -36,7 +39,20 @@ final class DiscoverViewModel: ObservableObject {
         addedFriendIDs.contains(profile.id)
     }
 
+    func onAppear(isLoggedIn: Bool) {
+        setAuthenticationState(isLoggedIn, resetWhenSignedOut: true)
+    }
+
+    func authenticationStateChanged(isLoggedIn: Bool) {
+        setAuthenticationState(isLoggedIn, resetWhenSignedOut: false)
+    }
+
     func searchProfiles() async {
+        guard isAuthenticated else {
+            resetSignedOutState()
+            return
+        }
+
         let trimmedQuery = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedQuery.isEmpty else {
@@ -63,6 +79,11 @@ final class DiscoverViewModel: ObservableObject {
     }
 
     func addFriend(_ profile: UserProfile) async {
+        guard isAuthenticated else {
+            resetSignedOutState()
+            return
+        }
+
         guard !isLoading else { return }
         guard addedFriendIDs.contains(profile.id) == false else { return }
 
@@ -78,6 +99,28 @@ final class DiscoverViewModel: ObservableObject {
             successMessage = "Added @\(profile.username) as a friend."
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    func resetSignedOutState() {
+        searchText = ""
+        profiles = []
+        addedFriendIDs = []
+        isLoading = false
+        errorMessage = nil
+        successMessage = nil
+    }
+}
+
+private extension DiscoverViewModel {
+    func setAuthenticationState(_ isLoggedIn: Bool, resetWhenSignedOut: Bool) {
+        let didChangeAuthenticationState = isAuthenticated != isLoggedIn
+        isAuthenticated = isLoggedIn
+
+        guard didChangeAuthenticationState || resetWhenSignedOut else { return }
+
+        if isLoggedIn == false {
+            resetSignedOutState()
         }
     }
 }
