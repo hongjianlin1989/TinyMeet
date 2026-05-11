@@ -251,6 +251,101 @@ struct CreateEventRequest: Encodable, Sendable {
 
 struct CreateEventResponse: Decodable, Sendable {}
 
+// MARK: - Unified feed
+
+struct UnifiedFeedResponse: Decodable, Sendable {
+    let events: [UnifiedEventDTO]
+    let nextCursor: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case events
+        case nextCursor = "next_cursor"
+    }
+}
+
+struct UnifiedEventDTO: Decodable, Sendable {
+    let id: UUID
+    let eventType: String          // "public" | "private" | "external"
+    let title: String
+    let scheduledAt: String
+    let endsAt: String?
+    let locationName: String?
+    let latitude: Double?
+    let longitude: Double?
+    let summary: String?
+    let attendeeCount: Int
+    let isInterested: Bool
+    // public / private
+    let hostUID: String?
+    let hostName: String?
+    let themeEmoji: String?
+    // external
+    let imageUrl: String?
+    let ticketUrl: String?
+    let category: String?
+    let venueName: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case eventType     = "event_type"
+        case title
+        case scheduledAt   = "scheduled_at"
+        case endsAt        = "ends_at"
+        case locationName  = "location_name"
+        case latitude
+        case longitude
+        case summary
+        case attendeeCount = "attendee_count"
+        case isInterested  = "is_interested"
+        case hostUID       = "host_uid"
+        case hostName      = "host_name"
+        case themeEmoji    = "theme_emoji"
+        case imageUrl      = "image_url"
+        case ticketUrl     = "ticket_url"
+        case category
+        case venueName     = "venue_name"
+    }
+
+    func toNearbyEvent() -> NearbyEvent {
+        let visibility: NearbyEventVisibility
+        switch eventType {
+        case "private":  visibility = .private
+        case "external": visibility = .external
+        default:         visibility = .public
+        }
+
+        let location = locationName ?? venueName ?? "Location TBD"
+        let emoji: String
+        switch eventType {
+        case "private":  emoji = themeEmoji ?? "🏡"
+        case "external": emoji = "🎟️"
+        default:         emoji = themeEmoji ?? "🎉"
+        }
+
+        let host: String
+        switch eventType {
+        case "external": host = venueName ?? category ?? "External event"
+        default:         host = EventDisplayFormatter.hostLabel(for: hostName, fallback: "Hosted by TinyMeet")
+        }
+
+        return NearbyEvent(
+            id: id,
+            title: title,
+            locationName: location,
+            timeDescription: EventDisplayFormatter.timeDescription(from: scheduledAt),
+            ageRange: "All ages",
+            distanceDescription: eventType == "external" ? "Ticketmaster" : (eventType == "private" ? "Private" : "Community"),
+            hostName: host,
+            attendeeSummary: EventDisplayFormatter.attendeeSummary(count: attendeeCount),
+            themeEmoji: emoji,
+            summary: summary ?? "Join other families for a fun local meet-up.",
+            eventUrl: ticketUrl,
+            isInterested: isInterested,
+            visibility: visibility
+        )
+    }
+}
+
 private enum EventDisplayFormatter {
     private static let inputFormatterWithFractionalSeconds: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()

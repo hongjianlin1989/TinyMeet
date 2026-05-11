@@ -4,6 +4,7 @@ enum EventsUrlRequest {
     case listPublic
     case listPrivate
     case create(CreateEventRequest)
+    case feed(types: [String]?, postalCode: String?, cursor: String?)
 
     private var path: String {
         switch self {
@@ -13,12 +14,14 @@ enum EventsUrlRequest {
             return "/events/private"
         case .create(let request):
             return request.visibility == .public ? "/events/public" : "/events/private"
+        case .feed:
+            return "/events/feed"
         }
     }
 
     private var method: String {
         switch self {
-        case .listPublic, .listPrivate:
+        case .listPublic, .listPrivate, .feed:
             return "GET"
         case .create:
             return "POST"
@@ -26,7 +29,27 @@ enum EventsUrlRequest {
     }
 
     func asURLRequest() throws -> URLRequest {
-        let url = ApiConfig.apiURL(path: path)
+        let url: URL
+        if case let .feed(types, postalCode, cursor) = self {
+            var components = URLComponents(url: ApiConfig.apiURL(path: path), resolvingAgainstBaseURL: false)!
+            var queryItems: [URLQueryItem] = []
+            for type_ in types ?? [] {
+                queryItems.append(URLQueryItem(name: "types", value: type_))
+            }
+            if let postalCode {
+                queryItems.append(URLQueryItem(name: "postal_code", value: postalCode))
+            }
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            if !queryItems.isEmpty {
+                components.queryItems = queryItems
+            }
+            url = components.url!
+        } else {
+            url = ApiConfig.apiURL(path: path)
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = ApiConfig.timeoutInterval
@@ -42,7 +65,7 @@ enum EventsUrlRequest {
 
     private func bodyData() throws -> Data? {
         switch self {
-        case .listPublic, .listPrivate:
+        case .listPublic, .listPrivate, .feed:
             return nil
         case .create(let request):
             return try JSONEncoder().encode(request)

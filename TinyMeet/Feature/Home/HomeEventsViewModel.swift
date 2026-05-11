@@ -53,22 +53,12 @@ final class HomeEventsViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            async let publicEvents = eventsRepository.fetchPublicEvents()
-            async let privateEvents = eventsRepository.fetchPrivateEvents()
-            async let interestedEvents = interestedEventsRepository.fetchInterestedEvents()
-
-            let (publicResults, privateResults, interestedRows) = try await (
-                publicEvents,
-                privateEvents,
-                interestedEvents
+            let (feedEvents, _) = try await eventsRepository.fetchUnifiedFeed(
+                types: nil,
+                postalCode: nil,
+                cursor: nil
             )
-            let interestedEventIDs = interestedRows.map(\.id)
-            let interestedIDSet = Set(interestedEventIDs)
-            events = (publicResults + privateResults).map { event in
-                var event = event
-                event.isInterested = event.isInterested || interestedIDSet.contains(event.id)
-                return event
-            }
+            events = feedEvents
         } catch {
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             events = []

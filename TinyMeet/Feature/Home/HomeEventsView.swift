@@ -100,6 +100,8 @@ struct HomeEventsView: View {
             return "No public events yet"
         case .private:
             return "No private events yet"
+        case .external:
+            return "No external events found"
         }
     }
 
@@ -109,6 +111,8 @@ struct HomeEventsView: View {
             return "Try again soon for new community events nearby."
         case .private:
             return "Private invitations and family-only meet-ups will show up here."
+        case .external:
+            return "No Ticketmaster events were found in your area right now."
         }
     }
 
@@ -118,6 +122,8 @@ struct HomeEventsView: View {
             return "figure.and.child.holdinghands"
         case .private:
             return "person.2.badge.gearshape"
+        case .external:
+            return "ticket"
         }
     }
 
@@ -160,7 +166,14 @@ struct HomeEventsView: View {
             viewModel.selectFilter(filter)
         } label: {
             HStack(spacing: 8) {
-                Image(systemName: filter == .public ? "globe" : "lock.fill")
+                let iconName: String = {
+                    switch filter {
+                    case .public:   return "globe"
+                    case .private:  return "lock.fill"
+                    case .external: return "ticket"
+                    }
+                }()
+                Image(systemName: iconName)
                     .font(.caption.weight(.bold))
 
                 Text(filter.title)

@@ -3,6 +3,7 @@ import Foundation
 enum NearbyEventVisibility: String, CaseIterable, Identifiable, Sendable {
     case `public`
     case `private`
+    case external
 
     var id: String { rawValue }
 
@@ -12,6 +13,8 @@ enum NearbyEventVisibility: String, CaseIterable, Identifiable, Sendable {
             return "Public"
         case .private:
             return "Private"
+        case .external:
+            return "External"
         }
     }
 }

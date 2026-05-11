@@ -4,6 +4,7 @@ protocol EventsRepositoryProtocol: Sendable {
     func fetchPublicEvents() async throws -> [NearbyEvent]
     func fetchPrivateEvents() async throws -> [NearbyEvent]
     func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent
+    func fetchUnifiedFeed(types: [String]?, postalCode: String?, cursor: String?) async throws -> (events: [NearbyEvent], nextCursor: String?)
 }
 
 struct EventsRepository: EventsRepositoryProtocol {
@@ -22,7 +23,6 @@ struct EventsRepository: EventsRepositoryProtocol {
     }
 
     func fetchPublicEvents() async throws -> [NearbyEvent] {
-
         let request = try EventsUrlRequest.listPublic.asURLRequest()
         let response: PublicEventsResponse = try await networkManager.perform(request)
         return response.events.map { $0.toNearbyEvent() }
@@ -38,6 +38,17 @@ struct EventsRepository: EventsRepositoryProtocol {
         let urlRequest = try EventsUrlRequest.create(request).asURLRequest()
         let _: CreateEventResponse = try await networkManager.perform(urlRequest)
         return request.toNearbyEvent()
+    }
+
+    func fetchUnifiedFeed(
+        types: [String]? = nil,
+        postalCode: String? = nil,
+        cursor: String? = nil
+    ) async throws -> (events: [NearbyEvent], nextCursor: String?) {
+        let request = try EventsUrlRequest.feed(types: types, postalCode: postalCode, cursor: cursor).asURLRequest()
+        let response: UnifiedFeedResponse = try await networkManager.perform(request)
+        let events = response.events.map { $0.toNearbyEvent() }
+        return (events, response.nextCursor)
     }
 
     private func loadMockResponse<T: Decodable>(named resourceName: String) throws -> T {
