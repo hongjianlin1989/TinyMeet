@@ -2,11 +2,23 @@ import SwiftUI
 
 struct HomeEventsView: View {
     @StateObject private var viewModel: HomeEventsViewModel
-    private let refreshTrigger: Int
+    @State private var selectedEvent: NearbyEvent?
+    @State private var pendingRequestedEventID: UUID?
 
-    init(viewModel: HomeEventsViewModel, refreshTrigger: Int = 0) {
+    private let refreshTrigger: Int
+    private let requestedEventID: UUID?
+    private let onRequestedEventHandled: (UUID) -> Void
+
+    init(
+        viewModel: HomeEventsViewModel,
+        refreshTrigger: Int = 0,
+        requestedEventID: UUID? = nil,
+        onRequestedEventHandled: @escaping (UUID) -> Void = { _ in }
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.refreshTrigger = refreshTrigger
+        self.requestedEventID = requestedEventID
+        self.onRequestedEventHandled = onRequestedEventHandled
     }
 
     var body: some View {
@@ -36,7 +48,10 @@ struct HomeEventsView: View {
                                                     await viewModel.toggleInterest(for: event.id)
                                                 }
                                             }
-                                        )
+                                        ),
+                                        onTap: {
+                                            selectedEvent = event
+                                        }
                                     )
                                 }
                             }
@@ -50,18 +65,63 @@ struct HomeEventsView: View {
             .navigationTitle("Home")
             .task {
                 await viewModel.loadNearbyEvents()
+                stageRequestedEventIfNeeded(requestedEventID)
             }
             .task(id: refreshTrigger) {
                 guard refreshTrigger > 0 else { return }
                 await viewModel.refreshNearbyEvents()
+                selectPendingRequestedEventIfPossible()
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     AuthToolbarButton()
                 }
             }
+            .navigationDestination(item: $selectedEvent) { event in
+                eventDetailView(for: event)
+            }
+            .onChange(of: requestedEventID) { _, newValue in
+                stageRequestedEventIfNeeded(newValue)
+            }
+            .onChange(of: viewModel.events) { _, _ in
+                selectPendingRequestedEventIfPossible()
+            }
         }
         .tinyMeetPageBackground()
+    }
+
+    private func eventDetailView(for event: NearbyEvent) -> some View {
+        let currentEvent = viewModel.event(for: event.id) ?? event
+
+        return EventDetailView(
+            viewModel: EventDetailViewModel(
+                event: currentEvent,
+                isInterestUpdating: viewModel.isUpdatingInterest(for: currentEvent.id),
+                onInterestTapped: {
+                    Task {
+                        await viewModel.toggleInterest(for: currentEvent.id)
+                    }
+                }
+            )
+        )
+    }
+
+    private func stageRequestedEventIfNeeded(_ eventID: UUID?) {
+        guard let eventID else { return }
+        pendingRequestedEventID = eventID
+        selectPendingRequestedEventIfPossible()
+    }
+
+    private func selectPendingRequestedEventIfPossible() {
+        guard let pendingRequestedEventID,
+              let requestedEvent = viewModel.event(for: pendingRequestedEventID) else {
+            return
+        }
+
+        viewModel.selectFilter(requestedEvent.visibility)
+        selectedEvent = requestedEvent
+        self.pendingRequestedEventID = nil
+        onRequestedEventHandled(requestedEvent.id)
     }
 
     private var heroSection: some View {

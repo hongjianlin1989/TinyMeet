@@ -1,7 +1,18 @@
 import Foundation
 import SwiftUI
 
-struct HomeEventCardViewModel {
+struct EventSharePayload: Identifiable, Equatable {
+    let id = UUID()
+    let title: String
+    let message: String
+    let url: URL
+
+    var activityItems: [Any] {
+        [message, url]
+    }
+}
+
+struct EventDetailViewModel {
     let event: NearbyEvent
     let isInterestUpdating: Bool
     let onInterestTapped: () -> Void
@@ -28,8 +39,17 @@ struct HomeEventCardViewModel {
     var eventUrlText: String? { event.eventUrl }
     var visibilityTitle: String { event.visibility.title }
     var isInterested: Bool { event.isInterested }
-    var interestButtonTitle: String { "Interested" }
+    var interestButtonTitle: String { isInterested ? "Interested" : "Mark Interested" }
     var interestButtonSystemImage: String { event.isInterested ? "heart.fill" : "heart" }
+    var eventDeepLinkURL: URL { DeepLinkHandler.eventDetailURL(for: event.id) }
+
+    var sharePayload: EventSharePayload {
+        EventSharePayload(
+            title: title,
+            message: shareMessage,
+            url: eventDeepLinkURL
+        )
+    }
 
     var eventURL: URL? {
         guard let eventUrlText,
@@ -54,5 +74,9 @@ struct HomeEventCardViewModel {
 
     func interestedTapped() {
         onInterestTapped()
+    }
+
+    private var shareMessage: String {
+        "Check out \(title) on TinyMeet. Open the event here: \(eventDeepLinkURL.absoluteString)"
     }
 }

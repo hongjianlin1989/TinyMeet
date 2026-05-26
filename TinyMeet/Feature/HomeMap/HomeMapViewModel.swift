@@ -24,6 +24,7 @@ final class HomeMapViewModel: ObservableObject {
     private let locationHelper: LocationHelper
     private let attendeeRefreshInterval: Duration
     private var isAuthenticated: Bool
+    private var isMapVisible = false
     private var cancellables = Set<AnyCancellable>()
     private var interestedPlaydatesFetchTask: Task<Void, Never>?
     private var attendeesFetchTask: Task<Void, Never>?
@@ -65,16 +66,36 @@ final class HomeMapViewModel: ObservableObject {
     }
 
     func onAppear(isLoggedIn: Bool) {
-        setAuthenticationState(isLoggedIn, shouldRefreshWhenAuthenticated: true)
+        setMapVisibility(true, isLoggedIn: isLoggedIn)
     }
 
     func onDisappear() {
-        interestedPlaydatesFetchTask?.cancel()
-        attendeesFetchTask?.cancel()
+        setMapVisibility(false, isLoggedIn: isAuthenticated)
     }
 
     func authenticationStateChanged(isLoggedIn: Bool) {
-        setAuthenticationState(isLoggedIn, shouldRefreshWhenAuthenticated: false)
+        setAuthenticationState(isLoggedIn, shouldRefreshWhenAuthenticated: isMapVisible)
+    }
+
+    func setMapVisibility(_ isVisible: Bool, isLoggedIn: Bool) {
+        let wasVisible = isMapVisible
+        isMapVisible = isVisible
+
+        setAuthenticationState(
+            isLoggedIn,
+            shouldRefreshWhenAuthenticated: isVisible && (wasVisible == false || interestedPlaydates.isEmpty)
+        )
+
+        guard isVisible, isAuthenticated else {
+            pauseMapActivity()
+            return
+        }
+
+        requestLocationAccess()
+
+        if wasVisible == false, interestedPlaydates.isEmpty == false {
+            resumeAttendeeRefreshIfNeeded(fetchImmediately: true)
+        }
     }
 
     func requestLocationAccess() {
@@ -158,7 +179,10 @@ final class HomeMapViewModel: ObservableObject {
 
             if let selectedPlaydateID = self.selectedPlaydateID {
                 await fetchAttendees(for: selectedPlaydateID)
-                startAttendeeRefreshLoop(for: selectedPlaydateID)
+
+                if isMapVisible {
+                    startAttendeeRefreshLoop(for: selectedPlaydateID)
+                }
             } else {
                 syncLocationContext(resetPrompt: didChangeSelectedPlaydate)
             }
@@ -219,6 +243,7 @@ private extension HomeMapViewModel {
     }
 
     func loadAttendees(for playdateID: UUID) {
+        guard isMapVisible else { return }
         attendeesFetchTask?.cancel()
         attendeesFetchTask = Task { [weak self] in
             guard let self else { return }
@@ -228,9 +253,25 @@ private extension HomeMapViewModel {
     }
 
     func startAttendeeRefreshLoop(for playdateID: UUID) {
+        guard isMapVisible else { return }
         attendeesFetchTask?.cancel()
         attendeesFetchTask = Task { [weak self] in
             await self?.pollAttendees(for: playdateID)
+        }
+    }
+
+    func resumeAttendeeRefreshIfNeeded(fetchImmediately: Bool) {
+        guard isMapVisible, isAuthenticated, let selectedPlaydateID else { return }
+
+        attendeesFetchTask?.cancel()
+        attendeesFetchTask = Task { [weak self] in
+            guard let self else { return }
+
+            if fetchImmediately {
+                await self.fetchAttendees(for: selectedPlaydateID)
+            }
+
+            await self.pollAttendees(for: selectedPlaydateID)
         }
     }
 
@@ -259,7 +300,7 @@ private extension HomeMapViewModel {
                 break
             }
 
-            guard Task.isCancelled == false, isAuthenticated, selectedPlaydateID == playdateID else { break }
+            guard Task.isCancelled == false, isAuthenticated, isMapVisible, selectedPlaydateID == playdateID else { break }
             await fetchAttendees(for: playdateID)
         }
     }
@@ -271,11 +312,16 @@ private extension HomeMapViewModel {
         guard didChangeAuthenticationState || shouldRefreshWhenAuthenticated else { return }
 
         if isLoggedIn {
+            guard isMapVisible else { return }
             refreshInterestedPlaydates()
-            requestLocationAccess()
         } else {
             resetSignedOutState()
         }
+    }
+
+    func pauseMapActivity() {
+        interestedPlaydatesFetchTask?.cancel()
+        attendeesFetchTask?.cancel()
     }
 
     func resetSignedOutState() {

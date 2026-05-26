@@ -2,9 +2,11 @@ import SwiftUI
 
 struct HomeEventCardView: View {
     private let viewModel: HomeEventCardViewModel
+    private let onTap: () -> Void
 
-    init(viewModel: HomeEventCardViewModel) {
+    init(viewModel: HomeEventCardViewModel, onTap: @escaping () -> Void = {}) {
         self.viewModel = viewModel
+        self.onTap = onTap
     }
 
     var body: some View {
@@ -20,6 +22,8 @@ struct HomeEventCardView: View {
                     HStack(spacing: 8) {
                         Text(viewModel.title)
                             .font(.headline)
+
+                        visibilityBadge
                     }
 
                     Label(viewModel.locationName, systemImage: "mappin.and.ellipse")
@@ -29,12 +33,19 @@ struct HomeEventCardView: View {
 
                 Spacer(minLength: 8)
 
-                Text(viewModel.distanceDescription)
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(TinyMeetTheme.badge)
-                    .clipShape(Capsule())
+                VStack(alignment: .trailing, spacing: 8) {
+                    Text(viewModel.distanceDescription)
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(TinyMeetTheme.badge)
+                        .clipShape(Capsule())
+
+                    Image(systemName: "chevron.right.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(TinyMeetTheme.accent)
+                        .accessibilityHidden(true)
+                }
             }
 
             Text(viewModel.summary)
@@ -68,6 +79,14 @@ struct HomeEventCardView: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .tinyMeetCardStyle()
+        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .gesture(
+            TapGesture().onEnded {
+                onTap()
+            },
+            including: .gesture
+        )
+        .accessibilityAddTraits(.isButton)
     }
 
     private var visibilityBadge: some View {

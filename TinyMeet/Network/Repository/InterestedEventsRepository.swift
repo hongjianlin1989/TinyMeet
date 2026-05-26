@@ -79,12 +79,11 @@ struct InterestedEventsRepository: InterestedEventsRepositoryProtocol {
     }
 
     private func fetchEvents(for visibility: NearbyEventVisibility) async throws -> [NearbyEvent] {
-        switch visibility {
-        case .public:
-            return try await eventsRepository.fetchPublicEvents()
-        case .private:
+        if visibility == .private {
             return try await eventsRepository.fetchPrivateEvents()
         }
+
+        return try await eventsRepository.fetchPublicEvents()
     }
 
     private func buildInterestedRows(

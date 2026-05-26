@@ -209,11 +209,10 @@ struct CreateEventRequest: Encodable, Sendable {
         try container.encode(summary, forKey: .summary)
         try container.encode(scheduledAt, forKey: .scheduledAt)
 
-        switch visibility {
-        case .public:
+        if visibility == .public {
             try container.encodeIfPresent(eventURL, forKey: .eventURL)
             try container.encodeIfPresent(endsAt, forKey: .endsAt)
-        case .private:
+        } else if visibility == .private {
             try container.encodeIfPresent(symbolName, forKey: .symbolName)
             try container.encodeIfPresent(tintName, forKey: .tintName)
             try container.encodeIfPresent(audienceType, forKey: .audienceType)

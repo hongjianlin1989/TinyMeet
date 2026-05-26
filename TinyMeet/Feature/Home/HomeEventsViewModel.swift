@@ -53,12 +53,22 @@ final class HomeEventsViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let (feedEvents, _) = try await eventsRepository.fetchUnifiedFeed(
-                types: nil,
-                postalCode: nil,
-                cursor: nil
+            async let publicEvents = eventsRepository.fetchPublicEvents()
+            async let privateEvents = eventsRepository.fetchPrivateEvents()
+            async let interestedEvents = interestedEventsRepository.fetchInterestedEvents()
+
+            let (publicResults, privateResults, interestedRows) = try await (
+                publicEvents,
+                privateEvents,
+                interestedEvents
             )
-            events = feedEvents
+            let interestedEventIDs = interestedRows.map(\.id)
+            let interestedIDSet = Set(interestedEventIDs)
+            events = (publicResults + privateResults).map { event in
+                var event = event
+                event.isInterested = event.isInterested || interestedIDSet.contains(event.id)
+                return event
+            }
         } catch {
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             events = []
@@ -89,6 +99,10 @@ final class HomeEventsViewModel: ObservableObject {
             events[index].isInterested = previousValue
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }
+    }
+
+    func event(for eventID: UUID) -> NearbyEvent? {
+        events.first(where: { $0.id == eventID })
     }
 
     private static let selectedFilterKey = "home.events.selectedVisibility"

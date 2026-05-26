@@ -20,6 +20,13 @@ struct InterestedEventsRepositoryTests {
 
         func fetchPublicEvents() async throws -> [NearbyEvent] { publicEvents }
         func fetchPrivateEvents() async throws -> [NearbyEvent] { privateEvents }
+        func fetchUnifiedFeed(
+            types: [String]?,
+            postalCode: String?,
+            cursor: String?
+        ) async throws -> (events: [NearbyEvent], nextCursor: String?) {
+            (publicEvents + privateEvents, nil)
+        }
         func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent { request.toNearbyEvent() }
     }
 

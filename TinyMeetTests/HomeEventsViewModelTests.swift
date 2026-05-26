@@ -15,6 +15,14 @@ struct HomeEventsViewModelTests {
             privateEvents
         }
 
+        func fetchUnifiedFeed(
+            types: [String]?,
+            postalCode: String?,
+            cursor: String?
+        ) async throws -> (events: [NearbyEvent], nextCursor: String?) {
+            (publicEvents + privateEvents, nil)
+        }
+
         func createEvent(_ request: TinyMeet.CreateEventRequest) async throws -> TinyMeet.NearbyEvent {
             request.toNearbyEvent()
         }

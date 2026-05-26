@@ -11,6 +11,8 @@ import MapKit
 import SwiftUI
 
 struct HomeMapView: View {
+    let isActive: Bool
+
     @EnvironmentObject private var appSession: AppSession
     @EnvironmentObject private var deepLinkHandler: DeepLinkHandler
     @StateObject private var viewModel = HomeMapViewModel()
@@ -40,7 +42,10 @@ struct HomeMapView: View {
             }
         }
         .onAppear {
-            viewModel.onAppear(isLoggedIn: appSession.isLoggedIn)
+            viewModel.setMapVisibility(isActive, isLoggedIn: appSession.isLoggedIn)
+        }
+        .onChange(of: isActive) { _, isActive in
+            viewModel.setMapVisibility(isActive, isLoggedIn: appSession.isLoggedIn)
         }
         .onChange(of: appSession.isLoggedIn) { _, isLoggedIn in
             viewModel.authenticationStateChanged(isLoggedIn: isLoggedIn)
@@ -334,6 +339,6 @@ struct HomeMapView: View {
 }
 
 #Preview {
-    HomeMapView()
+    HomeMapView(isActive: true)
         .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }

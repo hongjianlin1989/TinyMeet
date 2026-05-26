@@ -6,6 +6,7 @@ final class DeepLinkHandler: ObservableObject {
     enum Destination: Equatable {
         case login
         case emailSignIn(email: String, link: String)
+        case eventDetail(eventID: UUID)
     }
 
     @Published var activeDestination: Destination?
@@ -31,19 +32,28 @@ final class DeepLinkHandler: ObservableObject {
         activeDestination = nil
     }
 
-    static func destination(for url: URL) -> Destination? {
+    nonisolated static func eventDetailURL(for eventID: UUID) -> URL {
+        var components = URLComponents()
+        components.scheme = "tinymeet"
+        components.host = "events"
+        components.path = "/\(eventID.uuidString.lowercased())"
+
+        return components.url ?? URL(string: "tinymeet://events")!
+    }
+
+    nonisolated static func destination(for url: URL) -> Destination? {
         let normalizedScheme = url.scheme?.lowercased()
         let normalizedHost = url.host?.lowercased()
         let normalizedPath = url.path.lowercased()
 
         if normalizedScheme == "tinymeet" {
-            // Email magic-link callback: tinymeet://auth/callback?link=<url>&email=<email>
             if normalizedHost == "auth" && normalizedPath == "/callback" {
                 if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                    let queryItems = components.queryItems,
-                   let link  = queryItems.first(where: { $0.name == "link"  })?.value,
+                   let link = queryItems.first(where: { $0.name == "link" })?.value,
                    let email = queryItems.first(where: { $0.name == "email" })?.value,
-                   !link.isEmpty, !email.isEmpty {
+                   !link.isEmpty,
+                   !email.isEmpty {
                     return .emailSignIn(email: email, link: link)
                 }
             }
@@ -52,9 +62,19 @@ final class DeepLinkHandler: ObservableObject {
                 return .login
             }
 
+            if let eventID = eventID(for: url, normalizedHost: normalizedHost) {
+                return .eventDetail(eventID: eventID)
+            }
+
             if normalizedHost == "invite" && hasNonEmptyQueryItem(named: "referrer", in: url) {
                 return .login
             }
+        }
+
+        if (normalizedScheme == "https" || normalizedScheme == "http"),
+           normalizedHost == "tinymeet.app",
+           let eventID = eventID(for: url, normalizedHost: normalizedHost) {
+            return .eventDetail(eventID: eventID)
         }
 
         if normalizedScheme == "https" || normalizedScheme == "http",
@@ -66,7 +86,7 @@ final class DeepLinkHandler: ObservableObject {
         return nil
     }
 
-    private static func hasNonEmptyQueryItem(named name: String, in url: URL) -> Bool {
+    nonisolated private static func hasNonEmptyQueryItem(named name: String, in url: URL) -> Bool {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
               let queryItems = components.queryItems else {
             return false
@@ -76,5 +96,28 @@ final class DeepLinkHandler: ObservableObject {
             item.name.caseInsensitiveCompare(name) == .orderedSame &&
             !(item.value?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
         }
+    }
+
+    nonisolated private static func eventID(for url: URL, normalizedHost: String?) -> UUID? {
+        let pathComponents = url.pathComponents.filter { $0 != "/" }
+
+        if normalizedHost == "events" || normalizedHost == "event" {
+            guard let rawEventID = pathComponents.first else {
+                return nil
+            }
+
+            return UUID(uuidString: rawEventID)
+        }
+
+        guard pathComponents.count >= 2 else {
+            return nil
+        }
+
+        let routeComponent = pathComponents[0].lowercased()
+        guard routeComponent == "events" || routeComponent == "event" else {
+            return nil
+        }
+
+        return UUID(uuidString: pathComponents[1])
     }
 }

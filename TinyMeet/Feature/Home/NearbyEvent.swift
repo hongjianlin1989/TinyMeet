@@ -19,7 +19,7 @@ enum NearbyEventVisibility: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
-struct NearbyEvent: Identifiable, Equatable, Sendable {
+struct NearbyEvent: Identifiable, Equatable, Hashable, Sendable {
     let id: UUID
     let title: String
     let locationName: String

@@ -169,6 +169,7 @@ struct HomeMapViewModelTests {
             ]
         )
 
+        viewModel.onAppear(isLoggedIn: true)
         await viewModel.loadInterestedPlaydates()
         #expect(viewModel.selectedInterestedPeople == firstAttendees)
 
@@ -278,6 +279,7 @@ struct HomeMapViewModelTests {
             attendeeRefreshInterval: .milliseconds(20)
         )
 
+        viewModel.onAppear(isLoggedIn: true)
         await viewModel.loadInterestedPlaydates()
         #expect(viewModel.selectedInterestedPeople == attendees)
 
@@ -289,6 +291,42 @@ struct HomeMapViewModelTests {
         let callCountBeforeWaiting = await attendeeFetchSpy.callCount(for: playdate.id)
         try await Task.sleep(for: .milliseconds(50))
         #expect(await attendeeFetchSpy.callCount(for: playdate.id) == callCountBeforeWaiting)
+    }
+
+    @MainActor
+    @Test func attendeeLocationsResumeRefreshingWhenMapBecomesVisibleAgain() async throws {
+        let playdate = makePlaydate(
+            title: "Playground",
+            subtitle: "Today · 5:00 PM",
+            latitude: 37.3317,
+            longitude: -122.0325,
+            scheduledAt: "2026-05-02T17:00:00Z",
+            endsAt: "2026-05-02T19:00:00Z",
+            tintName: "mint",
+            symbolName: "house.fill"
+        )
+        let attendees = [makeAttendee(id: "user-1", name: "Amy", latitude: 37.33, longitude: -122.03)]
+        let attendeeFetchSpy = AttendeeFetchSpy(attendeesByEventID: [playdate.id: attendees])
+        let viewModel = makeViewModel(
+            playdates: [playdate],
+            attendeesByEventID: [playdate.id: attendees],
+            attendeeFetchSpy: attendeeFetchSpy,
+            attendeeRefreshInterval: .milliseconds(20)
+        )
+
+        viewModel.onAppear(isLoggedIn: true)
+        await viewModel.loadInterestedPlaydates()
+        try await Task.sleep(for: .milliseconds(30))
+
+        viewModel.onDisappear()
+        let callCountWhileHidden = await attendeeFetchSpy.callCount(for: playdate.id)
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(await attendeeFetchSpy.callCount(for: playdate.id) == callCountWhileHidden)
+
+        viewModel.onAppear(isLoggedIn: true)
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(await attendeeFetchSpy.callCount(for: playdate.id) > callCountWhileHidden)
+        #expect(viewModel.selectedInterestedPeople == attendees)
     }
 
     @MainActor
