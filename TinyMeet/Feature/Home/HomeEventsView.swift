@@ -160,7 +160,7 @@ struct HomeEventsView: View {
         if viewModel.selectedFilter == .public {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text("Public filters")
+                    Text("External filters")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
 
@@ -212,33 +212,33 @@ struct HomeEventsView: View {
     private var emptyStateTitle: String {
         switch viewModel.selectedFilter {
         case .public:
-            return "No public events yet"
+            return "No external events yet"
         case .private:
             return "No private events yet"
         case .external:
-            return "No public events yet"
+            return "No external events yet"
         }
     }
 
     private var emptyStateDescription: String {
         switch viewModel.selectedFilter {
         case .public:
-            return "Try adjusting the filters or check back soon for new community events nearby."
+            return "Try adjusting the filters or check back soon for new external events nearby."
         case .private:
             return "Private invitations and family-only meet-ups will show up here."
         case .external:
-            return "Try adjusting the filters or check back soon for new community events nearby."
+            return "Try adjusting the filters or check back soon for new external events nearby."
         }
     }
 
     private var emptyStateSystemImage: String {
         switch viewModel.selectedFilter {
         case .public:
-            return "figure.and.child.holdinghands"
+            return "ticket"
         case .private:
             return "person.2.badge.gearshape"
         case .external:
-            return "figure.and.child.holdinghands"
+            return "ticket"
         }
     }
 
@@ -283,7 +283,7 @@ struct HomeEventsView: View {
             HStack(spacing: 8) {
                 let iconName: String = {
                     switch filter {
-                    case .public:   return "globe"
+                    case .public:   return "ticket"
                     case .private:  return "lock.fill"
                     case .external: return "ticket"
                     }
@@ -291,8 +291,10 @@ struct HomeEventsView: View {
                 Image(systemName: iconName)
                     .font(.caption.weight(.bold))
 
-                Text(filter.title)
+                Text(filter == .public ? "External" : filter.title)
                     .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.9)
             }
             .foregroundStyle(viewModel.selectedFilter == filter ? Color.white : Color.primary)
             .padding(.horizontal, 16)
