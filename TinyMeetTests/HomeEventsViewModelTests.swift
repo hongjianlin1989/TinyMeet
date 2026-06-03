@@ -6,20 +6,23 @@ struct HomeEventsViewModelTests {
     struct MockEventsRepository: EventsRepositoryProtocol {
         let publicEvents: [NearbyEvent]
         let privateEvents: [NearbyEvent]
+        let publicEventsHandler: @Sendable () async throws -> [NearbyEvent]
         let unifiedFeedHandler: @Sendable ([String]?, [String]?, [String]?, String?, String?) async throws -> (events: [NearbyEvent], nextCursor: String?)
 
         init(
             publicEvents: [NearbyEvent],
             privateEvents: [NearbyEvent],
+            publicEventsHandler: (@Sendable () async throws -> [NearbyEvent])? = nil,
             unifiedFeedHandler: (@Sendable ([String]?, [String]?, [String]?, String?, String?) async throws -> (events: [NearbyEvent], nextCursor: String?))? = nil
         ) {
             self.publicEvents = publicEvents
             self.privateEvents = privateEvents
-            self.unifiedFeedHandler = unifiedFeedHandler ?? { _, _, _, _, _ in (publicEvents, nil) }
+            self.publicEventsHandler = publicEventsHandler ?? { publicEvents }
+            self.unifiedFeedHandler = unifiedFeedHandler ?? { _, _, _, _, _ in ([], nil) }
         }
 
         func fetchPublicEvents() async throws -> [NearbyEvent] {
-            publicEvents
+            try await publicEventsHandler()
         }
 
         func fetchPrivateEvents() async throws -> [NearbyEvent] {
@@ -102,6 +105,14 @@ struct HomeEventsViewModelTests {
             cursor: String?
         ) {
             calls.append((types, categories, ageGroups, postalCode, cursor))
+        }
+    }
+
+    actor PublicEventsRequestRecorder {
+        private(set) var count = 0
+
+        func record() {
+            count += 1
         }
     }
 
@@ -235,7 +246,7 @@ struct HomeEventsViewModelTests {
     }
 
     @MainActor
-    @Test func refreshNearbyEventsUsesUnifiedFeedForExternalEventsOnPublicTab() async throws {
+    @Test func refreshNearbyEventsUsesUnifiedFeedForExternalEventsOnExternalTab() async throws {
         let externalID = try #require(UUID(uuidString: "C2D5E5D0-5B9F-4A9F-B637-8F5D1A77C1B2"))
         let privateID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
         let userDefaults = try #require(UserDefaults(suiteName: #function))
@@ -298,6 +309,8 @@ struct HomeEventsViewModelTests {
         #expect(calls.count == 1)
         #expect(calls.first?.types == ["external"])
         #expect(calls.first?.postalCode == "10001")
+
+        viewModel.selectFilter(.external)
         #expect(viewModel.filteredEvents.map(\.id) == [externalID])
 
         viewModel.selectFilter(.private)
@@ -305,7 +318,70 @@ struct HomeEventsViewModelTests {
     }
 
     @MainActor
-    @Test func togglingPublicFiltersRefreshesUnifiedFeedWithSelectedQueryParameters() async throws {
+    @Test func refreshNearbyEventsLoadsPublicEventsOnPublicTab() async throws {
+        let publicID = try #require(UUID(uuidString: "D3E6F6E1-6CAD-4BA0-C748-9A6E2B88D2C3"))
+        let privateID = try #require(UUID(uuidString: "A29EBCB6-8A0D-4E1C-9C88-1D7A331E2F8F"))
+        let userDefaults = try #require(UserDefaults(suiteName: #function))
+        userDefaults.removePersistentDomain(forName: #function)
+        defer { userDefaults.removePersistentDomain(forName: #function) }
+        let recorder = PublicEventsRequestRecorder()
+
+        let publicEvent = NearbyEvent(
+            id: publicID,
+            title: "Community Picnic",
+            locationName: "Town Green",
+            timeDescription: "Tomorrow · 11:00 AM",
+            ageRange: "All ages",
+            distanceDescription: "Community",
+            hostName: "Hosted by Mia",
+            attendeeSummary: "8 people attending",
+            themeEmoji: "🌳",
+            summary: "Bring snacks and meet local families.",
+            visibility: .public
+        )
+
+        let privateEvent = NearbyEvent(
+            id: privateID,
+            title: "Private Event",
+            locationName: "Backyard",
+            timeDescription: "Saturday · 2:00 PM",
+            ageRange: "Kids",
+            distanceDescription: "Friends",
+            hostName: "Hosted by Emma",
+            attendeeSummary: "Private group · 4 families",
+            themeEmoji: "🪣",
+            summary: "Invite only.",
+            visibility: .private
+        )
+
+        let viewModel = HomeEventsViewModel(
+            userDefaults: userDefaults,
+            eventsRepository: MockEventsRepository(
+                publicEvents: [publicEvent],
+                privateEvents: [privateEvent],
+                publicEventsHandler: {
+                    await recorder.record()
+                    return [publicEvent]
+                }
+            ),
+            interestedEventsRepository: MockInterestedEventsRepository(interestedRows: []),
+            postalCodeProvider: MockPostalCodeProvider(postalCode: "10001")
+        )
+
+        await viewModel.refreshNearbyEvents()
+
+        let count = await recorder.count
+        #expect(count == 1)
+
+        viewModel.selectFilter(.public)
+        #expect(viewModel.filteredEvents.map(\.id) == [publicID])
+
+        viewModel.selectFilter(.private)
+        #expect(viewModel.filteredEvents.map(\.id) == [privateID])
+    }
+
+    @MainActor
+    @Test func togglingExternalFiltersRefreshesUnifiedFeedWithSelectedQueryParameters() async throws {
         let userDefaults = try #require(UserDefaults(suiteName: #function))
         userDefaults.removePersistentDomain(forName: #function)
         defer { userDefaults.removePersistentDomain(forName: #function) }
@@ -337,7 +413,7 @@ struct HomeEventsViewModelTests {
         let calls = await recorder.calls
         #expect(calls.count == 2)
         #expect(calls.last?.types == ["external"])
-        #expect(calls.last?.categories == ["Music"])
+        #expect(calls.last?.categories == ["music"])
         #expect(calls.last?.ageGroups == ["kids"])
         #expect(viewModel.selectedCategories == [.music])
         #expect(viewModel.selectedAgeGroups == [.kids])

@@ -148,7 +148,7 @@ struct HomeEventsView: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 10) {
-                ForEach([NearbyEventVisibility.public, .private], id: \.id) { filter in
+                ForEach([NearbyEventVisibility.private, .public, .external], id: \.id) { filter in
                     filterButton(filter)
                 }
             }
@@ -157,7 +157,7 @@ struct HomeEventsView: View {
 
     @ViewBuilder
     private var publicFilterSection: some View {
-        if viewModel.selectedFilter == .public {
+        if viewModel.selectedFilter == .external {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("External filters")
@@ -212,7 +212,7 @@ struct HomeEventsView: View {
     private var emptyStateTitle: String {
         switch viewModel.selectedFilter {
         case .public:
-            return "No external events yet"
+            return "No public events yet"
         case .private:
             return "No private events yet"
         case .external:
@@ -223,7 +223,7 @@ struct HomeEventsView: View {
     private var emptyStateDescription: String {
         switch viewModel.selectedFilter {
         case .public:
-            return "Try adjusting the filters or check back soon for new external events nearby."
+            return "Try again soon for new community events nearby."
         case .private:
             return "Private invitations and family-only meet-ups will show up here."
         case .external:
@@ -234,7 +234,7 @@ struct HomeEventsView: View {
     private var emptyStateSystemImage: String {
         switch viewModel.selectedFilter {
         case .public:
-            return "ticket"
+            return "globe"
         case .private:
             return "person.2.badge.gearshape"
         case .external:
@@ -283,7 +283,7 @@ struct HomeEventsView: View {
             HStack(spacing: 8) {
                 let iconName: String = {
                     switch filter {
-                    case .public:   return "ticket"
+                    case .public:   return "globe"
                     case .private:  return "lock.fill"
                     case .external: return "ticket"
                     }
@@ -291,7 +291,7 @@ struct HomeEventsView: View {
                 Image(systemName: iconName)
                     .font(.caption.weight(.bold))
 
-                Text(filter == .public ? "External" : filter.title)
+                Text(filter.title)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.9)

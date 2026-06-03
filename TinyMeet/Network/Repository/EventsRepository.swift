@@ -4,13 +4,7 @@ protocol EventsRepositoryProtocol: Sendable {
     func fetchPublicEvents() async throws -> [NearbyEvent]
     func fetchPrivateEvents() async throws -> [NearbyEvent]
     func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent
-    func fetchUnifiedFeed(
-        types: [String]?,
-        categories: [String]?,
-        ageGroups: [String]?,
-        postalCode: String?,
-        cursor: String?
-    ) async throws -> (events: [NearbyEvent], nextCursor: String?)
+    func fetchUnifiedFeed(types: [String]?, categories: [String]?, ageGroups: [String]?, postalCode: String?, cursor: String?) async throws -> (events: [NearbyEvent], nextCursor: String?)
 }
 
 struct EventsRepository: EventsRepositoryProtocol {

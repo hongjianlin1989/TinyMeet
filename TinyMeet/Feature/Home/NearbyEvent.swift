@@ -1,6 +1,6 @@
 import Foundation
 
-enum NearbyEventVisibility: String, Identifiable, Sendable {
+enum NearbyEventVisibility: String, CaseIterable, Identifiable, Sendable {
     case `public`
     case `private`
     case external
@@ -20,37 +20,33 @@ enum NearbyEventVisibility: String, Identifiable, Sendable {
 }
 
 enum NearbyEventCategory: String, CaseIterable, Identifiable, Sendable, CustomStringConvertible {
-    case music = "Music"
-    case sports = "Sports"
-    case artsAndTheatre = "Arts & Theatre"
-    case family = "Family"
-    case comedy = "Comedy"
-    case film = "Film"
-    case miscellaneous = "Miscellaneous"
+    case music
+    case sports
+    case arts
+    case film
+    case food
+    case family
 
     var id: String { rawValue }
 
-    var title: String { rawValue }
-
-    var description: String { title }
+    var description: String {
+        rawValue.capitalized
+    }
 }
 
 enum NearbyEventAgeGroup: String, CaseIterable, Identifiable, Sendable, CustomStringConvertible {
-    case family
     case kids
-    case teen
+    case adults
     case all
 
     var id: String { rawValue }
 
-    var title: String {
+    var description: String {
         switch self {
-        case .family:
-            return "Family"
         case .kids:
             return "Kids"
-        case .teen:
-            return "Teen"
+        case .adults:
+            return "Adults"
         case .all:
             return "All Ages"
         }
@@ -58,18 +54,14 @@ enum NearbyEventAgeGroup: String, CaseIterable, Identifiable, Sendable, CustomSt
 
     var eventLabel: String {
         switch self {
-        case .family:
-            return "Family"
         case .kids:
             return "Kids"
-        case .teen:
-            return "Teen"
+        case .adults:
+            return "Adults"
         case .all:
             return "All ages"
         }
     }
-
-    var description: String { title }
 }
 
 struct NearbyEvent: Identifiable, Equatable, Hashable, Sendable {

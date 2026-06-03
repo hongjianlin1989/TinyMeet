@@ -33,7 +33,7 @@ final class HomeEventsViewModel: ObservableObject {
         self.interestedEventsRepository = interestedEventsRepository
         self.postalCodeProvider = postalCodeProvider ?? HomePostalCodeProvider(userDefaults: userDefaults)
         let savedFilter = NearbyEventVisibility(rawValue: userDefaults.string(forKey: Self.selectedFilterKey) ?? "")
-        self.selectedFilter = savedFilter == .private ? .private : .public
+        self.selectedFilter = savedFilter ?? .private
         self.selectedCategories = Self.savedValues(
             forKey: Self.selectedCategoriesKey,
             in: userDefaults,
@@ -47,12 +47,7 @@ final class HomeEventsViewModel: ObservableObject {
     }
 
     var filteredEvents: [NearbyEvent] {
-        switch selectedFilter {
-        case .private:
-            return events.filter { $0.visibility == .private }
-        case .public, .external:
-            return events.filter { $0.visibility != .private }
-        }
+        events.filter { $0.visibility == selectedFilter }
     }
 
     var hasPublicFilters: Bool {
@@ -60,10 +55,9 @@ final class HomeEventsViewModel: ObservableObject {
     }
 
     func selectFilter(_ filter: NearbyEventVisibility) {
-        let normalizedFilter: NearbyEventVisibility = filter == .private ? .private : .public
-        guard selectedFilter != normalizedFilter else { return }
-        selectedFilter = normalizedFilter
-        userDefaults.set(normalizedFilter.rawValue, forKey: Self.selectedFilterKey)
+        guard selectedFilter != filter else { return }
+        selectedFilter = filter
+        userDefaults.set(filter.rawValue, forKey: Self.selectedFilterKey)
     }
 
     func toggleCategory(_ category: NearbyEventCategory) async {
@@ -112,6 +106,7 @@ final class HomeEventsViewModel: ObservableObject {
             errorMessage = nil
 
             do {
+                async let publicEvents = eventsRepository.fetchPublicEvents()
                 async let privateEvents = eventsRepository.fetchPrivateEvents()
                 async let interestedEvents = interestedEventsRepository.fetchInterestedEvents()
 
@@ -119,27 +114,28 @@ final class HomeEventsViewModel: ObservableObject {
                 let publicFeedNoticeMessage = postalCode == nil
                     ? "Allow location access to load nearby external events."
                     : nil
-                let (privateResults, interestedRows) = try await (
+                let (publicResults, privateResults, interestedRows) = try await (
+                    publicEvents,
                     privateEvents,
                     interestedEvents
                 )
-                let publicResults: [NearbyEvent]
+                let externalResults: [NearbyEvent]
 
                 if let postalCode {
-                    let publicResponse = try await eventsRepository.fetchUnifiedFeed(
+                    let externalResponse = try await eventsRepository.fetchUnifiedFeed(
                         types: ["external"],
                         categories: selectedCategories.map(\.rawValue),
                         ageGroups: selectedAgeGroups.map(\.rawValue),
                         postalCode: postalCode,
                         cursor: nil
                     )
-                    publicResults = publicResponse.events.filter { $0.visibility != .private }
+                    externalResults = externalResponse.events.filter { $0.visibility == .external }
                 } else {
-                    publicResults = []
+                    externalResults = []
                 }
 
                 let interestedIDSet = Set(interestedRows.map(\.id))
-                self.events = (publicResults + privateResults).map { event in
+                self.events = (privateResults + publicResults + externalResults).map { event in
                     var event = event
                     event.isInterested = event.isInterested || interestedIDSet.contains(event.id)
                     return event

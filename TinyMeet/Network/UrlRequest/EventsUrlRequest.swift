@@ -37,10 +37,10 @@ enum EventsUrlRequest {
                 queryItems.append(URLQueryItem(name: "types", value: type_))
             }
             for category in categories ?? [] {
-                queryItems.append(URLQueryItem(name: "categories", value: category))
+                queryItems.append(URLQueryItem(name: "category", value: category))
             }
             for ageGroup in ageGroups ?? [] {
-                queryItems.append(URLQueryItem(name: "age_groups", value: ageGroup))
+                queryItems.append(URLQueryItem(name: "age_group", value: ageGroup))
             }
             if let postalCode {
                 queryItems.append(URLQueryItem(name: "postal_code", value: postalCode))
