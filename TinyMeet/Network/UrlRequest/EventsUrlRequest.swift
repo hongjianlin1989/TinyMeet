@@ -4,7 +4,7 @@ enum EventsUrlRequest {
     case listPublic
     case listPrivate
     case create(CreateEventRequest)
-    case feed(types: [String]?, postalCode: String?, cursor: String?)
+    case feed(types: [String]?, categories: [String]?, ageGroups: [String]?, postalCode: String?, cursor: String?)
 
     private var path: String {
         switch self {
@@ -30,11 +30,17 @@ enum EventsUrlRequest {
 
     func asURLRequest() throws -> URLRequest {
         let url: URL
-        if case let .feed(types, postalCode, cursor) = self {
+        if case let .feed(types, categories, ageGroups, postalCode, cursor) = self {
             var components = URLComponents(url: ApiConfig.apiURL(path: path), resolvingAgainstBaseURL: false)!
             var queryItems: [URLQueryItem] = []
             for type_ in types ?? [] {
                 queryItems.append(URLQueryItem(name: "types", value: type_))
+            }
+            for category in categories ?? [] {
+                queryItems.append(URLQueryItem(name: "categories", value: category))
+            }
+            for ageGroup in ageGroups ?? [] {
+                queryItems.append(URLQueryItem(name: "age_groups", value: ageGroup))
             }
             if let postalCode {
                 queryItems.append(URLQueryItem(name: "postal_code", value: postalCode))

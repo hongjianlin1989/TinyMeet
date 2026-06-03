@@ -32,6 +32,7 @@ struct HomeEventsView: View {
                         VStack(alignment: .leading, spacing: 18) {
                             heroSection
                             filterSection
+                            publicFilterSection
 
                             if let errorMessage = viewModel.errorMessage, viewModel.events.isEmpty {
                                 unavailableState(errorMessage: errorMessage)
@@ -147,8 +148,62 @@ struct HomeEventsView: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 10) {
-                ForEach(NearbyEventVisibility.allCases) { filter in
+                ForEach([NearbyEventVisibility.public, .private], id: \.id) { filter in
                     filterButton(filter)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var publicFilterSection: some View {
+        if viewModel.selectedFilter == .public {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Public filters")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    Spacer(minLength: 12)
+
+                    if viewModel.hasPublicFilters {
+                        Button("Clear") {
+                            Task {
+                                await viewModel.clearPublicFilters()
+                            }
+                        }
+                        .font(.caption.weight(.semibold))
+                        .buttonStyle(.plain)
+                        .foregroundStyle(TinyMeetTheme.accent)
+                    }
+                }
+
+                filterChipGroup(
+                    title: "Category",
+                    options: NearbyEventCategory.allCases,
+                    selection: viewModel.selectedCategories,
+                    onTap: { category in
+                        Task {
+                            await viewModel.toggleCategory(category)
+                        }
+                    }
+                )
+
+                filterChipGroup(
+                    title: "Age Group",
+                    options: NearbyEventAgeGroup.allCases,
+                    selection: viewModel.selectedAgeGroups,
+                    onTap: { ageGroup in
+                        Task {
+                            await viewModel.toggleAgeGroup(ageGroup)
+                        }
+                    }
+                )
+
+                if let publicFeedNoticeMessage = viewModel.publicFeedNoticeMessage {
+                    Label(publicFeedNoticeMessage, systemImage: "location.circle")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -161,18 +216,18 @@ struct HomeEventsView: View {
         case .private:
             return "No private events yet"
         case .external:
-            return "No external events found"
+            return "No public events yet"
         }
     }
 
     private var emptyStateDescription: String {
         switch viewModel.selectedFilter {
         case .public:
-            return "Try again soon for new community events nearby."
+            return "Try adjusting the filters or check back soon for new community events nearby."
         case .private:
             return "Private invitations and family-only meet-ups will show up here."
         case .external:
-            return "No Ticketmaster events were found in your area right now."
+            return "Try adjusting the filters or check back soon for new community events nearby."
         }
     }
 
@@ -183,7 +238,7 @@ struct HomeEventsView: View {
         case .private:
             return "person.2.badge.gearshape"
         case .external:
-            return "ticket"
+            return "figure.and.child.holdinghands"
         }
     }
 
@@ -251,6 +306,43 @@ struct HomeEventsView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    private func filterChipGroup<Option: Identifiable & Hashable>(
+        title: String,
+        options: [Option],
+        selection: [Option],
+        onTap: @escaping (Option) -> Void
+    ) -> some View where Option: CustomStringConvertible {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 10)], alignment: .leading, spacing: 10) {
+                ForEach(options, id: \.id) { option in
+                    let isSelected = selection.contains(option)
+
+                    Button {
+                        onTap(option)
+                    } label: {
+                        Text(option.description)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(isSelected ? Color.white : Color.primary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .frame(maxWidth: .infinity)
+                            .background(isSelected ? TinyMeetTheme.accent : TinyMeetTheme.badge)
+                            .clipShape(Capsule())
+                            .overlay {
+                                Capsule()
+                                    .stroke(TinyMeetTheme.cardBorder, lineWidth: isSelected ? 0 : 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
     }
 }
 

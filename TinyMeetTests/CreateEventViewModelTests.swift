@@ -9,6 +9,8 @@ struct MockCreateEventEventsRepository: EventsRepositoryProtocol {
     func fetchPrivateEvents() async throws -> [NearbyEvent] { [] }
     func fetchUnifiedFeed(
         types: [String]?,
+        categories: [String]?,
+        ageGroups: [String]?,
         postalCode: String?,
         cursor: String?
     ) async throws -> (events: [NearbyEvent], nextCursor: String?) {

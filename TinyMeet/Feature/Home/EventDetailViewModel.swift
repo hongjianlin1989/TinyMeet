@@ -63,13 +63,25 @@ struct EventDetailViewModel {
     }
 
     var visibilitySymbolName: String {
-        event.visibility == .private ? "lock.fill" : "globe"
+        switch event.visibility {
+        case .public:
+            return "globe"
+        case .private:
+            return "lock.fill"
+        case .external:
+            return "ticket.fill"
+        }
     }
 
     var visibilityBadgeColor: Color {
-        event.visibility == .private
-            ? TinyMeetTheme.peach.opacity(0.25)
-            : TinyMeetTheme.sky.opacity(0.22)
+        switch event.visibility {
+        case .public:
+            return TinyMeetTheme.sky.opacity(0.22)
+        case .private:
+            return TinyMeetTheme.peach.opacity(0.25)
+        case .external:
+            return TinyMeetTheme.mint.opacity(0.24)
+        }
     }
 
     func interestedTapped() {

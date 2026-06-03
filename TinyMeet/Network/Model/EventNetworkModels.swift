@@ -282,6 +282,7 @@ struct UnifiedEventDTO: Decodable, Sendable {
     let imageUrl: String?
     let ticketUrl: String?
     let category: String?
+    let ageGroup: String?
     let venueName: String?
 
     private enum CodingKeys: String, CodingKey {
@@ -302,6 +303,7 @@ struct UnifiedEventDTO: Decodable, Sendable {
         case imageUrl      = "image_url"
         case ticketUrl     = "ticket_url"
         case category
+        case ageGroup      = "age_group"
         case venueName     = "venue_name"
     }
 
@@ -327,12 +329,14 @@ struct UnifiedEventDTO: Decodable, Sendable {
         default:         host = EventDisplayFormatter.hostLabel(for: hostName, fallback: "Hosted by TinyMeet")
         }
 
+        let ageRange = NearbyEventAgeGroup(rawValue: ageGroup ?? "")?.eventLabel ?? "All ages"
+
         return NearbyEvent(
             id: id,
             title: title,
             locationName: location,
             timeDescription: EventDisplayFormatter.timeDescription(from: scheduledAt),
-            ageRange: "All ages",
+            ageRange: ageRange,
             distanceDescription: eventType == "external" ? "Ticketmaster" : (eventType == "private" ? "Private" : "Community"),
             hostName: host,
             attendeeSummary: EventDisplayFormatter.attendeeSummary(count: attendeeCount),

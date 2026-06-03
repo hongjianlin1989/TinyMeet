@@ -33,7 +33,7 @@ struct TinyMeetApp: App {
 
                     _ = deepLinkHandler.handle(url)
                 }
-                .onChange(of: deepLinkHandler.activeDestination) { destination in
+                .onChange(of: deepLinkHandler.activeDestination) { _, destination in
                     if case .emailSignIn(let email, let link) = destination {
                         handleEmailSignIn(email: email, link: link)
                     }

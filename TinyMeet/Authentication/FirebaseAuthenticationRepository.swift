@@ -45,8 +45,8 @@ struct FirebaseAuthenticationRepository: AuthenticationRepositoryProtocol {
     private static let pendingEmailKey = "auth.pendingEmailLinkEmail"
     private let networkManager: NetworkManaging
 
-    init(networkManager: NetworkManaging = NetworkManager()) {
-        self.networkManager = networkManager
+    init(networkManager: NetworkManaging? = nil) {
+        self.networkManager = networkManager ?? NetworkManager()
     }
 
     @MainActor

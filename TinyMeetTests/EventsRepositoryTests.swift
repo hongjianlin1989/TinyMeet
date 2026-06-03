@@ -188,4 +188,65 @@ struct EventsRepositoryTests {
         #expect(event.distanceDescription == "Community")
         #expect(event.eventUrl == "https://tinymeet.app/events/community-picnic")
     }
+
+    @Test func fetchUnifiedFeedDecodesPublicAndExternalEvents() async throws {
+        let publicID = UUID()
+        let externalID = UUID()
+        let payload = """
+        {
+          "events": [
+            {
+              "id": "\(publicID.uuidString)",
+              "event_type": "public",
+              "title": "Community Picnic",
+              "scheduled_at": "2026-05-03T14:15:45.592Z",
+              "location_name": "Town Green",
+              "summary": "Bring snacks and meet local families.",
+              "attendee_count": 8,
+              "is_interested": false,
+              "host_name": "Mia",
+              "theme_emoji": "🌳",
+              "age_group": "family"
+            },
+            {
+              "id": "\(externalID.uuidString)",
+              "event_type": "external",
+              "title": "Family Concert",
+              "scheduled_at": "2026-05-04T18:00:00Z",
+              "summary": "Live music for all ages.",
+              "attendee_count": 120,
+              "is_interested": true,
+              "category": "Music",
+              "age_group": "kids",
+              "ticket_url": "https://example.com/tickets",
+              "venue_name": "City Arena"
+            }
+          ],
+          "next_cursor": "cursor-2"
+        }
+        """
+
+        let repo = EventsRepository(
+            networkManager: MockNetworkManager(data: try #require(payload.data(using: .utf8)))
+        )
+
+        let result = try await repo.fetchUnifiedFeed(
+            types: ["public", "external"],
+            categories: ["Music"],
+            ageGroups: ["kids"],
+            postalCode: "10001",
+            cursor: nil
+        )
+
+        #expect(result.nextCursor == "cursor-2")
+        #expect(result.events.count == 2)
+        #expect(result.events.first?.id == publicID)
+        #expect(result.events.first?.visibility == .public)
+        #expect(result.events.first?.ageRange == "Family")
+        #expect(result.events.last?.id == externalID)
+        #expect(result.events.last?.visibility == .external)
+        #expect(result.events.last?.ageRange == "Kids")
+        #expect(result.events.last?.eventUrl == "https://example.com/tickets")
+        #expect(result.events.last?.hostName == "City Arena")
+    }
 }

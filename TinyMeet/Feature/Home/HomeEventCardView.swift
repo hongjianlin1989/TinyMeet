@@ -22,8 +22,9 @@ struct HomeEventCardView: View {
                     HStack(spacing: 8) {
                         Text(viewModel.title)
                             .font(.headline)
+                            .lineLimit(2)
 
-                        visibilityBadge
+                       // visibilityBadge
                     }
 
                     Label(viewModel.locationName, systemImage: "mappin.and.ellipse")
@@ -51,6 +52,7 @@ struct HomeEventCardView: View {
             Text(viewModel.summary)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .lineLimit(4)
 
             HStack(spacing: 10) {
                 detailPill(title: viewModel.timeDescription, color: TinyMeetTheme.sky)

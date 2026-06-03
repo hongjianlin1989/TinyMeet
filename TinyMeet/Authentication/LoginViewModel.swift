@@ -15,8 +15,8 @@ final class LoginViewModel: ObservableObject {
 
     private let authenticationRepository: AuthenticationRepositoryProtocol
 
-    init(authenticationRepository: AuthenticationRepositoryProtocol = FirebaseAuthenticationRepository()) {
-        self.authenticationRepository = authenticationRepository
+    init(authenticationRepository: AuthenticationRepositoryProtocol? = nil) {
+        self.authenticationRepository = authenticationRepository ?? FirebaseAuthenticationRepository()
     }
 
     var isFormValid: Bool {

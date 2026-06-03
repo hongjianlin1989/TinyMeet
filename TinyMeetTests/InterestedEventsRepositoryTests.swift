@@ -22,6 +22,8 @@ struct InterestedEventsRepositoryTests {
         func fetchPrivateEvents() async throws -> [NearbyEvent] { privateEvents }
         func fetchUnifiedFeed(
             types: [String]?,
+            categories: [String]?,
+            ageGroups: [String]?,
             postalCode: String?,
             cursor: String?
         ) async throws -> (events: [NearbyEvent], nextCursor: String?) {

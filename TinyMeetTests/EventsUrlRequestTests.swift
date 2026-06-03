@@ -102,4 +102,25 @@ struct EventsUrlRequestTests {
         #expect(json["ends_at"] as? String == "2026-05-03T16:15:45.592Z")
         #expect(json["scheduled_at"] as? String == "2026-05-03T14:15:45.592Z")
     }
+
+    @Test func unifiedFeedRequestEncodesRepeatedFilterQueryItems() throws {
+        let urlRequest = try EventsUrlRequest.feed(
+            types: ["public", "external"],
+            categories: ["Music", "Sports"],
+            ageGroups: ["kids", "family"],
+            postalCode: "10001",
+            cursor: "next-page"
+        ).asURLRequest()
+
+        let components = try #require(URLComponents(url: try #require(urlRequest.url), resolvingAgainstBaseURL: false))
+        let queryItems = components.queryItems ?? []
+
+        #expect(urlRequest.httpMethod == "GET")
+        #expect(urlRequest.url?.path == "/api/v1/events/feed")
+        #expect(queryItems.filter { $0.name == "types" }.compactMap(\.value) == ["public", "external"])
+        #expect(queryItems.filter { $0.name == "categories" }.compactMap(\.value) == ["Music", "Sports"])
+        #expect(queryItems.filter { $0.name == "age_groups" }.compactMap(\.value) == ["kids", "family"])
+        #expect(queryItems.first(where: { $0.name == "postal_code" })?.value == "10001")
+        #expect(queryItems.first(where: { $0.name == "cursor" })?.value == "next-page")
+    }
 }

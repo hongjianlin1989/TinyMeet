@@ -7,11 +7,16 @@ final class HomeEventsViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var selectedFilter: NearbyEventVisibility
+    @Published private(set) var selectedCategories: [NearbyEventCategory]
+    @Published private(set) var selectedAgeGroups: [NearbyEventAgeGroup]
+    @Published private(set) var publicFeedNoticeMessage: String?
     @Published private(set) var interestUpdateIDs: Set<UUID> = []
 
     private let userDefaults: UserDefaults
     private let eventsRepository: EventsRepositoryProtocol
     private let interestedEventsRepository: InterestedEventsRepositoryProtocol
+    private let postalCodeProvider: HomePostalCodeProviding
+    private var needsRefreshAfterCurrentLoad = false
 
     static func makeDefault() -> HomeEventsViewModel {
         HomeEventsViewModel()
@@ -20,23 +25,74 @@ final class HomeEventsViewModel: ObservableObject {
     init(
         userDefaults: UserDefaults = .standard,
         eventsRepository: EventsRepositoryProtocol = EventsRepository(),
-        interestedEventsRepository: InterestedEventsRepositoryProtocol = InterestedEventsRepository()
+        interestedEventsRepository: InterestedEventsRepositoryProtocol = InterestedEventsRepository(),
+        postalCodeProvider: HomePostalCodeProviding? = nil
     ) {
         self.userDefaults = userDefaults
         self.eventsRepository = eventsRepository
         self.interestedEventsRepository = interestedEventsRepository
-        let savedFilter = userDefaults.string(forKey: Self.selectedFilterKey)
-        self.selectedFilter = NearbyEventVisibility(rawValue: savedFilter ?? "") ?? .public
+        self.postalCodeProvider = postalCodeProvider ?? HomePostalCodeProvider(userDefaults: userDefaults)
+        let savedFilter = NearbyEventVisibility(rawValue: userDefaults.string(forKey: Self.selectedFilterKey) ?? "")
+        self.selectedFilter = savedFilter == .private ? .private : .public
+        self.selectedCategories = Self.savedValues(
+            forKey: Self.selectedCategoriesKey,
+            in: userDefaults,
+            allCases: NearbyEventCategory.allCases
+        )
+        self.selectedAgeGroups = Self.savedValues(
+            forKey: Self.selectedAgeGroupsKey,
+            in: userDefaults,
+            allCases: NearbyEventAgeGroup.allCases
+        )
     }
 
     var filteredEvents: [NearbyEvent] {
-        events.filter { $0.visibility == selectedFilter }
+        switch selectedFilter {
+        case .private:
+            return events.filter { $0.visibility == .private }
+        case .public, .external:
+            return events.filter { $0.visibility != .private }
+        }
+    }
+
+    var hasPublicFilters: Bool {
+        selectedCategories.isEmpty == false || selectedAgeGroups.isEmpty == false
     }
 
     func selectFilter(_ filter: NearbyEventVisibility) {
-        guard selectedFilter != filter else { return }
-        selectedFilter = filter
-        userDefaults.set(filter.rawValue, forKey: Self.selectedFilterKey)
+        let normalizedFilter: NearbyEventVisibility = filter == .private ? .private : .public
+        guard selectedFilter != normalizedFilter else { return }
+        selectedFilter = normalizedFilter
+        userDefaults.set(normalizedFilter.rawValue, forKey: Self.selectedFilterKey)
+    }
+
+    func toggleCategory(_ category: NearbyEventCategory) async {
+        selectedCategories = toggleSelection(
+            selectedCategories,
+            value: category,
+            allCases: NearbyEventCategory.allCases
+        )
+        userDefaults.set(selectedCategories.map(\.rawValue), forKey: Self.selectedCategoriesKey)
+        await refreshNearbyEvents()
+    }
+
+    func toggleAgeGroup(_ ageGroup: NearbyEventAgeGroup) async {
+        selectedAgeGroups = toggleSelection(
+            selectedAgeGroups,
+            value: ageGroup,
+            allCases: NearbyEventAgeGroup.allCases
+        )
+        userDefaults.set(selectedAgeGroups.map(\.rawValue), forKey: Self.selectedAgeGroupsKey)
+        await refreshNearbyEvents()
+    }
+
+    func clearPublicFilters() async {
+        guard hasPublicFilters else { return }
+        selectedCategories = []
+        selectedAgeGroups = []
+        userDefaults.removeObject(forKey: Self.selectedCategoriesKey)
+        userDefaults.removeObject(forKey: Self.selectedAgeGroupsKey)
+        await refreshNearbyEvents()
     }
 
     func loadNearbyEvents() async {
@@ -45,34 +101,58 @@ final class HomeEventsViewModel: ObservableObject {
     }
 
     func refreshNearbyEvents() async {
-        guard !isLoading else { return }
-
-        isLoading = true
-        errorMessage = nil
-
-        defer { isLoading = false }
-
-        do {
-            async let publicEvents = eventsRepository.fetchPublicEvents()
-            async let privateEvents = eventsRepository.fetchPrivateEvents()
-            async let interestedEvents = interestedEventsRepository.fetchInterestedEvents()
-
-            let (publicResults, privateResults, interestedRows) = try await (
-                publicEvents,
-                privateEvents,
-                interestedEvents
-            )
-            let interestedEventIDs = interestedRows.map(\.id)
-            let interestedIDSet = Set(interestedEventIDs)
-            events = (publicResults + privateResults).map { event in
-                var event = event
-                event.isInterested = event.isInterested || interestedIDSet.contains(event.id)
-                return event
-            }
-        } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-            events = []
+        guard isLoading == false else {
+            needsRefreshAfterCurrentLoad = true
+            return
         }
+
+        repeat {
+            needsRefreshAfterCurrentLoad = false
+            isLoading = true
+            errorMessage = nil
+
+            do {
+                async let privateEvents = eventsRepository.fetchPrivateEvents()
+                async let interestedEvents = interestedEventsRepository.fetchInterestedEvents()
+
+                let postalCode = await postalCodeProvider.currentPostalCode()
+                let publicFeedNoticeMessage = postalCode == nil
+                    ? "Allow location access to load nearby external events."
+                    : nil
+                let (privateResults, interestedRows) = try await (
+                    privateEvents,
+                    interestedEvents
+                )
+                let publicResults: [NearbyEvent]
+
+                if let postalCode {
+                    let publicResponse = try await eventsRepository.fetchUnifiedFeed(
+                        types: ["external"],
+                        categories: selectedCategories.map(\.rawValue),
+                        ageGroups: selectedAgeGroups.map(\.rawValue),
+                        postalCode: postalCode,
+                        cursor: nil
+                    )
+                    publicResults = publicResponse.events.filter { $0.visibility != .private }
+                } else {
+                    publicResults = []
+                }
+
+                let interestedIDSet = Set(interestedRows.map(\.id))
+                self.events = (publicResults + privateResults).map { event in
+                    var event = event
+                    event.isInterested = event.isInterested || interestedIDSet.contains(event.id)
+                    return event
+                }
+                self.publicFeedNoticeMessage = publicFeedNoticeMessage
+            } catch {
+                errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                events = []
+                publicFeedNoticeMessage = nil
+            }
+
+            isLoading = false
+        } while needsRefreshAfterCurrentLoad
     }
 
     func isUpdatingInterest(for eventID: UUID) -> Bool {
@@ -106,6 +186,33 @@ final class HomeEventsViewModel: ObservableObject {
     }
 
     private static let selectedFilterKey = "home.events.selectedVisibility"
+    private static let selectedCategoriesKey = "home.events.selectedCategories"
+    private static let selectedAgeGroupsKey = "home.events.selectedAgeGroups"
+
+    private static func savedValues<T: RawRepresentable & Sendable>(
+        forKey key: String,
+        in userDefaults: UserDefaults,
+        allCases: [T]
+    ) -> [T] where T.RawValue == String {
+        let savedValues = Set(userDefaults.stringArray(forKey: key) ?? [])
+        return allCases.filter { savedValues.contains($0.rawValue) }
+    }
+
+    private func toggleSelection<T: RawRepresentable & Sendable>(
+        _ currentValues: [T],
+        value: T,
+        allCases: [T]
+    ) -> [T] where T.RawValue == String {
+        var selectedValues = Set(currentValues.map(\.rawValue))
+
+        if selectedValues.contains(value.rawValue) {
+            selectedValues.remove(value.rawValue)
+        } else {
+            selectedValues.insert(value.rawValue)
+        }
+
+        return allCases.filter { selectedValues.contains($0.rawValue) }
+    }
 
     static let mockEvents: [NearbyEvent] = [
         NearbyEvent(

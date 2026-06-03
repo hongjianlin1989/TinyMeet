@@ -4,7 +4,13 @@ protocol EventsRepositoryProtocol: Sendable {
     func fetchPublicEvents() async throws -> [NearbyEvent]
     func fetchPrivateEvents() async throws -> [NearbyEvent]
     func createEvent(_ request: CreateEventRequest) async throws -> NearbyEvent
-    func fetchUnifiedFeed(types: [String]?, postalCode: String?, cursor: String?) async throws -> (events: [NearbyEvent], nextCursor: String?)
+    func fetchUnifiedFeed(
+        types: [String]?,
+        categories: [String]?,
+        ageGroups: [String]?,
+        postalCode: String?,
+        cursor: String?
+    ) async throws -> (events: [NearbyEvent], nextCursor: String?)
 }
 
 struct EventsRepository: EventsRepositoryProtocol {
@@ -42,10 +48,18 @@ struct EventsRepository: EventsRepositoryProtocol {
 
     func fetchUnifiedFeed(
         types: [String]? = nil,
+        categories: [String]? = nil,
+        ageGroups: [String]? = nil,
         postalCode: String? = nil,
         cursor: String? = nil
     ) async throws -> (events: [NearbyEvent], nextCursor: String?) {
-        let request = try EventsUrlRequest.feed(types: types, postalCode: postalCode, cursor: cursor).asURLRequest()
+        let request = try EventsUrlRequest.feed(
+            types: types,
+            categories: categories,
+            ageGroups: ageGroups,
+            postalCode: postalCode,
+            cursor: cursor
+        ).asURLRequest()
         let response: UnifiedFeedResponse = try await networkManager.perform(request)
         let events = response.events.map { $0.toNearbyEvent() }
         return (events, response.nextCursor)
